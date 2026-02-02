@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field, StrictStr
-from typing import List, Optional, Tuple
+from typing import List, Optional, Annotated
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
 
 class SlotStatus(str, Enum):
     """
@@ -54,8 +55,8 @@ class BugAgentState(BaseModel):
         last_question: a string follow up question that is presented to the user during the interrupt_and_present node
         last_extraction_raw: the last llm_extraction, purely tracked for debugging purposes
     """ 
-    messages: List[BaseMessage] = Field(default_factory=list)
+    messages: Annotated[List[BaseMessage], add_messages] = Field(default_factory=list)
     BugInfo: InfoSlots = Field(default_factory=InfoSlots)
     unknown_and_low_confidence_info: set[str] = Field(default_factory=set)
-    last_question: Optional[str] = None
-    last_extraction_raw: Optional[str] = None
+    generated_question: Optional[str] = None
+    #last_extraction_raw: Optional[str] = None

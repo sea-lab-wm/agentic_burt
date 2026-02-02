@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
 from state import BugAgentState
-from actions import file_to_string, stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, format_final_bug_report
+from node_utils import file_to_string, stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, format_final_bug_report
 from config import MODEL_NAME, PATH_TO_EXEC_MODEL
+from observability import log_action, Entity, ActionName, ConversationLogger
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
@@ -18,6 +19,9 @@ load_dotenv()
 MODEL = ChatOpenAI(model = MODEL_NAME)
 APP_GRAPH = file_to_string(PATH_TO_EXEC_MODEL)
 
+#Define Agent Logger
+logger = ConversationLogger(filepath="logs/conversation_0.log", conversation_id=0)
+
 #Node 1: Extract Content from User Description + Update (LLM)
     # A: Format Information of BugAgentState necessary for model call
         #state
@@ -31,6 +35,7 @@ APP_GRAPH = file_to_string(PATH_TO_EXEC_MODEL)
         # Few shot examples of how to extract info from the response
     # C: Parse the JSON formatted response from MODEL into dict for update to BugAgentState
     # D: Return update to BugAgentState
+@log_action(logger=logger, entity=Entity.bot, action_name=ActionName.extract_and_update)
 def extract_and_update(state : BugAgentState, config : RunnableConfig):
     #capture the current BugInfo collected in JSON format
     stringified_bug_info = stringify_current_bug_info(state)
@@ -39,18 +44,17 @@ def extract_and_update(state : BugAgentState, config : RunnableConfig):
     app_graph = (config.get("configurable") or {}).get("app_graph")
 
     #fetch the most recent agent follow up question if applicable
-    follow_up_question = state.last_question if state.last_question else ""
+    follow_up_question = state.generated_question if state.generated_question else ""
 
     #current user description (either response to follow up or initial description of buggy behavior)
     user_description = state.messages[-1].content
-
-    print(f"\nUser Description: {user_description}\n")
 
     result = llm_extract(stringified_bug_info, app_graph, follow_up_question, user_description, MODEL)
     
     return format_extraction_update(state, result)
 
 #Node 2: Evaluate Internal Bug Report State for Completeness
+@log_action(logger=logger, entity=Entity.bot, action_name=ActionName.evaluate)
 def evaluate_state(state : BugAgentState, config : RunnableConfig) -> dict:
     current_bug_info = state.BugInfo
 
@@ -68,7 +72,8 @@ def should_continue(state : BugAgentState):
 #Node 3: Generate Follow Up Questions to Fill in Gaps in Bug Report State
     #A: Extract/Stringfy Low Confidence and Unknown bug info from the BugInfo slots based on references in missing_and_low_confidence_info
     #B: Compile and Ship prompt requesting that LLM choose field and ask follow up questions (Enforce Structured Output)
-    #C: Capture generated follow up question and return partial update to 'last_question' field of BugAgentState
+    #C: Capture generated follow up question and return partial update to 'generated_question' field of BugAgentState
+@log_action(logger=logger, entity=Entity.bot, action_name=ActionName.follow_up)
 def follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
     #Complete set of currently collected bug information (I figure the LLM needs good status fields to inform how it will ask to clarify poor status fields)
     stringified_bug_info = stringify_current_bug_info(state)
@@ -81,13 +86,14 @@ def follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
 
     follow_up_question = llm_follow_up(stringified_bug_info, app_graph, formatted_unknown_and_low_confidence_info, MODEL)
 
-    return {"last_question" : follow_up_question}
+    return {"generated_question" : follow_up_question}
 
 #Node 4: Interupt (Stops the Graph Cycle so we can display generated follow question(s) and retrive answer's written by user) 
 #See Review and Edit State section of LangChain intterupt docs for guidance: https://docs.langchain.com/oss/python/langgraph/interrupts
+@log_action(logger=logger, entity=Entity.user, action_name=ActionName.user_description)
 def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dict:
-    user_response = interrupt({"Follow Up Question": state.last_question})
-    return {"messages" : state.messages + [HumanMessage(content=user_response)]}
+    user_response = interrupt({"Follow Up Question": state.generated_question})
+    return {"messages" : HumanMessage(content=user_response)}
 
 #Graph Construction:
 
@@ -147,6 +153,9 @@ while True:
 
     # Resume run; this returns updated state
     result = graph.invoke(Command(resume=user_response), config=config)
+
+#Write Logs to File
+logger.write_log()
 
 print("FINAL BUG REPORT:\n")
 print(format_final_bug_report(result["BugInfo"]))

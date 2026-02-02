@@ -1,71 +1,128 @@
-from langchain_core.callbacks import BaseCallbackHandler
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
-import json
+from pydantic import BaseModel, StrictStr
+from enum import Enum
+from typing import List, Optional
 from pathlib import Path
+from functools import wraps
+from typing import Any
+import time
 
-
-#Format of AIMessage that our call back handler should recieve: AIMessage(
-# content="J'adore la programmation.", 
-# additional_kwargs={'refusal': None}, 
-# response_metadata=
-    # {
-        # 'token_usage': # {'completion_tokens': 5, 'prompt_tokens': 31, 'total_tokens': 36}, 
-        # 'model_name': 'gpt-4o-2024-05-13', 
-        # 'system_fingerprint': 'fp_3aa7262c27', 
-        # 'finish_reason': 'stop', 
-        # 'logprobs': None}
-# id='run-63219b22-03e3-4561-8cc4-78b7c7c3a3ca-0', 
-# usage_metadata={'input_tokens': 31, 'output_tokens': 5, 'total_tokens': 36})
-def _extract_usage(response: Any) -> Optional[Dict[str, int]]:
+class Entity(str, Enum):
     """
-    Extracts token usage from LLM call
+    Defines entities that can execute actions in the application.
     """
-    usage = response.get("usage_metadata")
+    user = "user"
+    bot = "bot"
 
-    #NOTE:-1 indicates that we could not extract token value
-    if isinstance(usage, dict):
-        p = int(usage.get("input_tokens", 0) or -1)
-        c = int(usage.get("output_tokens", 0) or -1)
-        t = int(usage.get("total_tokens", 0) or -1)
-        return {"input_tokens": p, "output_tokens": c, "total_tokens": t}
-        
-    return None
-
-@dataclass
-class LLMEvent:
-    input_tokens: int
-    output_tokens: int
-    total_tokens: int
-
-
-class TokenEventCollector(BaseCallbackHandler):
+class ActionName(str, Enum):
     """
-    Collects a list of token-usage events for every LLM call.
+    Defines names of actions that can be executed during the lifecycle of the application
     """
-    def __init__(self):
-        self.events: List[LLMEvent] = []
+    user_description = "user_description"
+    extract_and_update = "extract_and_update"
+    evaluate = "evaluate"
+    follow_up = "follow_up"
 
-    def on_llm_end(self, response, *, run_id, parent_run_id = None, **kwargs):
-        usage = _extract_usage(response)
-        if not usage:
-            print(f"Failed to Extract Usage")
-            return
-        
-        self.events.append(LLMEvent(
-            input_tokens=usage["input_tokens"],
-            output_tokens=usage["output_tokens"], 
-            total_tokens=usage["total_tokens"]
-        ))
-
-class JSONLNodeLogger:
+class MetaData(BaseModel):
     """
-    Writes one JSON line per node activation.
+    Defines Meta
+    """
+    latency : str #action latency in ms
+    tokens_consumed : Optional[Any] = None #tracked action involes LLM call, see LLMEvent above for info spec
+
+class Action(BaseModel):
+    """
+    Defines how agent and user actions are logged.
+    Each action in the application must have an entity (see Entity class above), an action name (see ActionName class above), an output (partial state update or user description) and meta data (latency, tokens consumed, etc.)
+    """
+    entity : Entity
+    action_name : ActionName
+    output : dict[str, Any] | StrictStr
+    meta_data : MetaData
+
+class ConversationTurn(BaseModel):
+    turn : int
+    actions : List[Action]
+
+
+class ConversationLogger:
+    """
+    Captures conversation between user and bot.
     """
 
     def __init__(self, filepath: str, conversation_id: str):
-        self.path = Path(filepath)
+        self.filepath = Path(filepath)
         self.conversation_id = conversation_id
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.num_turns : int = 0
+        self.conversation : List[ConversationTurn] = [ConversationTurn(turn=self.num_turns, actions=[])]
+        
+
+    def add_action_to_conversation(self, entity : Entity, action_name : ActionName, output, meta_data : MetaData):
+        """
+        Add action to log of current conversation turn. 
+        Adds conversation turn to conversation at the beginning of new conversation turn (ie. new user response recieved)
+        
+        :param entity: Entity that performed the action
+        :type entity: Entity
+        :param action_name: Name of action that was performed
+        :type action_name: ActionName
+        :param output: Output of action that was performed
+        :type output: str or dict[str, Any]
+        """
+        if action_name == ActionName.user_description:
+            self.num_turns += 1
+            self.conversation.append(ConversationTurn(turn=self.num_turns, actions=[]))
+
+        new_action = Action(entity=entity, action_name=action_name, output=output, meta_data=meta_data)
+        self.conversation[-1].actions.append(new_action)
+
+    def write_log(self):
+        """
+        Write contents of self.conversation to log file in JSON format
+        """
+        with open(self.filepath, "w") as f:
+            
+            print(self.conversation)
+
+            for action in self.conversation:
+                json_str = action.model_dump_json(indent=2)
+                f.write(json_str)
+                f.write("\n")
+
+
+
+def log_action(logger : ConversationLogger, entity : Entity, action_name : ActionName):
+    """
+    Decorator Factory that allows for traceable per-action logging of application events.
+    
+    :param logger: Active logger object
+    :type logger: ConversationLogger
+    :param entity: Entity that performed the action to be logged
+    :type entity: Entity
+    :param action_name: Name of action to be logged
+    :type action_name: ActionName
+    """
+    def decorator(node_func):
+        @wraps(node_func)
+        def wrapper(*args, **kwargs):
+            #mark timestamp directly before app action performed
+            start = time.perf_counter()
+
+            #capture output of application action
+            output = node_func(*args, **kwargs)
+
+            #calculate and store latency of app action in ms
+            action_latency = f"{(time.perf_counter() - start)} s"
+            meta_data = MetaData(latency=action_latency)
+            logger.add_action_to_conversation(entity=entity, action_name=action_name, output=output, meta_data=meta_data)
+
+            return output
+        return wrapper
+    return decorator
+
+
+
+
+
+
     
     

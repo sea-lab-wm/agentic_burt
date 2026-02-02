@@ -135,7 +135,7 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
     )
     return {
         "BugInfo": updated,
-        "last_extraction_raw": extraction.model_dump_json(),
+        #"last_extraction_raw": extraction.model_dump_json(),
     }
 
 def find_unknown_or_ambiguous(info: InfoSlots):
