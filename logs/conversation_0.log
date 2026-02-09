@@ -9,29 +9,29 @@
           "buggy_screen": {
             "value": null,
             "status": "unknown",
-            "evidence": "My app crashed."
+            "evidence": "\"My app crashed.\""
           },
           "trigger_action": {
             "value": null,
             "status": "unknown",
-            "evidence": "My app crashed."
+            "evidence": "\"My app crashed.\""
           },
           "buggy_behavior": {
-            "value": "The app crashed / stopped unexpectedly.",
+            "value": "App crashed / stopped unexpectedly.",
             "status": "confirmed",
-            "evidence": "My app crashed."
+            "evidence": "\"My app crashed.\""
           },
           "expected_behavior": {
-            "value": "The app should not crash and should continue running normally.",
-            "status": "inferred",
-            "evidence": "My app crashed."
+            "value": null,
+            "status": "unknown",
+            "evidence": "\"My app crashed.\""
           },
           "steps_to_reproduce": []
         }
       },
       "meta_data": {
-        "latency": "4.687179124999602 ms",
-        "tokens_consumed": null
+        "latency": "3.1176952499954496 s",
+        "token_consumption": null
       }
     },
     {
@@ -39,24 +39,25 @@
       "action_name": "evaluate",
       "output": {
         "unknown_and_low_confidence_info": [
-          "buggy_screen",
-          "trigger_action"
+          "expected_behavior",
+          "trigger_action",
+          "buggy_screen"
         ]
       },
       "meta_data": {
-        "latency": "1.595799949427601e-05 ms",
-        "tokens_consumed": null
+        "latency": "2.0667001081164926e-05 s",
+        "token_consumption": null
       }
     },
     {
       "entity": "bot",
       "action_name": "follow_up",
       "output": {
-        "generated_question": "Right before the crash, what screen were you on in Family Finance (e.g., Dashboard, Reports/Charts, Expenses, Sms Patterns, etc.)?"
+        "generated_question": "Right before the app crashed, which screen were you on (e.g., Dashboard, Reports/Charts, Expenses, Incomes, Transfers, Templates, Sms Patterns, Settings), and what did you tap or do immediately before it stopped?"
       },
       "meta_data": {
-        "latency": "2.205359749999843 ms",
-        "tokens_consumed": null
+        "latency": "1.8888714170025196 s",
+        "token_consumption": null
       }
     }
   ]
@@ -69,17 +70,17 @@
       "action_name": "user_description",
       "output": {
         "messages": {
-          "content": "I was on the reports screen",
+          "content": "I was on the reports screen.",
           "additional_kwargs": {},
           "response_metadata": {},
           "type": "human",
           "name": null,
-          "id": "ce833be5-8624-4643-bf2d-6868cbf3f46f"
+          "id": "37e34d66-6432-4e8f-98ae-57c8c1d9fc95"
         }
       },
       "meta_data": {
-        "latency": "3.895899953931803e-05 ms",
-        "tokens_consumed": null
+        "latency": "7.795899728080258e-05 s",
+        "token_consumption": null
       }
     },
     {
@@ -89,46 +90,41 @@
         "BugInfo": {
           "buggy_screen": {
             "value": "caead4a7727e1c1f5cfd36bf05391cf318af588ab6d690f93472bdf8c7bb0e91",
-            "status": "confirmed",
-            "evidence": "\"I was on the reports screen\""
+            "status": "inferred",
+            "evidence": "\"I was on the reports screen.\""
           },
           "trigger_action": {
             "value": null,
             "status": "unknown",
-            "evidence": "User only specified they were on the reports screen; no specific action (e.g., tapping Display/Filter/tab) was mentioned."
+            "evidence": "User did not say what they tapped/did immediately before the crash; only that they were on Reports."
           },
           "buggy_behavior": {
-            "value": "The app crashed / stopped unexpectedly.",
+            "value": "App crashed / stopped unexpectedly.",
             "status": "confirmed",
             "evidence": "\"My app crashed.\""
           },
           "expected_behavior": {
-            "value": "The app should not crash and should continue running normally.",
-            "status": "inferred",
-            "evidence": "\"My app crashed.\" (implies it should have stayed open/kept working)"
+            "value": null,
+            "status": "unknown",
+            "evidence": "User did not describe what they expected to happen after the last action."
           },
           "steps_to_reproduce": [
             {
-              "value": "24f7aef009bd7a8b145fd2acabd46d79833f775339f82b7248b75b22eb407522",
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
               "status": "inferred",
-              "evidence": "\"I was on the reports screen\" (requires opening the app; one possible open-app transition)"
-            },
-            {
-              "value": "8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816",
-              "status": "inferred",
-              "evidence": "\"I was on the reports screen\" (likely proceeded past permissions to reach Dashboard) "
+              "evidence": "Implied start: user opened the app before reaching Reports."
             },
             {
               "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
-              "status": "confirmed",
-              "evidence": "\"I was on the reports screen\" (Dashboard -> Reports via 'Reports' button)"
+              "status": "inferred",
+              "evidence": "\"I was on the reports screen.\" (Dashboard -> Reports)"
             }
           ]
         }
       },
       "meta_data": {
-        "latency": "14.652026124999793 ms",
-        "tokens_consumed": null
+        "latency": "4.915574124999694 s",
+        "token_consumption": null
       }
     },
     {
@@ -136,23 +132,24 @@
       "action_name": "evaluate",
       "output": {
         "unknown_and_low_confidence_info": [
+          "expected_behavior",
           "trigger_action"
         ]
       },
       "meta_data": {
-        "latency": "1.7790999663702678e-05 ms",
-        "tokens_consumed": null
+        "latency": "2.245799987576902e-05 s",
+        "token_consumption": null
       }
     },
     {
       "entity": "bot",
       "action_name": "follow_up",
       "output": {
-        "generated_question": "On the Reports screen, what exactly did you do right before the crash—did you tap **Display**, tap **Filter**, or switch to a specific tab (e.g., **Expenses by Articles**, **Incomes by Articles**, or a Pie Chart tab)?"
+        "generated_question": "Right before the app crashed on the Reports screen, what did you tap or change (e.g., the top-right “Display” option, the “Filter” option, or switching to another report tab like “Incomes by Articles” / “Pie Chart”)?"
       },
       "meta_data": {
-        "latency": "3.4752518329996747 ms",
-        "tokens_consumed": null
+        "latency": "2.0411346670007333 s",
+        "token_consumption": null
       }
     }
   ]
@@ -165,17 +162,17 @@
       "action_name": "user_description",
       "output": {
         "messages": {
-          "content": "I switched to the Incomes by Articles tab",
+          "content": "I switched to the Incomes by Articles tab and changed the view.",
           "additional_kwargs": {},
           "response_metadata": {},
           "type": "human",
           "name": null,
-          "id": "64d48cac-b8c1-4b2b-b0d2-c04fcebddf66"
+          "id": "f5570ed1-e04b-49b4-a1ea-780bc118f1b6"
         }
       },
       "meta_data": {
-        "latency": "7.129200002964353e-05 ms",
-        "tokens_consumed": null
+        "latency": "6.912500248290598e-05 s",
+        "token_consumption": null
       }
     },
     {
@@ -184,52 +181,276 @@
       "output": {
         "BugInfo": {
           "buggy_screen": {
-            "value": "caead4a7727e1c1f5cfd36bf05391cf318af588ab6d690f93472bdf8c7bb0e91",
-            "status": "confirmed",
-            "evidence": "\"I switched to the Incomes by Articles tab\" (on the Reports/Chart screen)"
+            "value": "c73baec5341ca7597ddef244067a27040e0496b4ead7b7f27231070848c360d0",
+            "status": "inferred",
+            "evidence": "\"I switched to the Incomes by Articles tab and changed the view.\" (implies user was on the Reports screen with the 'Incomes by Articles' tab active)"
           },
           "trigger_action": {
-            "value": "c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0",
-            "status": "confirmed",
-            "evidence": "\"I switched to the Incomes by Articles tab\""
+            "value": "4b32ab9e1a61acf5623ab8d51c77b5cbf1aa3cd83822ae3db52df9c23c70b5f8",
+            "status": "ambiguous",
+            "evidence": "\"changed the view\" could correspond to tapping the top-right “Display” option (action_display). Multiple Display transitions exist; selected the one from the 'Incomes by Articles' Reports tab state."
           },
           "buggy_behavior": {
-            "value": "The app crashed / stopped unexpectedly after switching to the Incomes by Articles tab.",
+            "value": "App crashed / stopped unexpectedly after switching to the Incomes by Articles tab and changing the view.",
             "status": "inferred",
-            "evidence": "\"My app crashed.\" + \"I switched to the Incomes by Articles tab\""
+            "evidence": "\"I switched to the Incomes by Articles tab and changed the view.\" (combined with prior: \"My app crashed.\")"
           },
           "expected_behavior": {
-            "value": "After switching to the Incomes by Articles tab, the tab content should load and the app should continue running (not crash).",
+            "value": "The report view/display options should open/apply and the Incomes by Articles report should update without crashing.",
             "status": "inferred",
-            "evidence": "\"My app crashed.\" (implies it should have stayed open/kept working)"
+            "evidence": "\"changed the view\" (implies expectation that the view change would be applied rather than crashing)"
           },
           "steps_to_reproduce": [
             {
-              "value": "24f7aef009bd7a8b145fd2acabd46d79833f775339f82b7248b75b22eb407522",
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
               "status": "inferred",
-              "evidence": "\"I was on the reports screen\" (requires opening the app)"
-            },
-            {
-              "value": "8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816",
-              "status": "inferred",
-              "evidence": "\"I was on the reports screen\" (likely proceeded past permissions to reach Dashboard)"
+              "evidence": "Implied prerequisite: user opened the app before reaching Reports."
             },
             {
               "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
-              "status": "confirmed",
-              "evidence": "\"I was on the reports screen\""
+              "status": "inferred",
+              "evidence": "Previously stated: \"I was on the reports screen.\" (Dashboard -> Reports)"
             },
             {
               "value": "c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0",
-              "status": "confirmed",
-              "evidence": "\"I switched to the Incomes by Articles tab\""
+              "status": "inferred",
+              "evidence": "\"I switched to the Incomes by Articles tab\" (Reports -> Incomes by Articles tab)"
+            },
+            {
+              "value": "4b32ab9e1a61acf5623ab8d51c77b5cbf1aa3cd83822ae3db52df9c23c70b5f8",
+              "status": "ambiguous",
+              "evidence": "\"changed the view\" (likely tapping Display, but the graph contains multiple Display transitions; exact one not fully confirmed)"
             }
           ]
         }
       },
       "meta_data": {
-        "latency": "16.894884209000338 ms",
-        "tokens_consumed": null
+        "latency": "8.07824333300232 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "trigger_action",
+          "steps_to_reproduce[3]"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.3041000531520694e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "On the Reports screen after you switched to the “Incomes by Articles” tab, what exactly did you tap to “change the view”—did you tap the top-right “Display” option, and if so which settings did you change in that dialog (e.g., Group by Article vs Article parent, View values, Use percent values) before pressing OK?"
+      },
+      "meta_data": {
+        "latency": "2.2497759999969276 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}
+{
+  "turn": 3,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I changed from view values to use percent values. ",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "f587fa1e-ef08-4a38-84be-e94b9367c60c"
+        }
+      },
+      "meta_data": {
+        "latency": "3.675000334624201e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "buggy_screen": {
+            "value": "c73baec5341ca7597ddef244067a27040e0496b4ead7b7f27231070848c360d0",
+            "status": "inferred",
+            "evidence": "\"I changed from view values to use percent values.\" (this setting exists in the Display dialog opened from the Reports screen on the Incomes by Articles tab)"
+          },
+          "trigger_action": {
+            "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+            "status": "ambiguous",
+            "evidence": "\"changed from view values to use percent values\" implies using the Display dialog and confirming with OK; in the graph, OK from the Display dialog leads to the crash dialog via transition 26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa, but the user did not explicitly mention pressing OK."
+          },
+          "buggy_behavior": {
+            "value": "App crashed / stopped unexpectedly after switching the Display setting from “View values” to “Use percent values”.",
+            "status": "inferred",
+            "evidence": "\"I changed from view values to use percent values.\" (context from earlier report that the app crashed after changing the view)"
+          },
+          "expected_behavior": {
+            "value": "The Incomes by Articles report should update to show percent values (instead of raw values) without crashing.",
+            "status": "inferred",
+            "evidence": "\"I changed from view values to use percent values.\""
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "inferred",
+              "evidence": "(Previously provided context) Opened the app."
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "inferred",
+              "evidence": "(Previously provided context) Went to Reports from the Dashboard."
+            },
+            {
+              "value": "c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0",
+              "status": "inferred",
+              "evidence": "(Previously provided context) \"I switched to the Incomes by Articles tab\""
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "inferred",
+              "evidence": "Implied by \"I changed from view values to use percent values\" (requires opening the top-right Display dialog from the Incomes by Articles tab)."
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "\"I changed from view values to use percent values.\" (maps to toggling the 'Use percent values' checkbox in the Display dialog)."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "ambiguous",
+              "evidence": "To apply the change, the user would typically press \"OK\" in the Display dialog; this OK action is the one that leads to the crash dialog in the graph, but the user didn’t explicitly say they pressed OK."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "9.37933100000373 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[5]",
+          "trigger_action"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.1416002709884197e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "After you checked “Use percent values” in the Display dialog on the “Incomes by Articles” report, did you tap the dialog’s **OK** button to apply the change (or did it crash before you could press OK)?"
+      },
+      "meta_data": {
+        "latency": "1.985397959004331 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}
+{
+  "turn": 4,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I tapped the ok button and then it crashed.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "ccb6d1c3-4280-490e-9cc7-a5767c7816f3"
+        }
+      },
+      "meta_data": {
+        "latency": "6.850000499980524e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "buggy_screen": {
+            "value": "c73baec5341ca7597ddef244067a27040e0496b4ead7b7f27231070848c360d0",
+            "status": "inferred",
+            "evidence": "“I tapped the ok button and then it crashed.” (OK is in the Display dialog opened from the Reports screen on the ‘Incomes by Articles’ tab; this dialog is associated with the Incomes by Articles report screen)"
+          },
+          "trigger_action": {
+            "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+            "status": "confirmed",
+            "evidence": "“I tapped the ok button and then it crashed.” (maps to tapping OK in the Display dialog)"
+          },
+          "buggy_behavior": {
+            "value": "After tapping OK in the Display dialog (after enabling “Use percent values”), the app crashed / showed a “Unfortunately, Family Finance has stopped.” dialog.",
+            "status": "confirmed",
+            "evidence": "“then it crashed.”"
+          },
+          "expected_behavior": {
+            "value": "After tapping OK, the Incomes by Articles report should apply the “Use percent values” setting and update the chart without crashing.",
+            "status": "inferred",
+            "evidence": "Context: the OK button is used to apply the change; user indicates the crash happened immediately after applying it (“I tapped the ok button and then it crashed.”)."
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "inferred",
+              "evidence": "Implied prerequisite to reach the Reports screen: open the app."
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "inferred",
+              "evidence": "Implied prerequisite: navigate to “Reports” from the dashboard before changing display settings."
+            },
+            {
+              "value": "c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0",
+              "status": "inferred",
+              "evidence": "Implied prerequisite: be on the “Incomes by Articles” tab to access the Display dialog relevant to this report."
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "inferred",
+              "evidence": "Implied: to reach the OK button the user must have opened the “Display” dialog first."
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "inferred",
+              "evidence": "Context from earlier: user changed from “View values” to “Use percent values” (toggling the checkbox in the Display dialog)."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "“I tapped the ok button and then it crashed.”"
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "10.074202916999639 s",
+        "token_consumption": null
       }
     },
     {
@@ -239,8 +460,8 @@
         "unknown_and_low_confidence_info": []
       },
       "meta_data": {
-        "latency": "1.7874999684863724e-05 ms",
-        "tokens_consumed": null
+        "latency": "1.758400321705267e-05 s",
+        "token_consumption": null
       }
     }
   ]

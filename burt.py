@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from state import BugAgentState
-from node_utils import file_to_string, stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, format_final_bug_report
+from graph_utils import file_to_string, stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, generate_report
 from config import MODEL_NAME, PATH_TO_EXEC_MODEL
 from observability import log_action, Entity, ActionName, ConversationLogger
 from langchain_core.messages import HumanMessage
@@ -95,6 +95,10 @@ def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dic
     user_response = interrupt({"Follow Up Question": state.generated_question})
     return {"messages" : HumanMessage(content=user_response)}
 
+
+
+
+
 #Graph Construction:
 
 #Instantiating Graph Nodes:
@@ -157,6 +161,6 @@ while True:
 #Write Logs to File
 logger.write_log()
 
-print("FINAL BUG REPORT:\n")
-print(format_final_bug_report(result["BugInfo"]))
+print("FINAL BUG REPORT:\n\n")
+print(generate_report(result["BugInfo"], app_graph=APP_GRAPH, model=MODEL))
 

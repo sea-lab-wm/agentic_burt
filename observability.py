@@ -1,4 +1,5 @@
 from pydantic import BaseModel, StrictStr
+from langchain_core.callbacks import BaseCallbackHandler
 from enum import Enum
 from typing import List, Optional
 from pathlib import Path
@@ -27,7 +28,7 @@ class MetaData(BaseModel):
     Defines Meta
     """
     latency : str #action latency in ms
-    tokens_consumed : Optional[Any] = None #tracked action involes LLM call, see LLMEvent above for info spec
+    token_consumption : Optional[Any] = None #tracked action involes LLM call, see LLMEvent above for info spec
 
 class Action(BaseModel):
     """
@@ -42,7 +43,6 @@ class Action(BaseModel):
 class ConversationTurn(BaseModel):
     turn : int
     actions : List[Action]
-
 
 class ConversationLogger:
     """
@@ -87,8 +87,6 @@ class ConversationLogger:
                 json_str = action.model_dump_json(indent=2)
                 f.write(json_str)
                 f.write("\n")
-
-
 
 def log_action(logger : ConversationLogger, entity : Entity, action_name : ActionName):
     """

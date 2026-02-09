@@ -49,3 +49,17 @@ class FollowUpSchema(BaseModel):
             "A follow up question that prompts to the user to provide calrifying information about low_confidence or missing status bug info"
         ),
     )
+
+class ReportGenerationSchema(BaseModel):
+    title : StrictStr = Field(
+        description="The title of the generated bug report"
+    )
+    observed_behavior : StrictStr = Field(
+        description="The observed behavior section of the generated bug report"
+    )
+    expected_behavior : StrictStr = Field(
+        description="The expected behavior section of the generated bug report"
+    )
+    steps_to_reproduce : StrictStr = Field(
+        description="The steps to reproduce section of the generated bug report"
+    )

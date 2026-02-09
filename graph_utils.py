@@ -1,7 +1,8 @@
 from state import BugAgentState, InfoSlots, SlotStatus
-from llm_schema import ExtractionSchema, FollowUpSchema
+from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Any
+import json
 
 
 def file_to_string(filename):
@@ -215,5 +216,107 @@ def llm_follow_up(stringified_bug_info : str, app_graph : str, formatted_unknown
 
     return result.follow_up_question
 
-def format_final_bug_report(final_info_slots : InfoSlots) -> str:
-    pass
+def process_bug_info(complete_bug_info : InfoSlots):
+    """
+    Extracts values from InfoSlots into a plain dict and returns a string dump.
+
+    :param complete_state: Completed BugAgentState object
+    :type complete_state: BugAgentState
+    :return: Stringified dict of bug info values
+    :rtype: str
+    """
+    bug_info_values = {
+        "buggy_screen": complete_bug_info.buggy_screen.value,
+        "trigger_action": complete_bug_info.trigger_action.value,
+        "buggy_behavior": complete_bug_info.buggy_behavior.value,
+        "expected_behavior": complete_bug_info.expected_behavior.value,
+        "steps_to_reproduce": [step.value for step in complete_bug_info.steps_to_reproduce],
+    }
+
+    return json.dumps(bug_info_values)
+
+def generate_report(complete_bug_info : InfoSlots, app_graph : str, model : Any) -> str:
+    """
+    Generate High-Quality Textual Bug Report from Complete Bug InfoSlots
+    """
+
+    bug_info = process_bug_info(complete_bug_info)
+
+    system_template = """
+    # Task Summary
+    You are an expert developer of Android applications. Given a **user-submitted bug report** for an android application, your task is to generate a **high-quality structured bug report** with four sections: **Title**, **Observed Behavior (OB)**, **Expected Behavior (EB)**, and **Steps to Reproduce (S2Rs)**. 
+
+    You will be given the following information about a bug a user experienced created based on a textual graph of the buggy applications user interface:
+    buggy_screen: a hash identifying the screen in the application that the bug occurred on within the application graph
+    trigger_action: a hash identifying the action taken by the user that caused the buggy application behavior within the application graph
+    buggy_behavior: a description of the buggy behavior of the application (ie. crash, etc.)
+    expected_behavior: a description of the application behavior the user believes should replace the buggy_behavior
+    steps_to_reproduce : a list of hashes representing contiguous actions performed by the user starting from the app home screen and leading to the trigger_action within the application graph
+
+    The trigger_action and steps_to_reproduce hashes map to edges or tansitions in the textual graph, which appear in the following format: 
+    [Unique Transition Hash Number]: (s: [Source Screen Hash Number],t: [Target Screen Hash Number]): [id=0, ex=0, sq=1, act=(0) [Action Type (ie. click, tap, swipe)], cp=[, ty= [Component Type (ie. button, tab, image)], idx=[component name], idnx=1, tx=[component text]], x=[Component lateral postion on screen]], y=[Component vertical position on screen], h=[Component height], w=[Component width], dsc=], txt=, exp=, tr=null] weight=[Numerical Weight Value Dictating How Often this Button Was Used When Traversing the Application] ds=TR sc=[Path to Screen Shot of Transition]] ex=0
+
+    The buggy_screen hash represents a node or state in the textual graph, which appear in the following format: [Screen Hash Number], [Identifying Behavior of Screen]]..., TR, [Screen XML Meta Data]
+
+    You will be provided with the textual graph of the buggy application user interface below. 
+
+    buggy_behavior and expected_behavior are textual descriptions and can be used verbatim if desired.
+
+    ---
+
+    # Inputs
+
+    ##Bug Information
+    {bug_info}
+
+    ##Textual Application Graph
+    {app_graph}
+
+    ---
+
+    # Instructions for Generating the four sections of the **high-quality structured bug report**
+
+    1. **Title**
+    - Write one concise sentence that summarizes the problem clearly.
+
+    2. **Observed Behavior (OB)**
+    - Use the identified **buggy_screen**, **trigger_action**, and **buggy_behavior**.
+    - Only use information from the provided inputs; do not hallucinate any `information element` if that is not available.
+    - If the screen name is not explicitly found in the available inputs, generate a general name for the screen using the screen description.
+    - Use this template to write the OB description: On [Triggering Screen Reference], if the user [Triggering GUI Interaction], the [Buggy Behavior].
+    - Adapt the template if needed, but do not add unmentioned details.
+
+    3. **Expected Behavior (EB)**
+    - Use the provided **Expected Behavior** field.
+    - Use this template to write the EB description: [subject] should/should not [Correct Behavior/Incorrect Behavior].
+    - Adapt the template if needed, but do not add unmentioned details.
+    - Do not repeat information that is already mentioned in the OB.
+
+    4. **Steps to Reproduce (S2R)**
+    - Generate textual descriptions for every single step to reproduce provided in the bug information
+
+    5. **Generation Requirements**
+    - Do not hallucinate or introduce details not present in the input data.
+    - Maintain language clarity, precision, and consistency across all sections.
+
+    8. **Output Instructions**
+    - Provide the response using the given pydantic model. 
+
+    """
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_template)
+    
+    ])
+
+    messages = prompt.format_messages(
+        bug_info = bug_info,
+        app_graph = app_graph,
+    )
+
+    structured = model.with_structured_output(ReportGenerationSchema)
+
+    result = structured.invoke(messages)
+
+    return result
+    
