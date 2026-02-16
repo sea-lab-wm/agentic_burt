@@ -31,18 +31,18 @@ class InfoSlots(BaseModel):
     Defines the key bug report information that are agent seeks to gather information on during its conversation with the user.
     V1 InfoSlots:
         OB Information: 
-                a. buggy_screen: screen hash of bug causing or bug manifesting screen
-                b. trigger_action: transition hash of bug causing GUI interaction/action
-                c. buggy_behavior: description of application behavior following the trigger_action
+                a. triggering_screen_reference: The application screen where performing the interaction causes the bug and/or the screen where the bug was observed.
+                b. triggering_GUI_interactions: The user interaction(s) on the application that triggers the bug. These interactions may consist of a single action or a short sequence of causally important actions and do NOT need to be the final step in the Steps to Reproduce.
+                c. buggy_behavior: The specific buggy behavior (i.e., the problem) reported in the bug.
         EB Information:
-                a. expected_behavior: description of what the user believes should be the resulting behavior of the trigger action
+                a. correct_behavior: The specific correct application behavior that should happen instead of the buggy behavior.
         S2Rs Information:
-                a. steps_to_reproduce: a list of contiguous transition hashes from starting app screen to trigger_action
+                a. steps_to_reproduce: a list of contiguous transition hashes from starting app screen to triggering_screen_reference, representing the users path through the application resulting in the bug being experienced.
     """
-    buggy_screen: Slot = Field(default_factory=Slot)
-    trigger_action: Slot = Field(default_factory=Slot)
+    triggering_screen_reference: Slot = Field(default_factory=Slot)
+    triggering_GUI_interactions: List[Slot] = Field(default_factory=list)
     buggy_behavior: Slot = Field(default_factory=Slot)
-    expected_behavior: Slot = Field(default_factory=Slot)
+    correct_behavior: Slot = Field(default_factory=Slot)
     steps_to_reproduce: List[Slot] = Field(default_factory=list)
 
 class BugAgentState(BaseModel):
@@ -52,7 +52,7 @@ class BugAgentState(BaseModel):
         messages: list of user descriptions of the bug they experienced
         BugInfo: see InfoSlots
         unknown_and_low_confidence_info: a set containing names of low confidence or unkwon info slots following the extract_and_update node that are used for generating follow up questions
-        last_question: a string follow up question that is presented to the user during the interrupt_and_present node
+        generated_question: a string follow up question that is presented to the user during the interrupt_and_present node
         last_extraction_raw: the last llm_extraction, purely tracked for debugging purposes
     """ 
     messages: Annotated[List[BaseMessage], add_messages] = Field(default_factory=list)

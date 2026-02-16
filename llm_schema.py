@@ -6,36 +6,36 @@ class ExtractionSchema(BaseModel):
     """
     Defines the structured ouput for LLM call in the extract_and_update phase/node, so that updated key bug information can be cleanly loaded into agent state
     """
-    buggy_screen: Optional[Slot] = Field(
+    triggering_screen_reference: Optional[Slot] = Field(
         default=None,
         description=(
-            "The screen/view hash of the screen where the bug occurs. "
+            "App graph screen hash representing the application screenwhere performing the interaction causes the bug and/or the screen where the bug was observed."
         ),
     )
-    trigger_action: Optional[Slot] = Field(
+    triggering_GUI_interactions: Optional[List[Slot]] = Field(
         default=None,
         description=(
-            "The transition hash of the application action or transition that triggers the bug. "
+            "App graph transition hashes representing user interaction(s) on the application that triggers the bug."
         ),
     )
     buggy_behavior: Optional[Slot] = Field(
         default=None,
         description=(
-            "What actually happened (the observed buggy behavior). "
+            "The specific buggy behavior (i.e., the problem) reported in the bug. "
             "Please use user's exact language where possible"
         ),
     )
-    expected_behavior: Optional[Slot] = Field(
+    correct_behavior: Optional[Slot] = Field(
         default=None,
         description=(
-            "What the user expected to happen instead. "
+            "The specific correct application behavior that should happen instead of the buggy behavior."
             "Please use user's exact language where possible"
         ),
     )
     steps_to_reproduce: Optional[List[Slot]] = Field(
         default=None,
         description=(
-            "Ordered list of reproduction steps. Each item is a Slot where value is one transition hash number"
+            "Ordered list of bug reproduction steps spanning app open to triggering_screen_reference. Each item is a Slot where value is one app graph transition hash number corresponding to one step to reproduce."
             "If the user provides only part of the steps, include only those stated."
         ),
     )

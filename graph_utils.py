@@ -76,11 +76,11 @@ def llm_extract(stringified_bug_info : str, app_graph : str, follow_up_question 
     Your task is to use the description provided by the user to compile the following information from the provided application graph. Please use the pre-existing bug information to inform any new information you draw from the application graph.
 
     === Desired Bug Information ===
-    1. buggy_screen: A **single** screen hash from the application graph of the application screen the bug occured on
-    2. trigger_action: A **single** transition hash number from the application graph of the GUI transition/action that caused the bug
-    3. buggy_behavior: A description of the application behavior that occured following the trigger_action, as described by the user
-    4. expected_behavior: A description of the application behavior that should have occured following the trigger_action, as described by the user
-    5. steps_to_reproduce: A list of transition hash numbers from the application graph that represent a continuous path of GUI actions that connect the opening screen of the application to where the bug occured. Please include the trigger action as the last step to reproduce. Each entry in the list should be a **single** transition hash number.
+    1. triggering_screen_reference: A **single** screen hash from the application graph of the application screen the bug occured on
+    2. triggering_GUI_interactions: One to many transition hash numbers from the application graph representing the user interaction(s) that trigger(s) the bug
+    3. buggy_behavior: A description of the application behavior that occured following the triggering_GUI_interactions, as described by the user
+    4. correct_behavior: A description of the application behavior that should have occured following the triggering_GUI_interactions, as described by the user
+    5. steps_to_reproduce: A list of transition hash numbers from the application graph that represent a continuous path of GUI actions, connecting the opening screen of the application to the triggering_screen_reference, where the bug was experienced. Please include the triggering_GUI_interactions in this list. Each entry in the list should be a **single** transition hash number.
 
     For each desired bug information please return your confidence in your decision ('unkown', 'ambiguous', 'inferred', 'confirmed') and a segment from the users description that informed your decsion. 
     Return your confidence and evidence for each step in the steps to reproduce. 
@@ -108,7 +108,7 @@ def llm_extract(stringified_bug_info : str, app_graph : str, follow_up_question 
 
     return extraction
 
-#This method will eventually check that the llm extracted information for buggy_screen, trigger_action and steps_to_reproduce are all valid hashes from the execution model
+#This method will eventually check that the llm extracted information for triggering_screen_reference, triggering_GUI_interactions, and steps_to_reproduce are all valid hashes from the execution model
 #def validate_llm_extract():
 
 def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema) -> dict:
@@ -128,10 +128,10 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
     #In this current state, if the LLM does not add anything to the sate during its current extraction, the old state values are kept
     #Might need to change this later as the LLM should have the ability to reset a value to unknown if new information disuades it from its last selection for a specific field
     updated = InfoSlots(
-        buggy_screen=extraction.buggy_screen or current.buggy_screen,
-        trigger_action=extraction.trigger_action or current.trigger_action,
+        triggering_screen_reference=extraction.triggering_screen_reference or current.triggering_screen_reference,
+        triggering_GUI_interactions=extraction.triggering_GUI_interactions or current.triggering_GUI_interactions,
         buggy_behavior=extraction.buggy_behavior or current.buggy_behavior,
-        expected_behavior=extraction.expected_behavior or current.expected_behavior,
+        correct_behavior=extraction.correct_behavior or current.correct_behavior,
         steps_to_reproduce=extraction.steps_to_reproduce or current.steps_to_reproduce,
     )
     return {
@@ -149,7 +149,7 @@ def find_unknown_or_ambiguous(info: InfoSlots):
     flagged = set()
 
     for name, content in info:
-        if name == "steps_to_reproduce":
+        if name == "steps_to_reproduce" or name == "triggering_GUI_interactions":
             for i, step in enumerate(content):
                 if step.status in {SlotStatus.unknown, SlotStatus.ambiguous}:
                     flagged.add(f"{name}[{i}]")
@@ -190,6 +190,13 @@ def llm_follow_up(stringified_bug_info : str, app_graph : str, formatted_unknown
     === Current Bug Information ===
     {stringified_bug_info}
 
+    The section below outlines what each information category from the Current Bug Information contains:
+    1. triggering_screen_reference: A **single** screen hash from the application graph of the application screen the bug occured on
+    2. triggering_GUI_interactions: One to many transition hash numbers from the application graph representing the user interaction(s) that trigger(s) the bug
+    3. buggy_behavior: A description of the application behavior that occured following the triggering_GUI_interactions, as described by the user
+    4. correct_behavior: A description of the application behavior that should have occured following the triggering_GUI_interactions, as described by the user
+    5. steps_to_reproduce: A list of transition hash numbers from the application graph that represent a continuous path of GUI actions, connecting the opening screen of the application to the triggering_screen_reference, where the bug was experienced. Please include the triggering_GUI_interactions in this list. Each entry in the list should be a **single** transition hash number.
+
     Here is a list of low confidence and missing bug information.
     If you see a list item of the form, "steps_to_reproduce[i], that is specifying that the ith step to reproduce is low_confidence or missing."
     {formatted_unknown_and_low_confidence_info}
@@ -226,10 +233,10 @@ def process_bug_info(complete_bug_info : InfoSlots):
     :rtype: str
     """
     bug_info_values = {
-        "buggy_screen": complete_bug_info.buggy_screen.value,
-        "trigger_action": complete_bug_info.trigger_action.value,
+        "triggering_screen_reference": complete_bug_info.triggering_screen_reference.value,
+        "triggering_GUI_interactions": [interaction.value for interaction in complete_bug_info.triggering_GUI_interactions],
         "buggy_behavior": complete_bug_info.buggy_behavior.value,
-        "expected_behavior": complete_bug_info.expected_behavior.value,
+        "correct_behavior": complete_bug_info.correct_behavior.value,
         "steps_to_reproduce": [step.value for step in complete_bug_info.steps_to_reproduce],
     }
 
@@ -244,23 +251,26 @@ def generate_report(complete_bug_info : InfoSlots, app_graph : str, model : Any)
 
     system_template = """
     # Task Summary
-    You are an expert developer of Android applications. Given a **user-submitted bug report** for an android application, your task is to generate a **high-quality structured bug report** with four sections: **Title**, **Observed Behavior (OB)**, **Expected Behavior (EB)**, and **Steps to Reproduce (S2Rs)**. 
+    You are an expert developer of Android applications. Given information collected for a **user-experienced bug** on an android application, your task is to generate a **high-quality structured bug report** with four sections: **Title**, **Observed Behavior (OB)**, **Expected Behavior (EB)**, and **Steps to Reproduce (S2Rs)**. 
 
-    You will be given the following information about a bug a user experienced created based on a textual graph of the buggy applications user interface:
-    buggy_screen: a hash identifying the screen in the application that the bug occurred on within the application graph
-    trigger_action: a hash identifying the action taken by the user that caused the buggy application behavior within the application graph
-    buggy_behavior: a description of the buggy behavior of the application (ie. crash, etc.)
-    expected_behavior: a description of the application behavior the user believes should replace the buggy_behavior
-    steps_to_reproduce : a list of hashes representing contiguous actions performed by the user starting from the app home screen and leading to the trigger_action within the application graph
+    You will be given the following information about the **user-experienced bug** created based on a textual graph of the buggy applications user interface:
+    1. triggering_screen_reference: A **single** screen hash from the application graph of the application screen the bug occured on
+    2. triggering_GUI_interactions: One to many transition hash numbers from the application graph representing the user interaction(s) that trigger(s) the bug
+    3. buggy_behavior: A description of the application behavior that occured following the triggering_GUI_interactions, as described by the user
+    4. correct_behavior: A description of the application behavior that should have occured following the triggering_GUI_interactions, as described by the user
+    5. steps_to_reproduce: A list of transition hash numbers from the application graph that represent a continuous path of GUI actions, connecting the opening screen of the application to the triggering_screen_reference, where the bug was experienced. Please include the triggering_GUI_interactions in this list. Each entry in the list should be a **single** transition hash number.
 
-    The trigger_action and steps_to_reproduce hashes map to edges or tansitions in the textual graph, which appear in the following format: 
+    === Understanding the Textual Graph of the Buggy Application =====
+    The triggering_GUI_interactions and steps_to_reproduce hashes map to edges or tansitions in the textual graph, which appear in the following format: 
     [Unique Transition Hash Number]: (s: [Source Screen Hash Number],t: [Target Screen Hash Number]): [id=0, ex=0, sq=1, act=(0) [Action Type (ie. click, tap, swipe)], cp=[, ty= [Component Type (ie. button, tab, image)], idx=[component name], idnx=1, tx=[component text]], x=[Component lateral postion on screen]], y=[Component vertical position on screen], h=[Component height], w=[Component width], dsc=], txt=, exp=, tr=null] weight=[Numerical Weight Value Dictating How Often this Button Was Used When Traversing the Application] ds=TR sc=[Path to Screen Shot of Transition]] ex=0
 
-    The buggy_screen hash represents a node or state in the textual graph, which appear in the following format: [Screen Hash Number], [Identifying Behavior of Screen]]..., TR, [Screen XML Meta Data]
+    The triggering_screen_reference hash represents a node or state in the textual graph, which appear in the following format: [Screen Hash Number], [Identifying Behavior of Screen]]..., TR, [Screen XML Meta Data]
 
     You will be provided with the textual graph of the buggy application user interface below. 
 
+    === Generation Guidelines ===
     buggy_behavior and expected_behavior are textual descriptions and can be used verbatim if desired.
+    Please do NOT reference any hash numbers from the application graph in your generated bug report sections.
 
     ---
 
@@ -280,19 +290,20 @@ def generate_report(complete_bug_info : InfoSlots, app_graph : str, model : Any)
     - Write one concise sentence that summarizes the problem clearly.
 
     2. **Observed Behavior (OB)**
-    - Use the identified **buggy_screen**, **trigger_action**, and **buggy_behavior**.
+    - Use the identified **triggering_screen_reference**, **triggering_GUI_interactions**, and **buggy_behavior**.
     - Only use information from the provided inputs; do not hallucinate any `information element` if that is not available.
     - If the screen name is not explicitly found in the available inputs, generate a general name for the screen using the screen description.
     - Use this template to write the OB description: On [Triggering Screen Reference], if the user [Triggering GUI Interaction], the [Buggy Behavior].
     - Adapt the template if needed, but do not add unmentioned details.
 
     3. **Expected Behavior (EB)**
-    - Use the provided **Expected Behavior** field.
+    - Use the provided **correct_behavior** field.
     - Use this template to write the EB description: [subject] should/should not [Correct Behavior/Incorrect Behavior].
     - Adapt the template if needed, but do not add unmentioned details.
     - Do not repeat information that is already mentioned in the OB.
 
     4. **Steps to Reproduce (S2R)**
+    - Use the provided **steps_to_reproduce** field
     - Generate textual descriptions for every single step to reproduce provided in the bug information
 
     5. **Generation Requirements**
@@ -300,7 +311,7 @@ def generate_report(complete_bug_info : InfoSlots, app_graph : str, model : Any)
     - Maintain language clarity, precision, and consistency across all sections.
 
     8. **Output Instructions**
-    - Provide the response using the given pydantic model. 
+    - Provide a structured response enforced by the given pydantic model. 
 
     """
 
@@ -318,5 +329,5 @@ def generate_report(complete_bug_info : InfoSlots, app_graph : str, model : Any)
 
     result = structured.invoke(messages)
 
-    return result
+    return result.model_dump()
     

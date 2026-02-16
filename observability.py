@@ -22,6 +22,7 @@ class ActionName(str, Enum):
     extract_and_update = "extract_and_update"
     evaluate = "evaluate"
     follow_up = "follow_up"
+    generate_report = "generate_report"
 
 class MetaData(BaseModel):
     """

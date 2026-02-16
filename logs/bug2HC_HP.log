@@ -1,0 +1,239 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790",
+            "status": "confirmed",
+            "evidence": "\"tap View, check view values, check use percent values, and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen\""
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "\"check use percent values\""
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "\"tap OK\""
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After changing the report appearance from \"View values\" to \"Use percent values\" in the \"Display of Incomes by Articles\" dialog and tapping OK, the application crashes.",
+            "status": "confirmed",
+            "evidence": "\"changing the report appearance from view values to use percent values causes the application to crash\""
+          },
+          "correct_behavior": {
+            "value": "After selecting \"Use percent values\" and confirming with OK, the report should update its appearance to use percent values (instead of crashing).",
+            "status": "confirmed",
+            "evidence": "\"the appearance of the report should be changed to use percent values\""
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "confirmed",
+              "evidence": "\"Open the app\""
+            },
+            {
+              "value": "8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816",
+              "status": "confirmed",
+              "evidence": "\"tap Allow\""
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "confirmed",
+              "evidence": "\"select Report\""
+            },
+            {
+              "value": "2965c3b4debc48c038e78f98002ad0883abcdd8571e00c1287e80981331ef5b4",
+              "status": "ambiguous",
+              "evidence": "\"choose Incomes By Articles or Expenses By Articles\" (two possible tabs; this step records choosing Incomes by Articles)"
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "confirmed",
+              "evidence": "\"tap View\""
+            },
+            {
+              "value": "dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64",
+              "status": "confirmed",
+              "evidence": "\"check view values\""
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "\"check use percent values\""
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "\"tap OK\""
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "8.989334041001712 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[3]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.8041999283013865e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "In step 4 (after tapping **Reports**), which tab were you on when you opened the **Display of Incomes by Articles** dialog—did you select **Incomes by Articles** or a different tab like **Expenses by Articles** (and if you changed tabs, which one exactly)?"
+      },
+      "meta_data": {
+        "latency": "4.290061583000352 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I selected Incomes by Articles",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "51aec0f8-5d0b-47cb-ac67-2aa571e13100"
+        }
+      },
+      "meta_data": {
+        "latency": "7.716600157436915e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790",
+            "status": "confirmed",
+            "evidence": "\"tap View, check view values, check use percent values, and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen\""
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "\"check use percent values\""
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "\"tap OK\""
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After changing the report appearance from \"View values\" to \"Use percent values\" in the \"Display of Incomes by Articles\" dialog and tapping OK, the application crashes.",
+            "status": "confirmed",
+            "evidence": "\"changing the report appearance from view values to use percent values causes the application to crash\""
+          },
+          "correct_behavior": {
+            "value": "After selecting \"Use percent values\" and confirming with OK, the report should update its appearance to use percent values (instead of crashing).",
+            "status": "confirmed",
+            "evidence": "\"the appearance of the report should be changed to use percent values\""
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "confirmed",
+              "evidence": "\"Open the app\""
+            },
+            {
+              "value": "8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816",
+              "status": "confirmed",
+              "evidence": "\"tap Allow\""
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "confirmed",
+              "evidence": "\"select Report\""
+            },
+            {
+              "value": "2965c3b4debc48c038e78f98002ad0883abcdd8571e00c1287e80981331ef5b4",
+              "status": "confirmed",
+              "evidence": "\"I selected Incomes by Articles\""
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "confirmed",
+              "evidence": "\"tap View\""
+            },
+            {
+              "value": "dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64",
+              "status": "confirmed",
+              "evidence": "\"check view values\""
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "\"check use percent values\""
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "\"tap OK\""
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "8.065073207999376 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.2832999093225226e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "title": "App crashes when applying \"Use percent values\" display option in \"Incomes by Articles\" report",
+        "observed_behavior": "On the \"Display of Incomes by Articles\" dialog, if the user selects the \"Use percent values\" checkbox and then taps \"OK\", the application crashes.",
+        "expected_behavior": "The report should update its appearance to use percent values (instead of crashing).",
+        "steps_to_reproduce": "1. Launch the Family Finance app.\n2. On the permissions prompt, tap \"Allow\".\n3. On the Dashboard screen, tap \"Reports\".\n4. In Reports, switch to the \"Incomes by Articles\" tab.\n5. Tap \"Display\" in the toolbar.\n6. In the \"Display of Incomes by Articles\" dialog, tap the \"View values\" checkbox to change the selection.\n7. Tap the \"Use percent values\" checkbox.\n8. Tap \"OK\"."
+      },
+      "meta_data": {
+        "latency": "5.472413332998258 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}

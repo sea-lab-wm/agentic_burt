@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
+from database.db import SessionLocal
+from database.database_utils import fetch_app_graph
 from state import BugAgentState
-from graph_utils import file_to_string, stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, generate_report
-from config import MODEL_NAME, PATH_TO_EXEC_MODEL
+from graph_utils import stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, generate_report
+from config import MODEL_NAME
 from observability import log_action, Entity, ActionName, ConversationLogger
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
@@ -15,12 +17,24 @@ from pprint import pprint
 #loading in environment variables
 load_dotenv()
 
+#stand up db session
+session = SessionLocal()
+
+APP_GRAPH = None
+current_bug = -1
+
+#Select Bug being repored and fetch corresponding app graph from db
+while not APP_GRAPH:
+    current_bug = int(input("Enter valid ID for Bug Being Reported:"))
+    APP_GRAPH = fetch_app_graph(session=session, bug_id=current_bug)
+
+description_level = input("Please enter the description level as [completeness level]_[precision level]:")
+
+#Set up conversation logger
+logger = ConversationLogger(filepath=f"logs/bug{current_bug}{description_level}.log", conversation_id=0)
+
 #Model and APP_GRAPH Instantiation
 MODEL = ChatOpenAI(model = MODEL_NAME)
-APP_GRAPH = file_to_string(PATH_TO_EXEC_MODEL)
-
-#Define Agent Logger
-logger = ConversationLogger(filepath="logs/conversation_0.log", conversation_id=0)
 
 #Node 1: Extract Content from User Description + Update (LLM)
     # A: Format Information of BugAgentState necessary for model call
@@ -95,9 +109,10 @@ def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dic
     user_response = interrupt({"Follow Up Question": state.generated_question})
     return {"messages" : HumanMessage(content=user_response)}
 
-
-
-
+#Generate Final Bug Report
+@log_action(logger=logger, entity=Entity.user, action_name=ActionName.generate_report)
+def gen_report(bug_info, app_graph):
+    return generate_report(bug_info, app_graph, MODEL)
 
 #Graph Construction:
 
@@ -126,13 +141,13 @@ burt_workflow.add_edge("interrupt_and_present","extract_and_update")
 checkpointer = MemorySaver()
 graph = burt_workflow.compile(checkpointer=checkpointer)
 
-#Initializing Graph State (Information that Agent and User Update throughout conversation) and Config (Information that is constant and needed throughout agent lifecycle):
-
-#For now, provide the initial user bug description to the loop, in a later GUI enabled version we can request it as first user message
-state = BugAgentState(messages=[HumanMessage(content="My app crashed.")])
+#Initializing Graph State and Logger (Information that Agent and User Update throughout conversation) and Config (Information that is constant and needed throughout agent lifecycle):
 
 #Specifying a thread-id is how we ensure persistant state even with interupt
 config = {"configurable": {"app_graph": APP_GRAPH, "thread_id": "1"}}
+
+#For now, provide the initial user bug description to the loop, in a later GUI enabled version we can request it as first user message
+state = BugAgentState(messages=[HumanMessage(content="Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check ""view values"", check ""use percent values"", and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen; changing the report appearance from ""view values"" to ""use percent values"" causes the application to crash, but the appearance of the report should be changed to ""use percent values"".")])
 
 result = graph.invoke(state, config=config)
 
@@ -144,11 +159,11 @@ while True:
         #state = result
         break
 
-    # Display latest graph state from the checkpointer before asking the next follow-up
-    snapshot = graph.get_state(config)
-    print("STATE BEFORE NEXT FOLLOW UP:\n")
-    pprint(snapshot.values, width=100)
-    print("\n")
+    #Display latest graph state from the checkpointer before asking the next follow-up
+    # snapshot = graph.get_state(config)
+    # print("STATE BEFORE NEXT FOLLOW UP:\n")
+    # pprint(snapshot.values, width=100)
+    # print("\n")
 
     #Agent requests user follow up response: present generated follow up question to user and retrieve their response
     question = result["__interrupt__"]
@@ -158,9 +173,9 @@ while True:
     # Resume run; this returns updated state
     result = graph.invoke(Command(resume=user_response), config=config)
 
+print("FINAL BUG REPORT:\n\n")
+print(gen_report(result["BugInfo"], app_graph=APP_GRAPH))
+
 #Write Logs to File
 logger.write_log()
-
-print("FINAL BUG REPORT:\n\n")
-print(generate_report(result["BugInfo"], app_graph=APP_GRAPH, model=MODEL))
 
