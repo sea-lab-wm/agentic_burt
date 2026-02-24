@@ -1,0 +1,215 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790",
+            "status": "inferred",
+            "evidence": "\"Changing the report appearance from view values to use percent values results in the application crashing.\" (this corresponds to the Reports -> Display dialog with checkboxes 'View values' and 'Use percent values')"
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "inferred",
+              "evidence": "\"...to use percent values...\" (click on 'Use percent values' checkbox idx=use_percent_values)"
+            }
+          ],
+          "buggy_behavior": {
+            "value": "When changing the report appearance from \"View values\" to \"Use percent values\", the app crashes (\"Family Finance has stopped\").",
+            "status": "confirmed",
+            "evidence": "\"Changing the report appearance from view values to use percent values results in the application crashing.\""
+          },
+          "correct_behavior": {
+            "value": "The report display should switch to showing percent values (instead of raw values) without crashing.",
+            "status": "inferred",
+            "evidence": "\"Changing the report appearance from view values to use percent values\" (implies an appearance toggle; expected behavior is update display rather than crash)"
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "inferred",
+              "evidence": "App open transition to reach Dashboard (required to access Reports)."
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "inferred",
+              "evidence": "Navigate to Reports/Charts from Dashboard (Reports button)."
+            },
+            {
+              "value": "2965c3b4debc48c038e78f98002ad0883abcdd8571e00c1287e80981331ef5b4",
+              "status": "inferred",
+              "evidence": "Select a report tab where the Display dialog with the checkboxes is available (e.g., 'Incomes by Articles')."
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "inferred",
+              "evidence": "Open the 'Display' dialog in Reports (needed to access 'View values' / 'Use percent values')."
+            },
+            {
+              "value": "dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64",
+              "status": "ambiguous",
+              "evidence": "User mentions \"from view values\" but does not explicitly say they toggled it; this is the 'View values' checkbox interaction."
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "\"...to use percent values...\" (clicking 'Use percent values' triggers the crash)."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "ambiguous",
+              "evidence": "Often required to apply display changes (press OK), but user did not specify whether pressing OK occurred before the crash."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "20.733202874999733 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[4]",
+          "steps_to_reproduce[6]"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.1165999896766152e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "In the Reports screen, after opening the \"Display\" dialog, did the app crash immediately when you tapped the \"Use percent values\" checkbox, or only after you then pressed the \"OK\" button to apply the change?"
+      },
+      "meta_data": {
+        "latency": "5.8903057080005965 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Only after I pressed the \"oK\" button to apply the change.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "268fb2b1-3c30-4e3c-a607-fc9478b2450a"
+        }
+      },
+      "meta_data": {
+        "latency": "7.095799992384855e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790",
+            "status": "confirmed",
+            "evidence": "\"Only after I pressed the \\\"oK\\\" button to apply the change.\" (crash occurs from within the Reports → Display dialog)"
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "\"Only after I pressed the \\\"oK\\\" button to apply the change.\" (OK button in the Display dialog)"
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After enabling \"Use percent values\" and then pressing the \"OK\" button to apply the change in the Reports → Display dialog, the app crashes (\"Family Finance has stopped\").",
+            "status": "confirmed",
+            "evidence": "\"Only after I pressed the \\\"oK\\\" button to apply the change.\""
+          },
+          "correct_behavior": {
+            "value": "After pressing \"OK\" to apply \"Use percent values\" in the report display options, the report should update to show percent values without crashing.",
+            "status": "inferred",
+            "evidence": "\"pressed the \\\"oK\\\" button to apply the change\" (implies the change should apply successfully rather than crash)"
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "inferred",
+              "evidence": "Implied prerequisite to reach the Reports screen (app must be opened)."
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "inferred",
+              "evidence": "Implied navigation to Reports (needed to access the Display dialog mentioned)."
+            },
+            {
+              "value": "2965c3b4debc48c038e78f98002ad0883abcdd8571e00c1287e80981331ef5b4",
+              "status": "inferred",
+              "evidence": "Implied selecting a Reports tab where the \"Display\" dialog is used (user refers to report appearance options)."
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "inferred",
+              "evidence": "Implied opening the \"Display\" dialog (user describes pressing OK to apply display changes)."
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "inferred",
+              "evidence": "Context of applying \"Use percent values\" before pressing OK (user clarifies crash timing is after OK)."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "\"Only after I pressed the \\\"oK\\\" button to apply the change.\""
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "12.680509084000732 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.0708000192826148e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "title": "App crashes when applying “Use percent values” in Reports → Display dialog",
+        "observed_behavior": "On the Reports screen’s “Display of Incomes by Articles” dialog, if the user enables the “Use percent values” checkbox and then taps “OK”, the app crashes with the system message “Family Finance has stopped”.",
+        "expected_behavior": "The report should update to show percent values without crashing.",
+        "steps_to_reproduce": "1. Open the Family Finance app.\n2. On the dashboard, tap “Reports”.\n3. In Reports, switch to the “Incomes by Articles” tab.\n4. Tap “Display” in the toolbar.\n5. In the display dialog, enable the “Use percent values” checkbox.\n6. Tap “OK” to apply the change."
+      },
+      "meta_data": {
+        "latency": "10.125699499999428 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}

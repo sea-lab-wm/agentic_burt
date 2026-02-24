@@ -31,7 +31,7 @@ while not APP_GRAPH:
 description_level = input("Please enter the description level as [completeness level]_[precision level]:")
 
 #Set up conversation logger
-logger = ConversationLogger(filepath=f"logs/bug{current_bug}{description_level}.log", conversation_id=0)
+logger = ConversationLogger(filepath=f"logs/bug{current_bug}_{description_level}.log", conversation_id=0)
 
 #Model and APP_GRAPH Instantiation
 MODEL = ChatOpenAI(model = MODEL_NAME)
@@ -147,7 +147,7 @@ graph = burt_workflow.compile(checkpointer=checkpointer)
 config = {"configurable": {"app_graph": APP_GRAPH, "thread_id": "1"}}
 
 #For now, provide the initial user bug description to the loop, in a later GUI enabled version we can request it as first user message
-state = BugAgentState(messages=[HumanMessage(content="Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check ""view values"", check ""use percent values"", and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen; changing the report appearance from ""view values"" to ""use percent values"" causes the application to crash, but the appearance of the report should be changed to ""use percent values"".")])
+state = BugAgentState(messages=[HumanMessage(content="The Parent Categories of the current category should be displayed.")])
 
 result = graph.invoke(state, config=config)
 

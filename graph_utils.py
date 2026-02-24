@@ -150,6 +150,9 @@ def find_unknown_or_ambiguous(info: InfoSlots):
 
     for name, content in info:
         if name == "steps_to_reproduce" or name == "triggering_GUI_interactions":
+            if not content:
+                flagged.add(f"{name}")
+                
             for i, step in enumerate(content):
                 if step.status in {SlotStatus.unknown, SlotStatus.ambiguous}:
                     flagged.add(f"{name}[{i}]")

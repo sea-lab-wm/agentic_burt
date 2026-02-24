@@ -1,0 +1,269 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8",
+            "status": "inferred",
+            "evidence": "\"The Parent Categories of the current category should be displayed.\" (Parent Categories is a tab on CategoryDetailsActivity)"
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+              "status": "inferred",
+              "evidence": "\"The Parent Categories of the current category should be displayed.\" (this maps to tapping the PARENT CATEGORIES tab)"
+            }
+          ],
+          "buggy_behavior": {
+            "value": null,
+            "status": "unknown",
+            "evidence": "User only stated expected behavior; no description of what actually happened (e.g., empty list, wrong categories, not loading)."
+          },
+          "correct_behavior": {
+            "value": "Parent Categories of the current category should be displayed.",
+            "status": "confirmed",
+            "evidence": "\"The Parent Categories of the current category should be displayed.\""
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a",
+              "status": "inferred",
+              "evidence": "Implied app launch needed to reach the category screen."
+            },
+            {
+              "value": "b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app (no direct user steps given)."
+            },
+            {
+              "value": "e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app (no direct user steps given)."
+            },
+            {
+              "value": "8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app (no direct user steps given)."
+            },
+            {
+              "value": "b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app (no direct user steps given)."
+            },
+            {
+              "value": "603e704cb3a4d89b9512eb62fcb0c8f93d10ee708131c2492858fe54b37e7d93",
+              "status": "inferred",
+              "evidence": "Inferred: proceed from welcome by tapping \"YES!\" to enter the app."
+            },
+            {
+              "value": "7c5259ec36f178cb73d25caa30ee502f0260fe40fe484a23ac5de60393f13105",
+              "status": "inferred",
+              "evidence": "Inferred path: switch to the LOCATIONS tab from the Bookmarks screen to reach a category listing flow."
+            },
+            {
+              "value": "455dbeb2bcdc7b0ecf349c8018a56d34c513cde2eadebb3a340d7e46612d0284",
+              "status": "inferred",
+              "evidence": "Inferred path: select a category item (categoryImageView) to open category media/details flow."
+            },
+            {
+              "value": "fea870ef84e7c35dc35a241dfd5e94ae70f20264a678493f53770f9c734ea931",
+              "status": "inferred",
+              "evidence": "Inferred: scroll within category media/details."
+            },
+            {
+              "value": "7f7e06f0ee64187e9770b2ad285a5c224c1f7c698f35f90c3db12899db63400c",
+              "status": "inferred",
+              "evidence": "Inferred: tap a category chip/item (mediaDetailCategoryItemText) to open CategoryDetailsActivity."
+            },
+            {
+              "value": "67330a61f31c926cd7776626e0931601b31b8847bdc4e82b985989fe65caed40",
+              "status": "inferred",
+              "evidence": "Inferred: ensure we are on CategoryDetailsActivity tab strip (SUBCATEGORIES shown selected in trace) before switching to Parent Categories."
+            },
+            {
+              "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+              "status": "inferred",
+              "evidence": "\"The Parent Categories of the current category should be displayed.\" (tap PARENT CATEGORIES tab)"
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "12.891198457997234 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "buggy_behavior"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.0291998225729913e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "When you open a category and tap the **PARENT CATEGORIES** tab, what actually happens on the screen (e.g., does it stay stuck loading, show an empty list/“No … found”, show the wrong parent categories, or does the app crash)?"
+      },
+      "meta_data": {
+        "latency": "4.009579208999639 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The parent cattegories screen stays stuck loading",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "6dbf9b15-4ced-4b2d-bfe3-411a6dcb36df"
+        }
+      },
+      "meta_data": {
+        "latency": "8.445899948128499e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8",
+            "status": "inferred",
+            "evidence": "User refers to the \"parent categories screen\" which corresponds to the PARENT CATEGORIES tab within CategoryDetailsActivity."
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+              "status": "inferred",
+              "evidence": "Bug happens when opening the Parent Categories tab: \"parent cattegories screen stays stuck loading\"."
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After tapping the PARENT CATEGORIES tab, the Parent Categories screen stays stuck loading (does not finish loading/show results).",
+            "status": "confirmed",
+            "evidence": "\"The parent cattegories screen stays stuck loading\""
+          },
+          "correct_behavior": {
+            "value": "Parent Categories of the current category should be displayed.",
+            "status": "confirmed",
+            "evidence": "\"The Parent Categories of the current category should be displayed.\""
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a",
+              "status": "inferred",
+              "evidence": "App must be opened to reproduce."
+            },
+            {
+              "value": "b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app."
+            },
+            {
+              "value": "e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app."
+            },
+            {
+              "value": "8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app."
+            },
+            {
+              "value": "b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8",
+              "status": "inferred",
+              "evidence": "Inferred navigation through welcome screens to reach the app."
+            },
+            {
+              "value": "603e704cb3a4d89b9512eb62fcb0c8f93d10ee708131c2492858fe54b37e7d93",
+              "status": "inferred",
+              "evidence": "Inferred: proceed from welcome by tapping \"YES!\" to enter the app."
+            },
+            {
+              "value": "7c5259ec36f178cb73d25caa30ee502f0260fe40fe484a23ac5de60393f13105",
+              "status": "inferred",
+              "evidence": "Inferred path step to reach a category browsing flow that leads into CategoryDetailsActivity."
+            },
+            {
+              "value": "455dbeb2bcdc7b0ecf349c8018a56d34c513cde2eadebb3a340d7e46612d0284",
+              "status": "inferred",
+              "evidence": "Inferred: select a category item (categoryImageView) to open a category media/details flow."
+            },
+            {
+              "value": "fea870ef84e7c35dc35a241dfd5e94ae70f20264a678493f53770f9c734ea931",
+              "status": "inferred",
+              "evidence": "Inferred: scroll within media details to reach categories list."
+            },
+            {
+              "value": "7f7e06f0ee64187e9770b2ad285a5c224c1f7c698f35f90c3db12899db63400c",
+              "status": "inferred",
+              "evidence": "Inferred: tap a category item (mediaDetailCategoryItemText) to open CategoryDetailsActivity."
+            },
+            {
+              "value": "67330a61f31c926cd7776626e0931601b31b8847bdc4e82b985989fe65caed40",
+              "status": "inferred",
+              "evidence": "Inferred: arrive at CategoryDetailsActivity where the tab strip is visible before switching to Parent Categories."
+            },
+            {
+              "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+              "status": "confirmed",
+              "evidence": "\"The parent cattegories screen stays stuck loading\""
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "14.600382499997067 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.195799970650114e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "title": "Category Details: \"PARENT CATEGORIES\" tab stays stuck loading and never shows results",
+        "observed_behavior": "On the Category Details screen, if the user taps the \"PARENT CATEGORIES\" tab, the Parent Categories screen stays stuck loading (does not finish loading/show results).",
+        "expected_behavior": "Parent Categories of the current category should be displayed.",
+        "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome screen.\n3. Swipe left again.\n4. Swipe left again.\n5. Swipe left again.\n6. Tap \"YES!\" on the welcome/tutorial screen.\n7. Tap the \"LOCATIONS\" tab on the Bookmarks screen.\n8. Tap a category image in the Explore/category grid.\n9. Swipe up on the media details screen.\n10. Tap a category name (category chip/text) in the media details screen.\n11. Tap the \"SUBCATEGORIES\" tab on the Category Details screen.\n12. Tap the \"PARENT CATEGORIES\" tab on the Category Details screen."
+      },
+      "meta_data": {
+        "latency": "6.569838041999901 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}

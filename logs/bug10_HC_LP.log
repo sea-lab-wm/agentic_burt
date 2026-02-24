@@ -1,0 +1,101 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013",
+            "status": "confirmed",
+            "evidence": "\"On the FTP server screen\""
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5",
+              "status": "inferred",
+              "evidence": "\"stopping it\" (FTP server status switch toggled to OFF)"
+            },
+            {
+              "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+              "status": "inferred",
+              "evidence": "\"closing the app\" (leaving FTP screen via back / app close flow)"
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After stopping the FTP server and closing the app, the FTP server restarts by itself.",
+            "status": "confirmed",
+            "evidence": "\"stopping it and closing the app makes the server restart\""
+          },
+          "correct_behavior": {
+            "value": "After stopping the FTP server and closing the app, the FTP server should remain stopped and not restart automatically.",
+            "status": "confirmed",
+            "evidence": "\"even though it should stay stopped\""
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2",
+              "status": "inferred",
+              "evidence": "Implied: user opens the app to reach FTP server screen."
+            },
+            {
+              "value": "9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d",
+              "status": "inferred",
+              "evidence": "Implied: grant storage permission to proceed (common first-run step)."
+            },
+            {
+              "value": "3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49",
+              "status": "inferred",
+              "evidence": "Implied: open navigation drawer (\"Navigate up\" hamburger) to access FTP server entry."
+            },
+            {
+              "value": "ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec",
+              "status": "confirmed",
+              "evidence": "\"On the FTP server screen\" (navigate to FTP server screen via \"FTP server\" in drawer)."
+            },
+            {
+              "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+              "status": "inferred",
+              "evidence": "\"stopping it\" (toggle FTP server status switch to OFF)."
+            },
+            {
+              "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+              "status": "inferred",
+              "evidence": "\"closing the app\" (back out / close app after stopping)."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "24.06818016700163 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "1.6625001080683433e-05 s",
+        "token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "title": "FTP server restarts automatically after being stopped and exiting the app",
+        "observed_behavior": "On the FTP server screen, if the user turns the Status switch OFF to stop the FTP server and then presses the system Back button to leave/close the app, the FTP server restarts by itself.",
+        "expected_behavior": "The FTP server should remain stopped and not restart automatically after stopping it and closing the app.",
+        "steps_to_reproduce": "1. Open the app.\n2. On the permission prompt, tap \"Allow\".\n3. Tap the \"Navigate up\" button to open the navigation drawer.\n4. In the navigation drawer, tap \"FTP server\".\n5. On the FTP server screen, tap the Status switch to turn it OFF.\n6. Press the system Back button to leave/close the app."
+      },
+      "meta_data": {
+        "latency": "10.628788207999605 s",
+        "token_consumption": null
+      }
+    }
+  ]
+}
