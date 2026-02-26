@@ -1,5 +1,5 @@
-from state import BugAgentState, InfoSlots, SlotStatus
-from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema
+from state import BugAgentState, InfoSlots, SlotStatus, InformationElementExtraction
+from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema, ClaritySchema
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Any
 import json
@@ -33,7 +33,105 @@ def stringify_current_bug_info(state : BugAgentState):
     
     return bug_info.model_dump_json()
 
-def llm_extract(stringified_bug_info : str, app_graph : str, follow_up_question : str, user_description : str, model : Any) -> ExtractionSchema:
+def llm_extract(user_messages: list[str], model: Any) -> InformationElementExtraction:
+    """
+    Handles LLM query for information_element_extraction node.
+
+    :param user_messages: ordered list of user descriptions from the active clarification window
+    :type user_messages: list[str]
+    :param model: active chat model
+    :type model: Any
+    :return: extracted natural language information elements
+    :rtype: InformationElementExtraction
+    """
+
+    system_template = """You are an expert bug-report triage assistant.
+    Your job is to extract natural-language information elements from user descriptions of a bug.
+
+    You will receive one or more user descriptions. If there are multiple descriptions, merge them into one coherent extraction.
+
+    Extraction Definitions:
+    1. triggering_screen_reference: The application screen where performing the interaction causes the bug and/or the screen where the bug was observed.
+    2. triggering_GUI_interactions: The user interaction(s) on the application that trigger the bug.
+    3. buggy_behavior: The specific buggy behavior (the problem) reported in the bug.
+    4. correct_behavior: The specific correct behavior that should happen instead of the buggy behavior.
+    5. steps_to_reproduce: A contiguous sequence of application interactions starting from app launch and ending at the triggering screen.
+
+    Strict Requirements:
+    - Do not hallucinate or infer details not explicitly present in the user descriptions.
+    - Only populate an element if user descriptions contain evidence for it.
+    - Preserve user clarity: if wording is vague, keep it vague; do not rewrite into specific claims.
+    - For each populated element, include evidence as exact short quotes from the user descriptions.
+    - If an element is not present, leave it null.
+
+    Output must follow the provided structured schema exactly.
+    """
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_template),
+            ("human", "User descriptions:\n{user_messages}"),
+        ]
+    )
+
+    formatted_messages = prompt.format_messages(
+        user_messages="\n".join(f"- {message}" for message in user_messages),
+    )
+
+    structured = model.with_structured_output(InformationElementExtraction)
+    extraction = structured.invoke(formatted_messages)
+    return extraction
+
+def llm_check_clarity(
+    information_element_extraction: InformationElementExtraction, model: Any
+) -> ClaritySchema:
+    """
+    Handles LLM query for clarity_check node.
+
+    :param information_element_extraction: current extracted natural language information elements
+    :type information_element_extraction: InformationElementExtraction
+    :param model: active chat model
+    :type model: Any
+    :return: route decision and clarity issues
+    :rtype: ClaritySchema
+    """
+
+    system_template = """You are an expert quality checker for bug-report information extraction.
+    You will receive extracted information elements from user descriptions of bug report information.
+
+    Task:
+    1. Evaluate clarity of populated elements only.
+    2. Detect ambiguous pronouns and confusing sentence structure.
+    3. Return:
+       - clarity_route = "continue" when the populated information is clear enough.
+       - clarity_route = "needs_clarification" when any populated element is unclear.
+    4. If clarity_route is "needs_clarification", populate clarity_issues with short issue strings.
+    5. If clarity_route is "continue", return clarity_issues as an empty list.
+
+    Rules:
+    - Do not add new bug facts.
+    - Keep issues concise and specific to fields.
+    - If no fields are populated at all, route to "needs_clarification".
+    """
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_template),
+            ("human", "{information_element_extraction}"),
+        ]
+    )
+
+    formatted_messages = prompt.format_messages(
+        information_element_extraction=information_element_extraction.model_dump_json(
+            indent=2
+        ),
+    )
+
+    structured = model.with_structured_output(ClaritySchema)
+    clarity_result = structured.invoke(formatted_messages)
+    return clarity_result
+
+def llm_map(stringified_bug_info : str, app_graph : str, follow_up_question : str, user_description : str, model : Any) -> ExtractionSchema:
     """
     Handles LLM querry for extract and update node.
     
@@ -82,7 +180,7 @@ def llm_extract(stringified_bug_info : str, app_graph : str, follow_up_question 
     4. correct_behavior: A description of the application behavior that should have occured following the triggering_GUI_interactions, as described by the user
     5. steps_to_reproduce: A list of transition hash numbers from the application graph that represent a continuous path of GUI actions, connecting the opening screen of the application to the triggering_screen_reference, where the bug was experienced. Please include the triggering_GUI_interactions in this list. Each entry in the list should be a **single** transition hash number.
 
-    For each desired bug information please return your confidence in your decision ('unkown', 'ambiguous', 'inferred', 'confirmed') and a segment from the users description that informed your decsion. 
+    For each desired bug information please return your confidence in your decision ('unknown', 'ambiguous', 'inferred', 'confirmed') and a segment from the users description that informed your decsion. 
     Return your confidence and evidence for each step in the steps to reproduce. 
     Generate and return results according to the provided schema.
     If you cannot confidently identify part of the bug information above, leave the information unchanged or blank and mark the status as 'ambiguous' or 'unkown'.
@@ -178,7 +276,7 @@ def llm_follow_up(stringified_bug_info : str, app_graph : str, formatted_unknown
     """
 
     system_template ="""You are an expert bug report.
-    You will recieve a textual application graph that models the GUI hierarchy of the application the bug occured within, a set of information you already collected during your conversation with the user and list referencing specific low confidence or unkown information that you want the user to clarify.
+    You will recieve a textual application graph that models the GUI hierarchy of the application the bug occured within, a set of information you already collected during your conversation with the user and list referencing specific low confidence or unknown information that you want the user to clarify.
 
     Understanding the Application Graph:
     Each line of the application graph represents a GUI action or transition (button tap, swipe, etc.) that takes the user from source application screen to a target application screen.

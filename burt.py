@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from database.db import SessionLocal
 from database.database_utils import fetch_app_graph
 from state import BugAgentState
-from graph_utils import stringify_current_bug_info, llm_extract, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, generate_report
+from graph_utils import stringify_current_bug_info, llm_extract, llm_check_clarity, llm_map, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, generate_report
 from config import MODEL_NAME
 from observability import log_action, Entity, ActionName, ConversationLogger
 from langchain_core.messages import HumanMessage
@@ -36,7 +36,39 @@ logger = ConversationLogger(filepath=f"logs/bug{current_bug}_{description_level}
 #Model and APP_GRAPH Instantiation
 MODEL = ChatOpenAI(model = MODEL_NAME)
 
-#Node 1: Extract Content from User Description + Update (LLM)
+#Node: Information Element Extraction (Scaffold)
+def information_element_extraction(state: BugAgentState, config: RunnableConfig) -> dict:
+    # Outside a clarification cycle, extract from the latest user message only.
+    # During a clarification cycle, extract from the tracked message window.
+    if state.clarification_window_start_idx == 0:
+        user_messages = [state.messages[-1].content]
+    else:
+        window_messages = state.messages[state.clarification_window_start_idx :]
+        user_messages = [message.content for message in window_messages]
+
+    extraction = llm_extract(user_messages, MODEL)
+
+    return {"information_element_extraction": extraction}
+
+#Node: Clarity Check (Scaffold)
+def clarity_check(state: BugAgentState, config: RunnableConfig) -> dict:
+    extracted_info = state.information_element_extraction
+    clarity_check= llm_check_clarity(extracted_info, MODEL)
+    return {
+        "clarity_route": clarity_check.clarity_route,
+        "clarity_issues": clarity_check.clarity_issues,
+    }
+
+#Conditional edge behavior after clarity_check
+#Routes to map_to_graph when no clarity issues exist, otherwise routes to clarity_follow_up
+def should_route_clarity(state: BugAgentState):
+    return state.clarity_route
+
+#Node: Clarity Follow Up (Scaffold)
+def clarity_follow_up(state: BugAgentState, config: RunnableConfig) -> dict:
+    return {}
+
+#Node 1: Map Information to Graph + Update (LLM)
     # A: Format Information of BugAgentState necessary for model call
         #state
         #application execution model / graph
@@ -50,7 +82,7 @@ MODEL = ChatOpenAI(model = MODEL_NAME)
     # C: Parse the JSON formatted response from MODEL into dict for update to BugAgentState
     # D: Return update to BugAgentState
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.extract_and_update)
-def extract_and_update(state : BugAgentState, config : RunnableConfig):
+def map_to_graph(state : BugAgentState, config : RunnableConfig):
     #capture the current BugInfo collected in JSON format
     stringified_bug_info = stringify_current_bug_info(state)
 
@@ -63,7 +95,7 @@ def extract_and_update(state : BugAgentState, config : RunnableConfig):
     #current user description (either response to follow up or initial description of buggy behavior)
     user_description = state.messages[-1].content
 
-    result = llm_extract(stringified_bug_info, app_graph, follow_up_question, user_description, MODEL)
+    result = llm_map(stringified_bug_info, app_graph, follow_up_question, user_description, MODEL)
     
     return format_extraction_update(state, result)
 
@@ -118,14 +150,27 @@ def gen_report(bug_info, app_graph):
 
 #Instantiating Graph Nodes:
 burt_workflow = StateGraph(BugAgentState)
-burt_workflow.add_node("extract_and_update", extract_and_update)
+burt_workflow.add_node("information_element_extraction", information_element_extraction)
+burt_workflow.add_node("clarity_check", clarity_check)
+burt_workflow.add_node("clarity_follow_up", clarity_follow_up)
+burt_workflow.add_node("map_to_graph", map_to_graph)
 burt_workflow.add_node("evaluate_state", evaluate_state)
 burt_workflow.add_node("follow_up", follow_up)
 burt_workflow.add_node("interrupt_and_present", interrupt_and_present)
 
 #Establishing Graph Edges and Agent Behavior:
-burt_workflow.set_entry_point("extract_and_update")
-burt_workflow.add_edge("extract_and_update", "evaluate_state")
+burt_workflow.set_entry_point("information_element_extraction")
+burt_workflow.add_edge("information_element_extraction", "clarity_check")
+burt_workflow.add_conditional_edges(
+    "clarity_check",
+    should_route_clarity,
+    {
+        "continue": "map_to_graph",
+        "needs_clarification": "clarity_follow_up",
+    }
+)
+burt_workflow.add_edge("clarity_follow_up", "interrupt_and_present")
+burt_workflow.add_edge("map_to_graph", "evaluate_state")
 burt_workflow.add_conditional_edges(
     "evaluate_state", 
     should_continue, 
@@ -135,7 +180,7 @@ burt_workflow.add_conditional_edges(
     } 
 )
 burt_workflow.add_edge("follow_up","interrupt_and_present")
-burt_workflow.add_edge("interrupt_and_present","extract_and_update")
+burt_workflow.add_edge("interrupt_and_present","information_element_extraction")
 
 #Establish Check Pointer for Persistant Memory During Interrupt
 checkpointer = MemorySaver()
@@ -178,4 +223,3 @@ print(gen_report(result["BugInfo"], app_graph=APP_GRAPH))
 
 #Write Logs to File
 logger.write_log()
-

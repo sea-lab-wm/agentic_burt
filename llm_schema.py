@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, StrictStr
-from typing import List, Optional
+from typing import List, Optional, Literal
 from state import Slot
 
 class ExtractionSchema(BaseModel):
@@ -62,4 +62,13 @@ class ReportGenerationSchema(BaseModel):
     )
     steps_to_reproduce : StrictStr = Field(
         description="The steps to reproduce section of the generated bug report"
+    )
+
+class ClaritySchema(BaseModel):
+    clarity_route : Literal["continue", "needs_clarification"] = Field(
+        description="The model's clarity decision: 'continue' when extracted elements are clear, otherwise 'needs_clarification'."
+    )
+    clarity_issues: List[str] = Field(
+        default_factory=list,
+        description="List of clarity issues found in extracted information elements. Empty when clarity_route is 'continue'."
     )

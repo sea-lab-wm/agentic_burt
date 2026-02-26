@@ -1,7 +1,6 @@
 from enum import Enum
-from typing import Optional
-from pydantic import BaseModel, Field, StrictStr
-from typing import List, Optional, Annotated
+from pydantic import BaseModel, Field
+from typing import List, Optional, Annotated, Literal
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
@@ -45,18 +44,46 @@ class InfoSlots(BaseModel):
     correct_behavior: Slot = Field(default_factory=Slot)
     steps_to_reproduce: List[Slot] = Field(default_factory=list)
 
+class NaturalLanguageElement(BaseModel):
+    """
+    Defines a single extracted natural language information element.
+    This model is used before graph mapping and preserves exactly what the user stated.
+    """
+    value: str
+    evidence: List[str] = Field(default_factory=list)
+
+class InformationElementExtraction(BaseModel):
+    """
+    Stores extracted natural language information elements from the user message window.
+    Each field is optional and only populated when the user provides content for that element.
+    """
+    triggering_screen_reference: Optional[NaturalLanguageElement] = None
+    triggering_GUI_interactions: Optional[NaturalLanguageElement] = None
+    buggy_behavior: Optional[NaturalLanguageElement] = None
+    correct_behavior: Optional[NaturalLanguageElement] = None
+    steps_to_reproduce: Optional[NaturalLanguageElement] = None
+
 class BugAgentState(BaseModel):
     """
     Defines the final internal agent state/memory.
-    In V1 Includes:
-        messages: list of user descriptions of the bug they experienced
-        BugInfo: see InfoSlots
-        unknown_and_low_confidence_info: a set containing names of low confidence or unkwon info slots following the extract_and_update node that are used for generating follow up questions
-        generated_question: a string follow up question that is presented to the user during the interrupt_and_present node
-        last_extraction_raw: the last llm_extraction, purely tracked for debugging purposes
+    Includes:
+        messages: ordered user responses collected during the conversation.
+        BugInfo: grounded and confidence-scored bug information slots (see InfoSlots).
+        information_element_extraction: pre-mapping natural language extraction output.
+            Each populated element contains a required aggregated value and evidence list.
+        clarity_issues: short issue strings from clarity_check describing unclear elements.
+        clarity_route: clarity_check routing decision ("continue" or "needs_clarification").
+        clarification_rounds: number of clarification attempts in the active clarification loop.
+        clarification_window_start_idx: message index where the active clarification loop started.
+        unknown_and_low_confidence_info: low-confidence/unknown grounded slots used by follow_up.
+        generated_question: latest agent question shown by interrupt_and_present.
     """ 
     messages: Annotated[List[BaseMessage], add_messages] = Field(default_factory=list)
     BugInfo: InfoSlots = Field(default_factory=InfoSlots)
+    information_element_extraction: InformationElementExtraction = Field(default_factory=InformationElementExtraction)
+    clarity_issues: List[str] = Field(default_factory=list)
+    clarity_route: Literal["continue", "needs_clarification"] = "continue"
+    clarification_rounds: int = 0
+    clarification_window_start_idx: int = 0
     unknown_and_low_confidence_info: set[str] = Field(default_factory=set)
     generated_question: Optional[str] = None
-    #last_extraction_raw: Optional[str] = None
