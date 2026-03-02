@@ -21,6 +21,9 @@ flowchart LR
 
 ### Deeper on Logging
 - Per-node logging is handled by `@log_action` in `observability.py`, which wraps each node execution, measures latency, and records the node output.
+- Node metadata now includes `node_token_consumption` for token totals from LLM calls made during that node execution.
+- Conversation lifecycle metrics are tracked by `ConversationLogger.start_conversation()` and `ConversationLogger.finish_conversation()`.
+- Logs remain JSONL turn records and append a final `conversation_summary` record containing end-to-end latency and conversation-wide token totals.
 - When a new `user_description` is logged, the logger advances to a new conversation turn.
 
 ## 2. Agent Control Flow
@@ -49,7 +52,7 @@ flowchart TD
 - `graph_utils.py`: Prompt and LLM orchestration utilities for extraction, follow-up generation, bug-info postprocessing, and final report synthesis.
 - `state.py`: Pydantic models for agent state (`BugAgentState`), tracked bug information (`InfoSlots`/`Slot`), and confidence/status types.
 - `llm_schema.py`: Structured-output schemas for LLM calls (extraction, follow-up question, report sections).
-- `observability.py`: Logging domain models and decorator-based per-action instrumentation, including latency and turn-based conversation logging.
+- `observability.py`: Logging models, per-action instrumentation, provider token callback capture, and conversation summary generation.
 - `config.py`: Central constants such as model and DB uri.
 - `requirements.txt`: Pinned Python dependencies for runtime and development.
 - `database/db.py`: SQLAlchemy engine/session setup and SQLite foreign-key pragma configuration.

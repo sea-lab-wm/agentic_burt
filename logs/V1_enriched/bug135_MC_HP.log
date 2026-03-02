@@ -112,10 +112,18 @@
       "entity": "user",
       "action_name": "generate_report",
       "output": {
-        "title": "CategoryDetails: \"PARENT CATEGORIES\" tab shows blank content",
-        "observed_behavior": "On the CategoryDetails screen, if the user taps the \"PARENT CATEGORIES\" tab, the tab content is blank/empty (appears as a blank page).",
-        "expected_behavior": "The app should display the list of parent categories for the current category after tapping the \"PARENT CATEGORIES\" tab.",
-        "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome screens.\n3. Swipe left again.\n4. Swipe left again.\n5. Swipe left again to reach the final welcome screen.\n6. Tap \"YES!\".\n7. Tap the \"LOCATIONS\" tab.\n8. Tap the navigation drawer (hamburger) icon.\n9. In the navigation drawer, tap \"Explore\".\n10. Tap a category item (category image) from the Explore grid.\n11. From the media details screen, tap a category name (e.g., \"Focus stacking images of insects\").\n12. On the CategoryDetails screen, tap the \"PARENT CATEGORIES\" tab."
+        "full_report": {
+          "title": "CategoryDetails: \"PARENT CATEGORIES\" tab shows blank content",
+          "observed_behavior": "On the CategoryDetails screen, if the user taps the \"PARENT CATEGORIES\" tab, the tab content is blank/empty (appears as a blank page).",
+          "expected_behavior": "The app should display the list of parent categories for the current category after tapping the \"PARENT CATEGORIES\" tab.",
+          "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome screens.\n3. Swipe left again.\n4. Swipe left again.\n5. Swipe left again to reach the final welcome screen.\n6. Tap \"YES!\".\n7. Tap the \"LOCATIONS\" tab.\n8. Tap the navigation drawer (hamburger) icon.\n9. In the navigation drawer, tap \"Explore\".\n10. Tap a category item (category image) from the Explore grid.\n11. From the media details screen, tap a category name (e.g., \"Focus stacking images of insects\").\n12. On the CategoryDetails screen, tap the \"PARENT CATEGORIES\" tab."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the tab content is blank/empty (appears as a blank page)",
+          "triggering_gui_interactions": "the user taps the \"PARENT CATEGORIES\" tab",
+          "triggering_screen_reference": "On the CategoryDetails screen",
+          "correct_behavior": "display the list of parent categories for the current category after tapping the \"PARENT CATEGORIES\" tab"
+        }
       },
       "meta_data": {
         "latency": "7.372924874998716 s",

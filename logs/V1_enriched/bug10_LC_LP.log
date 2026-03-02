@@ -254,10 +254,18 @@
       "entity": "user",
       "action_name": "generate_report",
       "output": {
-        "title": "App unexpectedly restarts when turning off FTP server status",
-        "observed_behavior": "On the FTP server screen, if the user taps the Status switch to toggle it from ON to OFF, the app restarts on its own (unexpected restart).",
-        "expected_behavior": "The app should stop/disable the FTP server and remain on the FTP server screen without restarting after toggling FTP server Status from ON to OFF.",
-        "steps_to_reproduce": "1. Open the app.\n2. On the storage permission dialog, tap \"Allow\".\n3. Tap the \"Navigate up\" button to open the navigation drawer.\n4. In the navigation drawer, tap \"FTP server\".\n5. On the FTP server screen, tap the Status switch to toggle it from ON to OFF."
+        "full_report": {
+          "title": "App unexpectedly restarts when turning off FTP server status",
+          "observed_behavior": "On the FTP server screen, if the user taps the Status switch to toggle it from ON to OFF, the app restarts on its own (unexpected restart).",
+          "expected_behavior": "The app should stop/disable the FTP server and remain on the FTP server screen without restarting after toggling FTP server Status from ON to OFF.",
+          "steps_to_reproduce": "1. Open the app.\n2. On the storage permission dialog, tap \"Allow\".\n3. Tap the \"Navigate up\" button to open the navigation drawer.\n4. In the navigation drawer, tap \"FTP server\".\n5. On the FTP server screen, tap the Status switch to toggle it from ON to OFF."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the app restarts on its own (unexpected restart)",
+          "triggering_gui_interactions": "taps the Status switch to toggle it from ON to OFF",
+          "triggering_screen_reference": "On the FTP server screen",
+          "correct_behavior": "stop/disable the FTP server and remain on the FTP server screen without restarting after toggling FTP server Status from ON to OFF"
+        }
       },
       "meta_data": {
         "latency": "10.859681874999296 s",

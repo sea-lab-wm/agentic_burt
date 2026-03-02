@@ -201,10 +201,18 @@
       "entity": "user",
       "action_name": "generate_report",
       "output": {
-        "title": "App crashes when applying “Use percent values” in Reports → Display dialog",
-        "observed_behavior": "On the Reports screen’s “Display of Incomes by Articles” dialog, if the user enables the “Use percent values” checkbox and then taps “OK”, the app crashes with the system message “Family Finance has stopped”.",
-        "expected_behavior": "The report should update to show percent values without crashing.",
-        "steps_to_reproduce": "1. Open the Family Finance app.\n2. On the dashboard, tap “Reports”.\n3. In Reports, switch to the “Incomes by Articles” tab.\n4. Tap “Display” in the toolbar.\n5. In the display dialog, enable the “Use percent values” checkbox.\n6. Tap “OK” to apply the change."
+        "full_report": {
+          "title": "App crashes when applying “Use percent values” in Reports → Display dialog",
+          "observed_behavior": "On the Reports screen’s “Display of Incomes by Articles” dialog, if the user enables the “Use percent values” checkbox and then taps “OK”, the app crashes with the system message “Family Finance has stopped”.",
+          "expected_behavior": "The report should update to show percent values without crashing.",
+          "steps_to_reproduce": "1. Open the Family Finance app.\n2. On the dashboard, tap “Reports”.\n3. In Reports, switch to the “Incomes by Articles” tab.\n4. Tap “Display” in the toolbar.\n5. In the display dialog, enable the “Use percent values” checkbox.\n6. Tap “OK” to apply the change."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the app crashes with the system message “Family Finance has stopped”",
+          "triggering_gui_interactions": "enables the “Use percent values” checkbox and then taps “OK”",
+          "triggering_screen_reference": "On the Reports screen’s “Display of Incomes by Articles” dialog",
+          "correct_behavior": "The report should update to show percent values without crashing."
+        }
       },
       "meta_data": {
         "latency": "10.125699499999428 s",

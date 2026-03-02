@@ -225,10 +225,18 @@
       "entity": "user",
       "action_name": "generate_report",
       "output": {
-        "title": "App crashes when applying \"Use percent values\" display option in \"Incomes by Articles\" report",
-        "observed_behavior": "On the \"Display of Incomes by Articles\" dialog, if the user selects the \"Use percent values\" checkbox and then taps \"OK\", the application crashes.",
-        "expected_behavior": "The report should update its appearance to use percent values (instead of crashing).",
-        "steps_to_reproduce": "1. Launch the Family Finance app.\n2. On the permissions prompt, tap \"Allow\".\n3. On the Dashboard screen, tap \"Reports\".\n4. In Reports, switch to the \"Incomes by Articles\" tab.\n5. Tap \"Display\" in the toolbar.\n6. In the \"Display of Incomes by Articles\" dialog, tap the \"View values\" checkbox to change the selection.\n7. Tap the \"Use percent values\" checkbox.\n8. Tap \"OK\"."
+        "full_report": {
+          "title": "App crashes when applying \"Use percent values\" display option in \"Incomes by Articles\" report",
+          "observed_behavior": "On the \"Display of Incomes by Articles\" dialog, if the user selects the \"Use percent values\" checkbox and then taps \"OK\", the application crashes.",
+          "expected_behavior": "The report should update its appearance to use percent values (instead of crashing).",
+          "steps_to_reproduce": "1. Launch the Family Finance app.\n2. On the permissions prompt, tap \"Allow\".\n3. On the Dashboard screen, tap \"Reports\".\n4. In Reports, switch to the \"Incomes by Articles\" tab.\n5. Tap \"Display\" in the toolbar.\n6. In the \"Display of Incomes by Articles\" dialog, tap the \"View values\" checkbox to change the selection.\n7. Tap the \"Use percent values\" checkbox.\n8. Tap \"OK\"."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the application crashes",
+          "triggering_gui_interactions": "selects the \"Use percent values\" checkbox and then taps \"OK\"",
+          "triggering_screen_reference": "the \"Display of Incomes by Articles\" dialog",
+          "correct_behavior": "The report should update its appearance to use percent values"
+        }
       },
       "meta_data": {
         "latency": "5.472413332998258 s",

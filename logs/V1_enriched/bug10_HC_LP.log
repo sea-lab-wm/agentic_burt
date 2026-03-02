@@ -87,10 +87,18 @@
       "entity": "user",
       "action_name": "generate_report",
       "output": {
-        "title": "FTP server restarts automatically after being stopped and exiting the app",
-        "observed_behavior": "On the FTP server screen, if the user turns the Status switch OFF to stop the FTP server and then presses the system Back button to leave/close the app, the FTP server restarts by itself.",
-        "expected_behavior": "The FTP server should remain stopped and not restart automatically after stopping it and closing the app.",
-        "steps_to_reproduce": "1. Open the app.\n2. On the permission prompt, tap \"Allow\".\n3. Tap the \"Navigate up\" button to open the navigation drawer.\n4. In the navigation drawer, tap \"FTP server\".\n5. On the FTP server screen, tap the Status switch to turn it OFF.\n6. Press the system Back button to leave/close the app."
+        "full_report": {
+          "title": "FTP server restarts automatically after being stopped and exiting the app",
+          "observed_behavior": "On the FTP server screen, if the user turns the Status switch OFF to stop the FTP server and then presses the system Back button to leave/close the app, the FTP server restarts by itself.",
+          "expected_behavior": "The FTP server should remain stopped and not restart automatically after stopping it and closing the app.",
+          "steps_to_reproduce": "1. Open the app.\n2. On the permission prompt, tap \"Allow\".\n3. Tap the \"Navigate up\" button to open the navigation drawer.\n4. In the navigation drawer, tap \"FTP server\".\n5. On the FTP server screen, tap the Status switch to turn it OFF.\n6. Press the system Back button to leave/close the app."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the FTP server restarts by itself.",
+          "triggering_gui_interactions": "turns the Status switch OFF to stop the FTP server and then presses the system Back button to leave/close the app",
+          "triggering_screen_reference": "On the FTP server screen",
+          "correct_behavior": "The FTP server should remain stopped and not restart automatically after stopping it and closing the app."
+        }
       },
       "meta_data": {
         "latency": "10.628788207999605 s",

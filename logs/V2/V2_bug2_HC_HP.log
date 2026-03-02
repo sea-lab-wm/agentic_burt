@@ -1,0 +1,524 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "\"Display of Incomes by Articles\" pop-up of the Reports screen",
+            "evidence": [
+              "\"tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen\""
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Changing the report appearance from 'view values' to 'use percent values' (via checking those options)",
+            "evidence": [
+              "\"check 'view values', check 'use percent values'\"",
+              "\"changing the report appearance from 'view values' to 'use percent values' causes the application to crash\""
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The application crashes when changing the report appearance from 'view values' to 'use percent values'",
+            "evidence": [
+              "\"changing the report appearance from 'view values' to 'use percent values' causes the application to crash\""
+            ]
+          },
+          "correct_behavior": {
+            "value": "The appearance of the report should change to 'use percent values' (instead of crashing)",
+            "evidence": [
+              "\"the appearance of the report should be changed to 'use percent values'\""
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Open the app → tap Allow → select Report → choose \"Incomes By Articles\" or \"Expenses By Articles\" → tap View → check \"view values\" → check \"use percent values\" → tap OK to reach the \"Display of Incomes by Articles\" pop-up of the Reports screen",
+            "evidence": [
+              "\"Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check 'view values', check 'use percent values', and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen\""
+            ]
+          }
+        },
+        "clarification_window_start_idx": 0
+      },
+      "meta_data": {
+        "latency": "7.314062791999277 s",
+        "node_token_consumption": {
+          "input_tokens": 883,
+          "output_tokens": 350,
+          "total_tokens": 1233,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Triggering GUI interactions: unclear whether both options are checked sequentially, or whether switching requires unchecking one and checking the other (can both be enabled at once?).",
+          "Steps to reproduce: the final step says 'tap OK to reach' the pop-up, but the triggering screen is already described as that pop-up—unclear at what exact point the crash occurs (before/after tapping OK, or upon toggling the option).",
+          "Buggy behavior: 'application crashes' is clear, but lacks the exact moment of crash relative to the interactions (when checking 'use percent values', when switching from the other option, or on OK)."
+        ]
+      },
+      "meta_data": {
+        "latency": "3.1629099169995243 s",
+        "node_token_consumption": {
+          "input_tokens": 725,
+          "output_tokens": 154,
+          "total_tokens": 879,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "generated_question": "In the “Display of Incomes/Expenses by Articles” dialog, are “view values” and “use percent values” mutually exclusive (do you have to uncheck one before checking the other, or can both be checked at once)? Also, at what exact action does the crash happen: immediately when you check “use percent values” (or uncheck “view values”), or only after you tap OK to apply the change?",
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "2.4508422499993685 s",
+        "node_token_consumption": {
+          "input_tokens": 733,
+          "output_tokens": 101,
+          "total_tokens": 834,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The \"view values\" and \"use percent values\" are mutually exclusive. The crash only happens after I tap ok.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "d09c912b-3736-4d80-a85e-3ab142b37908"
+        }
+      },
+      "meta_data": {
+        "latency": "8.437499946012395e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "“Display of Incomes/Expenses by Articles” dialog",
+            "evidence": [
+              "In the “Display of Incomes/Expenses by Articles” dialog"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Selecting “use percent values” (mutually exclusive with “view values”) and then tapping OK",
+            "evidence": [
+              "The \"view values\" and \"use percent values\" are mutually exclusive.",
+              "The crash only happens after I tap ok."
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The app crashes after tapping OK (after changing the mutually exclusive option between “view values” and “use percent values”)",
+            "evidence": [
+              "The crash only happens after I tap ok."
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "3.727499125000577 s",
+        "node_token_consumption": {
+          "input_tokens": 903,
+          "output_tokens": 207,
+          "total_tokens": 1110,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.807657167000798 s",
+        "node_token_consumption": {
+          "input_tokens": 527,
+          "output_tokens": 21,
+          "total_tokens": 548,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790",
+            "status": "confirmed",
+            "evidence": "User: bug occurs in “Display of Incomes/Expenses by Articles” dialog. State f189f231… is the dialog titled “Display of Incomes by Articles” with checkboxes “View values” and “Use percent values” and OK/Cancel."
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "inferred",
+              "evidence": "User triggers by selecting “use percent values”. Transition c3292f1a… is click on CheckBox idx=use_percent_values (“Use percent values”) on the Display dialog (state f189f231…)."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "User: “crash only happens after I tap ok.” Transition 26c0ae2d… is tapping OK (button1 ‘OK’) on the Display dialog and leads to the crash state (2957d1cf…)."
+            }
+          ],
+          "buggy_behavior": {
+            "value": "App crashes after tapping OK in the “Display of Incomes/Expenses by Articles” dialog after changing the mutually exclusive option between “View values” and “Use percent values”.",
+            "status": "confirmed",
+            "evidence": "User: “The crash only happens after I tap ok.” and described toggling mutually exclusive options before OK."
+          },
+          "correct_behavior": {
+            "value": null,
+            "status": "unknown",
+            "evidence": null
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "inferred",
+              "evidence": "To reach the dialog, user must start by opening the app (open app transition from Start state to permissions screen)."
+            },
+            {
+              "value": "8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816",
+              "status": "inferred",
+              "evidence": "Likely need to grant initial permission to proceed; transition 8407e3… is clicking Allow on the SMS permission dialog to reach DashboardActivity."
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "inferred",
+              "evidence": "From Dashboard, user must open Reports to access ‘by Articles’ charts; transition 9a4f38… clicks ‘Reports’ and goes to ChartActivity (caead4a7…)."
+            },
+            {
+              "value": "c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0",
+              "status": "inferred",
+              "evidence": "To show the ‘Incomes/Expenses by Articles’ view, user navigates to ‘Incomes by Articles’ tab; transition c010db… clicks ‘Incomes by Articles’ in ChartActivity."
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "inferred",
+              "evidence": "To open the Display dialog, user taps Display; transition c7c181… is click on action_display (Display) from the ‘Incomes by Articles’ ChartActivity state to the Display dialog (f189f231…)."
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "inferred",
+              "evidence": "User selects ‘Use percent values’; mapped to checkbox click transition c3292f1a… on the Display dialog."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "User taps OK; transition 26c0ae2d… is OK on the Display dialog leading to the crash dialog state."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "17.675021332999677 s",
+        "node_token_consumption": {
+          "input_tokens": 81672,
+          "output_tokens": 959,
+          "total_tokens": 82631,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "correct_behavior"
+        ]
+      },
+      "meta_data": {
+        "latency": "0.0006605840007978259 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "When you tap **OK** in the “Display of Incomes/Expenses by Articles” dialog (after selecting **Use percent values** / changing that option), what should happen instead of the crash—should it return to the chart and redraw it with **percent labels** (or with **raw values**), and which option should be enabled/disabled at the same time?"
+      },
+      "meta_data": {
+        "latency": "5.181310332999601 s",
+        "node_token_consumption": {
+          "input_tokens": 81755,
+          "output_tokens": 89,
+          "total_tokens": 81844,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "turn": 2,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The view should be changed from view values to use percent values.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "d1d57bc5-6e00-4bb0-8b22-db3f7d80c224"
+        }
+      },
+      "meta_data": {
+        "latency": "9.058300020114984e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "“Display of Incomes/Expenses by Articles” dialog",
+            "evidence": [
+              "When you tap **OK** in the “Display of Incomes/Expenses by Articles” dialog",
+              "The crash only happens after I tap ok."
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Selecting/changing the option from “view values” to “use percent values” (which are mutually exclusive), then tapping OK",
+            "evidence": [
+              "The \"view values\" and \"use percent values\" are mutually exclusive.",
+              "The crash only happens after I tap ok.",
+              "The view should be changed from view values to use percent values."
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The app crashes after tapping OK (after changing the option).",
+            "evidence": [
+              "The crash only happens after I tap ok."
+            ]
+          },
+          "correct_behavior": {
+            "value": "After tapping OK, the view should change from “view values” to “use percent values” (with those options remaining mutually exclusive).",
+            "evidence": [
+              "The view should be changed from view values to use percent values.",
+              "The \"view values\" and \"use percent values\" are mutually exclusive."
+            ]
+          },
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "5.002273541999784 s",
+        "node_token_consumption": {
+          "input_tokens": 905,
+          "output_tokens": 307,
+          "total_tokens": 1212,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.0139016670000274 s",
+        "node_token_consumption": {
+          "input_tokens": 620,
+          "output_tokens": 21,
+          "total_tokens": 641,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790",
+            "status": "confirmed",
+            "evidence": "Information Elements: bug occurs when tapping OK in the “Display of Incomes/Expenses by Articles” dialog. State f189f231… is the dialog titled “Display of Incomes by Articles” with checkboxes “View values” and “Use percent values” and OK/Cancel."
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "Information Elements: user changes option to “use percent values” (mutually exclusive with “view values”). Transition c3292f1a… is click on CheckBox idx=use_percent_values (“Use percent values”) on state f189f231…."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "Information Elements: “The crash only happens after I tap ok.” Transition 26c0ae2d… is tapping OK (button1 ‘OK’) on the Display dialog and leads to crash state 2957d1cf…."
+            }
+          ],
+          "buggy_behavior": {
+            "value": "The app crashes after tapping OK (after changing the option).",
+            "status": "confirmed",
+            "evidence": "Information Elements: “The app crashes after tapping OK (after changing the option).” / “The crash only happens after I tap ok.”"
+          },
+          "correct_behavior": {
+            "value": "After tapping OK, the view should change from “view values” to “use percent values” (with those options remaining mutually exclusive).",
+            "status": "confirmed",
+            "evidence": "Information Elements: “The view should be changed from view values to use percent values.” and “The 'view values' and 'use percent values' are mutually exclusive.”"
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf",
+              "status": "inferred",
+              "evidence": "Previously collected mapping: app launch transition from Start state to initial permission screen."
+            },
+            {
+              "value": "8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816",
+              "status": "inferred",
+              "evidence": "Previously collected mapping: initial permission Allow leads to DashboardActivity (needed to proceed to Reports)."
+            },
+            {
+              "value": "9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88",
+              "status": "inferred",
+              "evidence": "Previously collected mapping: from Dashboard tap “Reports” to open ChartActivity."
+            },
+            {
+              "value": "c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0",
+              "status": "inferred",
+              "evidence": "Previously collected mapping: navigate to “Incomes by Articles” within Reports/ChartActivity."
+            },
+            {
+              "value": "c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413",
+              "status": "inferred",
+              "evidence": "Previously collected mapping: tap “Display” (action_display) to open the Display dialog (f189f231…)."
+            },
+            {
+              "value": "c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319",
+              "status": "confirmed",
+              "evidence": "Information Elements: user selects “Use percent values” (mutually exclusive option change). Transition c3292f1a… is that checkbox tap on the dialog."
+            },
+            {
+              "value": "26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa",
+              "status": "confirmed",
+              "evidence": "Information Elements: “The crash only happens after I tap ok.” Transition 26c0ae2d… is OK on the Display dialog leading to the crash dialog state."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "12.189434832999723 s",
+        "node_token_consumption": {
+          "input_tokens": 82652,
+          "output_tokens": 945,
+          "total_tokens": 83597,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "5.108299956191331e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Crash when confirming display option change to \"Use percent values\" in Reports chart display dialog",
+          "observed_behavior": "On the Reports \"Display of Incomes by Articles\" dialog, if the user taps the \"Use percent values\" checkbox and then taps \"OK\", the app crashes after tapping OK (after changing the option).",
+          "expected_behavior": "After tapping OK, the view should change from “view values” to “use percent values” (with those options remaining mutually exclusive).",
+          "steps_to_reproduce": "1. Open the Family Finance app.\n2. On the SMS permission prompt, tap \"Allow\".\n3. From the dashboard, tap \"Reports\".\n4. In Reports, select \"Incomes by Articles\".\n5. Tap \"Display\".\n6. In the display dialog, tap the \"Use percent values\" checkbox.\n7. Tap \"OK\"."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the app crashes after tapping OK (after changing the option)",
+          "triggering_gui_interactions": "taps the \"Use percent values\" checkbox and then taps \"OK\"",
+          "triggering_screen_reference": "On the Reports \"Display of Incomes by Articles\" dialog",
+          "correct_behavior": "After tapping OK, the view should change from “view values” to “use percent values” (with those options remaining mutually exclusive)."
+        }
+      },
+      "meta_data": {
+        "latency": "7.683711790999951 s",
+        "node_token_consumption": {
+          "input_tokens": 81793,
+          "output_tokens": 293,
+          "total_tokens": 82086,
+          "llm_calls": 2,
+          "llm_calls_with_usage": 2,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "conversation_summary",
+  "conversation_id": "0",
+  "started_at": "2026-03-02T15:48:42.461207+00:00",
+  "ended_at": "2026-03-02T15:51:39.852466+00:00",
+  "total_latency_seconds": 177.39258466700085,
+  "token_consumption": {
+    "input_tokens": 333168,
+    "output_tokens": 3447,
+    "total_tokens": 336615,
+    "llm_calls": 12,
+    "llm_calls_with_usage": 12,
+    "llm_calls_missing_usage": 0
+  }
+}

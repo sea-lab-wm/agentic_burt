@@ -1,10 +1,16 @@
 from dotenv import load_dotenv
 from database.db import SessionLocal
-from database.database_utils import fetch_app_graph
+from database.database_utils import fetch_app_graph_and_name
 from state import BugAgentState
-from graph_utils import stringify_current_bug_info, llm_extract, llm_check_clarity, llm_map, format_extraction_update, find_unknown_or_ambiguous, llm_follow_up, generate_report
+from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, llm_more_info_follow_up, generate_report
 from config import MODEL_NAME
-from observability import log_action, Entity, ActionName, ConversationLogger
+from observability import (
+    ActionName,
+    ConversationLogger,
+    Entity,
+    ObservabilityTokenCallback,
+    log_action,
+)
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
@@ -21,23 +27,29 @@ load_dotenv()
 session = SessionLocal()
 
 APP_GRAPH = None
+APP_NAME = None
 current_bug = -1
 
 #Select Bug being repored and fetch corresponding app graph from db
-while not APP_GRAPH:
+while not APP_GRAPH or not APP_NAME:
     current_bug = int(input("Enter valid ID for Bug Being Reported:"))
-    APP_GRAPH = fetch_app_graph(session=session, bug_id=current_bug)
+    APP_GRAPH, APP_NAME = fetch_app_graph_and_name(session=session, bug_id=current_bug)
 
 description_level = input("Please enter the description level as [completeness level]_[precision level]:")
 
 #Set up conversation logger
-logger = ConversationLogger(filepath=f"logs/bug{current_bug}_{description_level}.log", conversation_id=0)
+logger = ConversationLogger(filepath=f"logs/V2_bug{current_bug}_{description_level}.log", conversation_id=0)
 
-#Model and APP_GRAPH Instantiation
-MODEL = ChatOpenAI(model = MODEL_NAME)
+#Model instantiation with callback for token usage
+usage_callback = ObservabilityTokenCallback(logger=logger)
+MODEL = ChatOpenAI(model=MODEL_NAME, callbacks=[usage_callback])
 
-#Node: Information Element Extraction (Scaffold)
+#Node: Information Element Extraction
+@log_action(logger=logger, entity=Entity.bot, action_name=ActionName.information_element_extraction)
 def information_element_extraction(state: BugAgentState, config: RunnableConfig) -> dict:
+    print("extracting information elements...\n")
+    app_name = (config.get("configurable") or {}).get("app_name")
+
     # Outside a clarification cycle, extract from the latest user message only.
     # During a clarification cycle, extract from the tracked message window.
     if state.clarification_window_start_idx == 0:
@@ -46,14 +58,30 @@ def information_element_extraction(state: BugAgentState, config: RunnableConfig)
         window_messages = state.messages[state.clarification_window_start_idx :]
         user_messages = [message.content for message in window_messages]
 
-    extraction = llm_extract(user_messages, MODEL)
+    is_follow_up_response = state.generated_question is not None and len(state.messages) > 1
+    extraction_mode = "follow_up" if is_follow_up_response else "initial"
+    follow_up_question = state.generated_question if is_follow_up_response else None
 
-    return {"information_element_extraction": extraction}
+    extraction = llm_extract(
+        user_messages=user_messages,
+        model=MODEL,
+        app_name=app_name,
+        follow_up_question=follow_up_question,
+        extraction_mode=extraction_mode,
+    )
 
-#Node: Clarity Check (Scaffold)
+    return {
+        "information_element_extraction": extraction,
+        "clarification_window_start_idx": len(state.messages)-1
+    }
+
+#Node: Clarity Check
+@log_action(logger=logger, entity=Entity.bot, action_name=ActionName.clarity_check)
 def clarity_check(state: BugAgentState, config: RunnableConfig) -> dict:
+    print("checking clarity...\n")
+    app_name = (config.get("configurable") or {}).get("app_name")
     extracted_info = state.information_element_extraction
-    clarity_check= llm_check_clarity(extracted_info, MODEL)
+    clarity_check= llm_check_clarity(extracted_info, MODEL, app_name)
     return {
         "clarity_route": clarity_check.clarity_route,
         "clarity_issues": clarity_check.clarity_issues,
@@ -62,16 +90,31 @@ def clarity_check(state: BugAgentState, config: RunnableConfig) -> dict:
 #Conditional edge behavior after clarity_check
 #Routes to map_to_graph when no clarity issues exist, otherwise routes to clarity_follow_up
 def should_route_clarity(state: BugAgentState):
-    return state.clarity_route
+    if state.clarification_rounds < 1:
+        return state.clarity_route
+    else:
+        return "continue"
 
-#Node: Clarity Follow Up (Scaffold)
+#Node: Clarity Follow Up
+@log_action(logger=logger, entity=Entity.bot, action_name=ActionName.clarity_follow_up)
 def clarity_follow_up(state: BugAgentState, config: RunnableConfig) -> dict:
-    return {}
+    print("following up on clarity issues...\n")
+    app_name = (config.get("configurable") or {}).get("app_name")
+    clarity_issues = state.clarity_issues
+    information_elements = state.information_element_extraction
+    follow_up_question = llm_clarity_follow_up(
+        information_elements, clarity_issues, MODEL, app_name
+    )
+    return {
+        "generated_question": follow_up_question,
+        "clarification_rounds": (state.clarification_rounds + 1),
+    }
 
 #Node 1: Map Information to Graph + Update (LLM)
     # A: Format Information of BugAgentState necessary for model call
-        #state
+        #current agent state
         #application execution model / graph
+        #labeled extracted information elements
         #user response
     # B: Submit a prompt to MODEl  the following and enfore that response is in JSON format:
         # System Prompt instructing the LLM of its job
@@ -83,25 +126,31 @@ def clarity_follow_up(state: BugAgentState, config: RunnableConfig) -> dict:
     # D: Return update to BugAgentState
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.extract_and_update)
 def map_to_graph(state : BugAgentState, config : RunnableConfig):
+    print("mapping collected information to graph...\n")
     #capture the current BugInfo collected in JSON format
-    stringified_bug_info = stringify_current_bug_info(state)
+    current_bug_info = state.BugInfo
 
     #fetch the current app execution model/graph for the extraction prompt
     app_graph = (config.get("configurable") or {}).get("app_graph")
+    app_name = (config.get("configurable") or {}).get("app_name")
 
-    #fetch the most recent agent follow up question if applicable
-    follow_up_question = state.generated_question if state.generated_question else ""
+    #fetch the most recent extracted information elements 
+    extracted_infomration_elements = state.information_element_extraction 
 
-    #current user description (either response to follow up or initial description of buggy behavior)
-    user_description = state.messages[-1].content
-
-    result = llm_map(stringified_bug_info, app_graph, follow_up_question, user_description, MODEL)
+    result = llm_map(
+        current_bug_info=current_bug_info,
+        app_graph=app_graph,
+        extracted_information_elements=extracted_infomration_elements,
+        model=MODEL,
+        app_name=app_name,
+    )
     
     return format_extraction_update(state, result)
 
 #Node 2: Evaluate Internal Bug Report State for Completeness
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.evaluate)
 def evaluate_state(state : BugAgentState, config : RunnableConfig) -> dict:
+    print("evaluating collected information...\n")
     current_bug_info = state.BugInfo
 
     return {"unknown_and_low_confidence_info" : find_unknown_or_ambiguous(current_bug_info)}
@@ -120,17 +169,25 @@ def should_continue(state : BugAgentState):
     #B: Compile and Ship prompt requesting that LLM choose field and ask follow up questions (Enforce Structured Output)
     #C: Capture generated follow up question and return partial update to 'generated_question' field of BugAgentState
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.follow_up)
-def follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
+def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
+    print("following up on missing information...\n")
     #Complete set of currently collected bug information (I figure the LLM needs good status fields to inform how it will ask to clarify poor status fields)
-    stringified_bug_info = stringify_current_bug_info(state)
+    current_bug_info = state.BugInfo
 
     #Application Execution Model/Graph
     app_graph = (config.get("configurable") or {}).get("app_graph")
+    app_name = (config.get("configurable") or {}).get("app_name")
 
     #Reference to low_confidence and missing bug info fields to speed up reasoning
     formatted_unknown_and_low_confidence_info = str(state.unknown_and_low_confidence_info)
 
-    follow_up_question = llm_follow_up(stringified_bug_info, app_graph, formatted_unknown_and_low_confidence_info, MODEL)
+    follow_up_question = llm_more_info_follow_up(
+        current_bug_info,
+        app_graph,
+        formatted_unknown_and_low_confidence_info,
+        MODEL,
+        app_name,
+    )
 
     return {"generated_question" : follow_up_question}
 
@@ -143,8 +200,9 @@ def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dic
 
 #Generate Final Bug Report
 @log_action(logger=logger, entity=Entity.user, action_name=ActionName.generate_report)
-def gen_report(bug_info, app_graph):
-    return generate_report(bug_info, app_graph, MODEL)
+def gen_report(bug_info, app_graph, app_name):
+    print("generating final bug report...\n")
+    return generate_report(bug_info, app_graph, MODEL, app_name)
 
 #Graph Construction:
 
@@ -155,7 +213,7 @@ burt_workflow.add_node("clarity_check", clarity_check)
 burt_workflow.add_node("clarity_follow_up", clarity_follow_up)
 burt_workflow.add_node("map_to_graph", map_to_graph)
 burt_workflow.add_node("evaluate_state", evaluate_state)
-burt_workflow.add_node("follow_up", follow_up)
+burt_workflow.add_node("more_info_follow_up", more_info_follow_up)
 burt_workflow.add_node("interrupt_and_present", interrupt_and_present)
 
 #Establishing Graph Edges and Agent Behavior:
@@ -175,11 +233,11 @@ burt_workflow.add_conditional_edges(
     "evaluate_state", 
     should_continue, 
     {
-        "continue" : "follow_up",
+        "continue" : "more_info_follow_up",
         "end": END
     } 
 )
-burt_workflow.add_edge("follow_up","interrupt_and_present")
+burt_workflow.add_edge("more_info_follow_up","interrupt_and_present")
 burt_workflow.add_edge("interrupt_and_present","information_element_extraction")
 
 #Establish Check Pointer for Persistant Memory During Interrupt
@@ -189,11 +247,12 @@ graph = burt_workflow.compile(checkpointer=checkpointer)
 #Initializing Graph State and Logger (Information that Agent and User Update throughout conversation) and Config (Information that is constant and needed throughout agent lifecycle):
 
 #Specifying a thread-id is how we ensure persistant state even with interupt
-config = {"configurable": {"app_graph": APP_GRAPH, "thread_id": "1"}}
+config = {"configurable": {"app_graph": APP_GRAPH, "app_name": APP_NAME, "thread_id": "1"}}
 
 #For now, provide the initial user bug description to the loop, in a later GUI enabled version we can request it as first user message
-state = BugAgentState(messages=[HumanMessage(content="The Parent Categories of the current category should be displayed.")])
+state = BugAgentState(messages=[HumanMessage(content="Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check 'view values', check 'use percent values', and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen; changing the report appearance from 'view values' to 'use percent values' causes the application to crash, but the appearance of the report should be changed to 'use percent values'.")])
 
+logger.start_conversation()
 result = graph.invoke(state, config=config)
 
 #Control Flow
@@ -205,10 +264,10 @@ while True:
         break
 
     #Display latest graph state from the checkpointer before asking the next follow-up
-    # snapshot = graph.get_state(config)
-    # print("STATE BEFORE NEXT FOLLOW UP:\n")
-    # pprint(snapshot.values, width=100)
-    # print("\n")
+    snapshot = graph.get_state(config)
+    print("STATE BEFORE NEXT FOLLOW UP:\n")
+    pprint(snapshot.values, width=100)
+    print("\n\n")
 
     #Agent requests user follow up response: present generated follow up question to user and retrieve their response
     question = result["__interrupt__"]
@@ -219,7 +278,8 @@ while True:
     result = graph.invoke(Command(resume=user_response), config=config)
 
 print("FINAL BUG REPORT:\n\n")
-print(gen_report(result["BugInfo"], app_graph=APP_GRAPH))
+print(gen_report(result["BugInfo"], app_graph=APP_GRAPH, app_name=APP_NAME))
+logger.finish_conversation()
 
 #Write Logs to File
 logger.write_log()

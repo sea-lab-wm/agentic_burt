@@ -255,10 +255,18 @@
       "entity": "user",
       "action_name": "generate_report",
       "output": {
-        "title": "Category Details: \"PARENT CATEGORIES\" tab stays stuck loading and never shows results",
-        "observed_behavior": "On the Category Details screen, if the user taps the \"PARENT CATEGORIES\" tab, the Parent Categories screen stays stuck loading (does not finish loading/show results).",
-        "expected_behavior": "Parent Categories of the current category should be displayed.",
-        "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome screen.\n3. Swipe left again.\n4. Swipe left again.\n5. Swipe left again.\n6. Tap \"YES!\" on the welcome/tutorial screen.\n7. Tap the \"LOCATIONS\" tab on the Bookmarks screen.\n8. Tap a category image in the Explore/category grid.\n9. Swipe up on the media details screen.\n10. Tap a category name (category chip/text) in the media details screen.\n11. Tap the \"SUBCATEGORIES\" tab on the Category Details screen.\n12. Tap the \"PARENT CATEGORIES\" tab on the Category Details screen."
+        "full_report": {
+          "title": "Category Details: \"PARENT CATEGORIES\" tab stays stuck loading and never shows results",
+          "observed_behavior": "On the Category Details screen, if the user taps the \"PARENT CATEGORIES\" tab, the Parent Categories screen stays stuck loading (does not finish loading/show results).",
+          "expected_behavior": "Parent Categories of the current category should be displayed.",
+          "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome screen.\n3. Swipe left again.\n4. Swipe left again.\n5. Swipe left again.\n6. Tap \"YES!\" on the welcome/tutorial screen.\n7. Tap the \"LOCATIONS\" tab on the Bookmarks screen.\n8. Tap a category image in the Explore/category grid.\n9. Swipe up on the media details screen.\n10. Tap a category name (category chip/text) in the media details screen.\n11. Tap the \"SUBCATEGORIES\" tab on the Category Details screen.\n12. Tap the \"PARENT CATEGORIES\" tab on the Category Details screen."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the Parent Categories screen stays stuck loading (does not finish loading/show results)",
+          "triggering_gui_interactions": "taps the \"PARENT CATEGORIES\" tab",
+          "triggering_screen_reference": "On the Category Details screen",
+          "correct_behavior": "Parent Categories of the current category should be displayed."
+        }
       },
       "meta_data": {
         "latency": "6.569838041999901 s",
