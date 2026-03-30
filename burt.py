@@ -1,9 +1,11 @@
+import argparse
+import csv
 from dotenv import load_dotenv
 from database.db import SessionLocal
 from database.database_utils import fetch_app_graph_and_name
 from state import BugAgentState
 from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, llm_more_info_follow_up, generate_report
-from config import MODEL_NAME
+import config
 from observability import (
     ActionName,
     ConversationLogger,
@@ -19,30 +21,98 @@ from langgraph.types import interrupt
 from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
 from pprint import pprint
+from pathlib import Path
 
 #loading in environment variables
 load_dotenv()
 
-#stand up db session
-session = SessionLocal()
-
-APP_GRAPH = None
-APP_NAME = None
-current_bug = -1
-
-#Select Bug being repored and fetch corresponding app graph from db
-while not APP_GRAPH or not APP_NAME:
-    current_bug = int(input("Enter valid ID for Bug Being Reported:"))
-    APP_GRAPH, APP_NAME = fetch_app_graph_and_name(session=session, bug_id=current_bug)
-
-description_level = input("Please enter the description level as [completeness level]_[precision level]:")
-
 #Set up conversation logger
-logger = ConversationLogger(filepath=f"logs/V2_bug{current_bug}_{description_level}.log", conversation_id=0)
+logger = ConversationLogger(filepath="logs/V2/session.log", conversation_id=0)
 
 #Model instantiation with callback for token usage
 usage_callback = ObservabilityTokenCallback(logger=logger)
-MODEL = ChatOpenAI(model=MODEL_NAME, callbacks=[usage_callback])
+MODEL = ChatOpenAI(model=config.MODEL_NAME, callbacks=[usage_callback])
+DESCRIPTION_CSV_PATH = Path(config.DESCRIPTION_CSV_PATH)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run the BURT bug-report workflow.")
+    parser.add_argument(
+        "--bug-id",
+        type=int,
+        required=True,
+        help="Bug ID used to fetch the app graph and app name.",
+    )
+    parser.add_argument(
+        "--description-level",
+        required=True,
+        help="Description level in the format [completeness level]_[precision level].",
+    )
+    
+    return parser.parse_args()
+
+def normalize_description_level(description_level: str) -> str:
+    normalized = description_level.strip().upper().replace("-", "_")
+    try:
+        completeness_level, precision_level = normalized.split("_", maxsplit=1)
+    except ValueError as exc:
+        raise ValueError(
+            "Description level must use the format [L|M|H]C_[L|M|H]P, for example LC_MP."
+        ) from exc
+
+    if len(completeness_level) != 2 or completeness_level[1] != "C":
+        raise ValueError(
+            "Completeness level must be one of LC, MC, HC."
+        )
+    if len(precision_level) != 2 or precision_level[1] != "P":
+        raise ValueError(
+            "Precision level must be one of LP, MP, HP."
+        )
+
+    if completeness_level[0] not in {"L", "M", "H"} or precision_level[0] not in {"L", "M", "H"}:
+        raise ValueError(
+            "Description level must use only L, M, or H prefixes."
+        )
+
+    return f"{completeness_level}_{precision_level}"
+
+
+def load_initial_message(current_bug: int, description_level: str) -> str:
+    normalized_level = normalize_description_level(description_level)
+    description_column = f"{normalized_level} Desc"
+
+    with DESCRIPTION_CSV_PATH.open(newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            if row.get("bug_id") != str(current_bug):
+                continue
+
+            initial_message = (row.get(description_column) or "").strip()
+            if not initial_message:
+                raise ValueError(
+                    f"No initial message found for bug ID {current_bug} and description level {normalized_level}."
+                )
+            return initial_message
+
+    raise ValueError(
+        f"Bug ID {current_bug} was not found in {DESCRIPTION_CSV_PATH}."
+    )
+
+
+def initialize_runtime(current_bug: int, description_level: str) -> tuple[str, str]:
+    session = SessionLocal()
+    try:
+        app_graph, app_name = fetch_app_graph_and_name(session=session, bug_id=current_bug)
+    finally:
+        session.close()
+
+    if not app_graph or not app_name:
+        raise ValueError(f"No app graph/app name found for bug ID {current_bug}.")
+
+    version = str(config.PROMPT_VERSION)
+    logger.filepath = Path(f"logs/{version}/bug{current_bug}_{description_level}.log")
+    logger.conversation_id = str(current_bug)
+    return app_graph, app_name
 
 #Node: Information Element Extraction
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.information_element_extraction)
@@ -244,42 +314,50 @@ burt_workflow.add_edge("interrupt_and_present","information_element_extraction")
 checkpointer = MemorySaver()
 graph = burt_workflow.compile(checkpointer=checkpointer)
 
-#Initializing Graph State and Logger (Information that Agent and User Update throughout conversation) and Config (Information that is constant and needed throughout agent lifecycle):
+def main() -> None:
+    args = parse_args()
+    initial_message = load_initial_message(
+        current_bug=args.bug_id,
+        description_level=args.description_level,
+    )
+    app_graph, app_name = initialize_runtime(
+        current_bug=args.bug_id,
+        description_level=args.description_level,
+    )
 
-#Specifying a thread-id is how we ensure persistant state even with interupt
-config = {"configurable": {"app_graph": APP_GRAPH, "app_name": APP_NAME, "thread_id": "1"}}
+    #Specifying a thread-id is how we ensure persistant state even with interupt
+    config = {"configurable": {"app_graph": app_graph, "app_name": app_name, "thread_id": "1"}}
+    state = BugAgentState(messages=[HumanMessage(content=initial_message)])
 
-#For now, provide the initial user bug description to the loop, in a later GUI enabled version we can request it as first user message
-state = BugAgentState(messages=[HumanMessage(content="Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check 'view values', check 'use percent values', and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen; changing the report appearance from 'view values' to 'use percent values' causes the application to crash, but the appearance of the report should be changed to 'use percent values'.")])
+    logger.start_conversation()
+    result = graph.invoke(state, config=config)
 
-logger.start_conversation()
-result = graph.invoke(state, config=config)
+    #Control Flow
+    while True:
+        #End sate reached: agent did not interrupt to request user answer to follow up question
+        #Agent believes it is done collecting bug info
+        if "__interrupt__" not in result:
+            break
 
-#Control Flow
-while True:
-    #End sate reached: agent did not interrupt to request user answer to follow up question
-    #Agent believes it is done collecting bug info
-    if "__interrupt__" not in result:
-        #state = result
-        break
+        #Display latest graph state from the checkpointer before asking the next follow-up
+        snapshot = graph.get_state(config)
+        print("STATE BEFORE NEXT FOLLOW UP:\n")
+        pprint(snapshot.values, width=100)
+        print("\n\n")
 
-    #Display latest graph state from the checkpointer before asking the next follow-up
-    snapshot = graph.get_state(config)
-    print("STATE BEFORE NEXT FOLLOW UP:\n")
-    pprint(snapshot.values, width=100)
-    print("\n\n")
+        #Agent requests user follow up response: present generated follow up question to user and retrieve their response
+        question = result["__interrupt__"]
+        print(question)
+        user_response = input("> ")
 
-    #Agent requests user follow up response: present generated follow up question to user and retrieve their response
-    question = result["__interrupt__"]
-    print(question)
-    user_response = input("> ")
+        # Resume run; this returns updated state
+        result = graph.invoke(Command(resume=user_response), config=config)
 
-    # Resume run; this returns updated state
-    result = graph.invoke(Command(resume=user_response), config=config)
+    print("FINAL BUG REPORT:\n\n")
+    print(gen_report(result["BugInfo"], app_graph=app_graph, app_name=app_name))
+    logger.finish_conversation()
+    logger.write_log()
 
-print("FINAL BUG REPORT:\n\n")
-print(gen_report(result["BugInfo"], app_graph=APP_GRAPH, app_name=APP_NAME))
-logger.finish_conversation()
 
-#Write Logs to File
-logger.write_log()
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,303 @@
+bug_id,AndroR2_bug_type,Links,app_name,OB_GT_Antu/Sam_Final,EB_GT_Antu/Sam_Final,Agree?,info_elements_gt,,causing_screen,manifesting_screen,S2R_ground_truth,#steps_in_gt,LC_LP Desc,LC_MP Desc,LC_HP Desc,MC_LP Desc,MC_MP Desc,MC_HP Desc,HC_LP Desc,HC_MP Desc,HC_HP Desc,All_Level_Gen_Output
+2,crash,https://github.com/zwieback/FamilyFinance/issues/1,Family Finance,"In the report section, when the user changes the appearance of the report from 'view value' to 'use percent value', the application crashes and stops working.",The application should work properly and display the report data expected by the user.,1,"Buggy Behavior: the application crashes
+Triggering GUI Interaction: changes the appearance of the report from 'view values' to use percent values'
+Triggering Screen Reference: Display of Incomes by Articles pop-up of the Reports screen
+Correct Behavior: The appearance of the report should be changed to 'use percent values'",,f189f23124c6c372973bbff27e30b7107f27022f74836d7085daf2817f565790,2957d1cfee327d06abd84e6b91e1153eb930ce1886a45ed33c8ff4c6536fbcb0,"1. Open app <fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf>
+2. Click allow button <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>
+3. Click Report <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88
+4. Click Incomes By Articles or expenses by articles <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>
+5. Click View Button <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>
+6. Click view values checkbox <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>
+7. Click use percent values checkbox <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>
+8. Click OK <26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa>",8,It crashes.,The application crashes.,The appearance of the report should be changed to 'use percent values'.,Changing it to use percent values makes it crash.,Changing the report appearance from 'view values' to 'use percent values' results in the application crashing.,"Changing the report appearance from 'view values' to 'use percent values' causes the application to crash, but the appearance of the report should be changed to 'use percent values'.","In the Display of Incomes by Articles pop-up of the Reports screen, changing it to use percent values makes the application crash even though it should switch to 'use percent values'.","Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, select 'view values', select 'use percent values', and tap OK; the application crashes, but the appearance of the report should be changed to 'use percent values' in the Display of Incomes by Articles pop-up of the Reports screen.","On Display of Incomes by Articles pop-up of the Reports screen changing the report appearance from 'view values' to 'use percent values' causes the application to crash, but the appearance of the report should be changed to 'use percent values'. I took these steps: Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check 'view values', check 'use percent values', and tap OK.","[
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Buggy Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'It crashes.'
+  },
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Buggy Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'The application crashes.'
+  },
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'The appearance of the report should be changed to \'use percent values\'.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'Changing it to use percent values makes it crash.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'Changing the report appearance from \'view values\' to \'use percent values\' results in the application crashing.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'Changing the report appearance from \'view values\' to \'use percent values\' causes the application to crash, but the appearance of the report should be changed to \'use percent values\'.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'In the Display of Incomes by Articles pop-up of the Reports screen, changing it to use percent values makes the application crash even though it should switch to \'use percent values\'.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Steps To Reproduce, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, select \'view values,\' select \'use percent values,\' and tap OK; the application crashes, but the appearance of the report should be changed to \'use percent values\' in the Display of Incomes by Articles pop-up of the Reports screen.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Steps To Reproduce, Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'Open the app, tap Allow, select Report, choose Incomes By Articles or Expenses By Articles, tap View, check \'view values,\' check \'use percent values,\' and tap OK to reach the Display of Incomes by Articles pop-up of the Reports screen; changing the report appearance from \'view values\' to \'use percent values\' causes the application to crash, but the appearance of the report should be changed to \'use percent values\'.'
+  }
+]"
+10,output,https://github.com/zhanghai/MaterialFiles/issues/184,Material Files,"On the FTP server page, if the FTP server is stopped and then the app is closed, the server restarts automatically.",The FTP server should not start automatically if the user stops it before killing the application.,1,"Buggy Behavior: the server restarts automatically
+Triggering GUI Interaction: stops the FTP server and then closes the app
+Triggering Screen Reference: FTP server screen
+Correct Behavior: The FTP server should remain stopped",,a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013,a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013,"1. Open app <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>
+2. Click allow <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>
+3. Click the navigation drawer button, i.e., the menu option <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>
+4. Click FTP server <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>
+5. Click the status toggle button (switch server on) <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 >
+6. Click the status toggle button (switch server off) <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>",6,It restarts on its own.,The server restarts automatically.,The FTP server should remain stopped.,Stopping it and closing the app makes it come back on.,Stopping the FTP server and closing the app leads to the server restarting automatically.," After stopping the FTP server and closing the app, the server restarts automatically, but the FTP server should remain stopped.","On the FTP server screen, stopping it and closing the app makes the server restart, even though it should stay stopped.","Open the app, allow the permission, open the navigation drawer, go to FTP server, toggle the server on and then off; the server restarts automatically, but it should remain stopped.","Open the app, tap Allow, open the navigation drawer, select FTP server to reach the FTP server screen, toggle the status switch on and then off to stop the server; then close the app—the server restarts automatically, but the FTP server should remain stopped.","[
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Buggy Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'It restarts on its own.'
+  },
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Buggy Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'The server restarts automatically.'
+  },
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'The FTP server should remain stopped.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'Stopping it and closing the app makes it come back on.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'Stopping the FTP server and closing the app leads to the server restarting automatically.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Correct Behavior, Buggy Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'After stopping the FTP server and closing the app, the server restarts automatically, but the FTP server should remain stopped.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'On the FTP server screen, stopping it and closing the app makes the server restart, even though it should stay stopped.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Steps To Reproduce, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'Open the app, allow the permission, open the navigation drawer, go to FTP server, toggle the server on and then off; the server restarts automatically, but it should remain stopped.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Steps To Reproduce, Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'Open the app, tap Allow, open the navigation drawer, select FTP server to reach the FTP server screen, toggle the status switch on and then off to stop the server; then stop the FTP server and close the app—the server restarts automatically, but the FTP server should remain stopped.'
+  }
+]"
+110,output,https://github.com/AdrienPoupa/VinylMusicPlayer/issues/311,Vinyl Music Player,"On the Artists tab, selecting an artist does not display the artist's name, and it is missing in all the relevant places of the application.
+
+Artist's names are missing in all relevant places of the application, for example, on the Artists tab, selecting an artist does not display the artist's name. ",An artist's name should appear on the Artists tab and other relevant places.,1,"Buggy Behavior: the artist's name is not displayed (Artists' names are missing throughout the application)
+Triggering GUI Interaction: selects an artist
+Triggering Screen Reference: Artists screen
+Correct Behavior: The artists' names should appear on the Artists screen, and where they are needed to identify the artists.",,a7a520297496ac15881add8b14ecec2a75b2478f7d241cbcbde040a5609fe4c5,27770bb7d1a9a1b02ee39f799c6a3593026cf10f2a05dd2062625b09e41cc6bc,"1. Open app <dff1706e3876e5dc3b4cc6d42f7e18d506442dfb948af7b9521b858959145dcb>
+2. Click Get Started <abb4e3ae547f8f221770d4ac5f214da73275ba2960bdc33bc94f578fd64d0517>
+3. Click allow <cc92fe754826b49aa2792dbbc2866528a7b8b3b3a09f960cabb50ac7bb364996>
+4. Click artist <14cc2c7970259df90aeb85c31ae3995f576f55bcb819907ec2c0f1e1cd0d8a0f>
+5. Click an Album <53a3716963290feecad3953af0434828cf03edbba7fc91dde2bd69b9a5e26466>",5,,,,,,,,,,
+117,cosmetic,https://github.com/openfoodfacts/openfoodfacts-androidapp/issues/2087,Open Food Facts - Food scanner,"On the Nutrition Facts tab, refreshing the data increases the space between each row of nutritional values.",Refreshing should not increase the space and should only update the data.,1,"Buggy Behavior: the space between each row of nutritional values increases
+Triggering GUI Interaction: refreshes the data
+Triggering Screen Reference: Nutrition Facts screen
+Correct Behavior: The data should be updated, and the space between nutritional values should remain the same",,5190822dc529fe5d177c3c2c1a8524e6ed7e98726d6c18ecc2c4c522c99f323e,5190822dc529fe5d177c3c2c1a8524e6ed7e98726d6c18ecc2c4c522c99f323e,"1. Open app <7b7efeeb1c65615448e45021fb4d48a3e3a4e3abbeec8bf6a976e403ce0ddc66>
+2. Click skip <f0e14783122eb60aaaf76339cd6a1c5f0160a7782ab6dd9066fdfffde798ddc5>
+3. Click search <3391ed62e8d882dff88d6014c50895b866ba03570d5c6c0d95d425b05f045507>
+4. Select a food item <8d721779d3487da09060ca257a49780e33bbea939087522c9cc57cdf3600bf4a>
+5. Go to Nutrition Fact tab <0f99425f3cfaef795c200e9e27219f9a7dcca1624f7d879b2f12574ade25b3e3>
+6. Swipe down to refresh the page <0eaca8f495806fc7a61defc9681b5ef0421abec1d22f236645b6fb64b3e98603>",6,,,,,,,,,,
+130,cosmetic,https://github.com/andOTP/andOTP/issues/486,andOTP - OTP Authenticator,"On the Authentication Encryption slide, I explicitly selected 'Android KeyStore'; however, the Authentication slide still asked for the PIN.",The authentication slide should not ask for the PIN and allow me to continue without a PIN.,1,"Buggy Behavior: Authentication screen still asks for the PIN
+Triggering GUI Interaction: selects 'Android KeyStore'
+Triggering Screen Reference: Authentication Encryption screen, Authentication screen
+Correct Behavior: The user should be allowed to continue without a PIN","After pressing next to continue to the Authentication Slide of the application intro, the text immediately beneath 'Authentication' should state that the encryption method chosen is Password / Pin instead of Android KeyStore. ",c843bf73e8d67a442d8dd9fd8571fffbcaeccffcc78475bb5a304ec0b5fa233e,b47f06bd33c56d382b26090a96ea8218f78bba9d7eed3b8b13c7ec535715f29c,"1. Open app <3b4bd7f0faf570f6856d124e8c998bae1175dcb6ac04f16f9ee74a76e7424c53>
+2. Click next arrow <83f144abf06ba30b8f672b178f0d4c95dda4d6d46891b78d8ff0b1e7e5034160>
+3. Click Password / PIN <4096cd48dd0b00de9add9d7228e6963cd66491e3ed77af4fad9bb656849915a1>
+4. Select Android KeyStore <1d984744d5bb0208d12ddb990af32ba876b98ef2513a99d59ed8108b4c6b2eb0>
+5. Click next arrow <20972f3fe92e2473ac909785d2db33a30939f83513dd82ff9158f70da8a81688>",5,,,,,,,,,,
+135,navigation,https://github.com/commons-app/apps-android-commons/issues/2088,Wikimedia Commons,"In night mode, on a category page, clicking the parent categories tab leads to a blank page.",The parrent categories tab should show parent categories of the current category.,1,"Buggy Behavior: see a blank page
+Triggering GUI Interaction: clicks the Parent Categories tab
+Triggering Screen Reference: Category screen, Parent Categories tab
+Correct Behavior: The Parent Categories of the current category should be displayed",,602a7968c560523c8680b370923e9002a6519817d8779fbe90b8e942efbb9173,5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8,"1. Open App <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>
+2. Swipe Left <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>
+3. Swipe Left <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>
+4. Swipe Left <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>
+5. Swipe Left <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>
+6. Click YES <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>
+7. Click Skip <bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4>
+8. Click YES <a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b>
+9. Click the navigation drawer button, i.e., the menu option <1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e>
+10. Click Explore <2cb54b6b2c319fadcb77770ddc6f08bc1620d2ea99af5e4315a0e04d97476e34>
+11. Click a picture <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>
+12. Swipe Up <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>
+13. Swipe Up <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>
+14. Click a category <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>
+15. Click parent Categories <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>",15,It shows nothing.,A blank page is displayed.,The Parent Categories of the current category should be displayed.,Clicking the Parent Categories tab shows a blank page.,"When the Parent Categories tab is clicked, a blank page appears.","Clicking the Parent Categories tab results in a blank page, but the Parent Categories of the current category should be displayed.","On the Category screen in the Parent Categories tab, clicking the Parent Categories tab shows a blank page even though the Parent Categories of the current category should be displayed.","Open App, swipe left four times, click YES, click Skip, click YES, open the navigation drawer, click Explore, click a picture, swipe up twice, click a category, and click Parent Categories; on the Category screen in the Parent Categories tab a blank page is displayed, but the Parent Categories of the current category should be displayed.","Open App, swipe left four times, tap YES, tap Skip, tap YES, open the navigation drawer, select Explore, tap a picture, swipe up twice, tap a category, and tap Parent Categories to reach the Category screen in the Parent Categories tab; clicking the Parent Categories tab results in a blank page, but the Parent Categories of the current category should be displayed.","[
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Buggy Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'It shows nothing.'
+  },
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Buggy Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'A blank page is displayed.'
+  },
+  {
+    'Completeness_Level': 'LOW',
+    'Included_Information_Cattegories': 'Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'The Parent Categories of the current category should be displayed.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'Clicking the Parent Categories tab shows a blank page.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'When the Parent Categories tab is clicked, a blank page appears.'
+  },
+  {
+    'Completeness_Level': 'MEDIUM',
+    'Included_Information_Cattegories': 'Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'Clicking the Parent Categories tab results in a blank page, but the Parent Categories of the current category should be displayed.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'LOW',
+    'Bug_Description': 'On the Category screen in the Parent Categories tab, clicking the Parent Categories tab shows a blank page even though the Parent Categories of the current category should be displayed.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Steps To Reproduce, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'MEDIUM',
+    'Bug_Description': 'Open App, swipe left four times, click YES, click Skip, click YES, open the navigation drawer, click Explore, click a picture, swipe up twice, click a category, and click Parent Categories; on the Category screen in the Parent Categories tab a blank page is displayed, but the Parent Categories of the current category should be displayed.'
+  },
+  {
+    'Completeness_Level': 'HIGH',
+    'Included_Information_Cattegories': 'Triggering Screen Reference, Steps To Reproduce, Triggering GUI Interaction, Buggy Behavior, Correct Behavior',
+    'Precision_Level': 'HIGH',
+    'Bug_Description': 'Open App, swipe left four times, tap YES, tap Skip, tap YES, open the navigation drawer, select Explore, tap a picture, swipe up twice, tap a category, and tap Parent Categories to reach the Category screen in the Parent Categories tab; clicking the Parent Categories tab results in a blank page, but the Parent Categories of the current category should be displayed.'
+  }
+]"
+248,output,https://github.com/getodk/collect/issues/2958,ODK Collect,"In Admin settings, accessing the General settings does not display all General settings submenus if access to them has been revoked from normal users.",Accessing General settings via the Admin settings should allow access to all the settings in the General settings submenus.,1,"Buggy Behavior: all general settings submenus are not displayed if access to them has been revoked from normal users
+Triggering GUI Interaction: accesses the general settings
+Triggering Screen Reference: Admin settings screen
+Correct Behavior: All the settings in the General settings submenus should be displayed",,06a05f27d56fe7a3d8e53c0fd142fda45e798383f8eacdd538a12bdc4d27a92b,6ab5bddad9ca8122282698348fdbaf22767d18a14619f4a667b6aa24b51e1989,"1. Open App <c50ac3469c2f50ed5de354cf9d09fc53f0b0faac6e57f357a082360b3f12da22>
+2. Click the Allow button <2ce1b3a5cfa8089cc014059a2dde2532613f873b276ba98c285778c8748fa9d6>
+3. Click More Options, i.e., the three-dot menu <9856f335cc63c9768f99ee0d72d63bfc52ffe2f7b433fe7c9af123f17a5f51e6>
+4. Click Admin Settings <f0949f9bfc3f05ab20969ac673763e9d1f586c707d8a824ff26dc7ec47071b9c>
+5. Click User Settings <2101b06db4daf7225c6ff240502a0519b84c442382c2648ae4ae5efc3b55755e>
+6. Uncheck the checkbox <81c64190fdf34b81c78fea7ed9ec74fe39b11c7b7ef6b904499649a655a1c50b>
+7. Uncheck the checkbox <612d9972649cb485443338c68180edcda5f31063ed27dbc041fe38ef9180c49a>
+8. Uncheck the checkbox <bf43a49154e0d13200d7db1c8e35a16d1b37f8d347a7273cae25dd97155c94eb>
+9. Uncheck the checkbox <f4ba0649e53fed51697d861fd42f88109e35e04cce69cf68b2ea7b0ed0859290>
+10. Uncheck the checkbox <bbf2a6cd22a9941ac0ae4e6ddb1e3ff3006db7325120de754da19192d7cc73bb>
+11. Uncheck the checkbox <1747a799c6a600acf58dd9c3ac6e309e6f45ca32d3b87619523c349884feccea>
+12. Uncheck the checkbox <be92cfc96117dcef8679bd3a6323fbf1cf169de7d6d0427e211e45f521f28dd2>
+13. Uncheck the checkbox <04af87c8365be4cb5aaf3102f956cebedc8e589d94e6323a5e3733493035212e>
+14. Uncheck the checkbox <21e0698a2af96a5b5e0763241ed7b927a5bed6ad2ed3ee7b44e58a9ef100fb19>
+15. Click the back button <184f1ac3e934440594ba70fd30ed99e52234e8c3f041691f15e315c07c964067>
+16. Click General Settings <7393758822b6e611b12c3acbc94b81998aaecc1d227927cbb3c7a1fedb450d04>
+17. Click Server <4443107d2bec81640d9abf97debc40159bae851804e3c4c1572710aa85b9b131>
+18. Click back <8cab6ea50a52e9bf0affacb92755ed474ba67ddc49c2f2bbf3b8741e734e7018>
+19. Click User interface <4d46e7b378b1a2daecf45e5f66b0dbf440c961a82bb4c9210a620c13097fcac1>
+20. Click back <624de51ed099e512f51fa7d3cb06a9225e2447d1e523853e4770a41264472bcb>
+21. Click Form management <9baf955f449e19625eb5c5d70727fb2d43e48f29225b0927e31f1ac7b6f90863>
+22. Click back <6300c9f28601c77e8cc4fbebfe0376da4c23403b76667350f165cf066455f432>
+23. Click user and device identity <9a0edea0366c7dab2b64cecbd615723f60d26544e746de37e3c4e3314487257c>",9,,,,,,,,,,
+1299,crash,https://github.com/PhenoApps/Field-Book/issues/146,Field Book,"In the Collect page, importing a sample CSV file and pressing +1 and then -1 crashes the application with an exception. ","On the collect page, the imported sample CSV infromation should be incremented and decremented properly and the application should not crash.",0,"Buggy Behavior: the application crashes with an exception
+Triggering GUI Interaction: imports a sample CSV file, presses +1, and then -1
+Triggering Screen Reference: Collect screen
+Correct Behavior: The imported sample CSV information should be incremented and decremented","Within the tracker page, pressing any button other than primary or secondary order, like the -1 button, should not cause the application to crash, instead it should adjust count according to the buttons function. ",16c9d62c265c8fdb4e439859c356403676619f27ba36b7df23aeaf444ab30cd4,e9baf7bd2356f52876be906bce06fe0d645bf7d061dc6158d90b0e4cfb1b20a6,"1. Open App <d3d2f15adbba57ff0f1e1af145887e588d37ddc664c0381bec1ab3cc7aed779d>
+2. Click Allow <7590e29ec5698b99dbfa04bf60f80f2343f5b8b608bae5557530ea7793b798e6>
+3. Click Allow <6255a448638532409d353ff03079cf330f52a18f16a4c07bbfa48df4bd80c1d9>
+4. Click No <a4c3a49ee51e3273da67b5a226f1165994ce6f3a84459402153cd43f97b27a95>
+5. Click No <9977acfbab6a37d8d45d0027c1c7f81113907b4b51f2d9128eef4a70cde74cd3>
+6. Click Fields <5acfb1906a11b41f38d42b9bb6a56506a2dc4b2cfac89df4919332f006d7552a>
+7. Click Import Button, i.e., Add trait button <7c56b7e1cbe5739a68bd556c0f5b65bdf5b04d40b443d1ac73354b0b60bd4f7e>
+8. Click Local storage <049c6ed53b0743de9a36f02ac8deb9cf2b90401d660f64f0315dbecc760b856d>
+9. Click a file, e.g., test1.csv <5774bc5ca77dfc0a528a35bde01ee2c215264c150076bc91bb0ee56a13c41124>
+10. Click dropdown on primary order <daf9c1b345d8a0118b6be3a5165449423cf36f813ae2dd63ab3407a2c22d302c>
+11. Click header2 <5e163a014a25fb651b9b6d8bcac3df89a1650883d29c0c21c7a931a87bc2f1d7>
+12. Click dropdown on secondary order <6d32e7c60f1275ede897fc09c437e9f120342fe3111dc70595737c2573f9decb>
+13. Click header3 <8bc637d5aba55f5d49cf9fdd80c97ff6da88bc6517d038c855c14b75627b37e2>
+14. Click Import <18ebe35f02a37b6719318a4ca80f13858033cf85f01e0c55112f3dd3bef831ef>
+15. Click back, i.e., Navigate up button <5a6bd1aa611c3686149f4f645acfd0a0552a77f36c67edf680f3795f6fbc4b21>
+16. Click Collect <db40f9cad237467bb97d7354539ec214f2bcedcf21e721b63ae3ec48b46f1853>
+17. Click the add button, i.e., +1 <17818526a6e0ded816b6cff100f688b36963b57c09201597131321a9f4a5fe0a>
+18. Click Collect <f7d638eb14b3062430233d38829a27af9c2a955e98e4bebcbe9eee19ae43df99>
+19. Click -1 <aec362bd459f02ddefe433af8dacccc7378f2647483a34b9598268ca626a4c12>",17,,,,,,,,,,
+1563,cosmetic,https://github.com/lfuelling/lrkFM/issues/26,lrkFM - File Manager,"Reloading the current directory after completing a file operation, the list of files scrolls to the top.",Reloading the current directory should preserve the user's last scroll position.,0,"Buggy Behavior: the list of files scrolls to the top
+Triggering GUI Interaction: reloads the list of files after completing a file operation
+Triggering Screen Reference: Current Directory screen
+Correct Behavior: The user's last scroll position should be preserved",,ba6258dfabd0b9cfed3a0ec98a8ff5681febe430ae8ce61b3a50d6de542bc4ad,c7036819e8914c0b9f9b36416e4945b7a1edc516f6670d5acc754fe3109b99a2,"1. Open App <e1a0425a193fe09f25faab0bba06c53324e557463503bcccf478cac5a0535ab1>
+2. Click the fab button, i.e., the lock button <9e977e5ab418c8c38427b22ea2ac08a8dbb8e6f02a580b85a901ce98b0efe99b>
+3. Click Allow <8b0668b61c8e93bcc2cb034303183f97a495ab5f6fb9d96a2a641d35e87d3c10>
+4. Click the fab button, i.e., the right arrow <fcb885a64cf750f2bfee7bedd3efbec9ae77c1eef0ae23a4f8e5848646096dbd>
+5. Swipe up <8ad222002aa4c65886d32ba60a3bf3189e7c64ce99eb430e8e8cd7fcb10d0de1>
+6. Swipe up <0ad1d8b87a25f3ca7048f9e38901d1012f6ddc2296043e93d6c8651e688fa5d1>
+7. Click more options, i.e., the three dots in the top right corner <5ecd2814a196ee8c9c4242160beb90dab32b7c38aec95a1994b81c7bdcf851ed>
+8. Click Reload <be6467e6d5a6924bd8599400ddbcf7c2e227088336d6b7aa0fd97ec0c3acc5b7>",8,,,,,,,,,,
+1568,crash,https://github.com/lfuelling/lrkFM/issues/44,lrkFM - File Manager,"In the storage page, changing multiple checkboxes quickly crashes the application.  ","The application should not crash, and the check boxes should be selected and deselected as usual.",1,"Buggy Behavior: the application crashes
+Triggering GUI Interaction: selects and deselects multiple checkboxes quickly
+Triggering Screen Reference: Storage screen
+Correct Behavior: The checkboxes should be selected and deselected",,80fb5f189cbea7ec59bf54fa092b75ec7b55450244c52183854325091581014c,322fee6d2791b7cb6ac7e9adcbc7303e4fc4af31aca6b715a500c1322e2616d8,"1. Open App <c7d9d24165d581ed0997ea8a4fefbd599529b0000d5b078f2f4460bdefc0de1e>
+2. Click the fab button, i.e., the lock button <8904779c02afd673ea5c902742fee2a7df6706615c21bb5ab959a46601104460>
+3. Click Allow <8f5902356bc675a466cc1969b6128c92f9379f35020b7f673ba47de8e1afaffb>
+4. Click the fab button, i.e., up arrow button <41b41a6a91fe634afaaae8c0375126f9f4f31aee54fb32eb629ba7449ce9937a>
+5. Click the fab button, i.e., up arrow button <f7ac5c0df467b812efb359e36e474dd8bddaecd697cc5759fa8c4e6f95616584>
+6. Click 0808-2F10 File Check Box  <1772c806618e0780e6e6e3cd2c71ccd62c2a124a825eab64cc14202683184073>
+7. Click emulated File Checkbox <ef4b5f11b7193a5ce54bac17f39684dca427eaa90f939ae6a3fabedd64e579e2>
+8. Click 0808-2F10 File Checkbox <8e464b800fc41b02b1fe537c2e223dda849dea313075310440b55a0909d0a83c>",8,,,,,,,,,,
+,,,,,,,,,,,,87,,,,,,,,,,
+,,,,,,8,,,,,,,,,,,,,,,,

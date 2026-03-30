@@ -1,0 +1,353 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the current category",
+            "evidence": [
+              "\"The Parent Categories of the current category\""
+            ]
+          },
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": {
+            "value": "Parent Categories of the current category should be displayed",
+            "evidence": [
+              "\"The Parent Categories of the current category should be displayed.\""
+            ]
+          },
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 0
+      },
+      "meta_data": {
+        "latency": "2.5957256670003517 s",
+        "node_token_consumption": {
+          "input_tokens": 804,
+          "output_tokens": 87,
+          "total_tokens": 891,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.737002708000091 s",
+        "node_token_consumption": {
+          "input_tokens": 441,
+          "output_tokens": 21,
+          "total_tokens": 462,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8",
+            "status": "inferred",
+            "evidence": "User says bug is on “the current category” and references “The Parent Categories of the current category”. In the graph, the CategoryDetailsActivity screen with tabs MEDIA / SUBCATEGORIES / PARENT CATEGORIES is state 5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8 (Category:Focus stacking images of insects), which matches the described ‘current category’ view where Parent Categories would be shown."
+          },
+          "triggering_GUI_interactions": [],
+          "buggy_behavior": {
+            "value": null,
+            "status": "unknown",
+            "evidence": null
+          },
+          "correct_behavior": {
+            "value": "Parent Categories of the current category should be displayed",
+            "status": "confirmed",
+            "evidence": "Directly from user: “The Parent Categories of the current category should be displayed.”"
+          },
+          "steps_to_reproduce": []
+        }
+      },
+      "meta_data": {
+        "latency": "5.5242050000001655 s",
+        "node_token_consumption": {
+          "input_tokens": 71992,
+          "output_tokens": 242,
+          "total_tokens": 72234,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_GUI_interactions",
+          "buggy_behavior",
+          "steps_to_reproduce"
+        ]
+      },
+      "meta_data": {
+        "latency": "7.03339997016883e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "When you’re on the Category details screen (tabs MEDIA / SUBCATEGORIES / PARENT CATEGORIES), what exact action triggers the issue—do you tap the “PARENT CATEGORIES” tab, swipe to it, or something else—and what happens right after (e.g., empty list/“No images found”, infinite loading spinner, wrong categories, or app crash)?"
+      },
+      "meta_data": {
+        "latency": "4.612347791000047 s",
+        "node_token_consumption": {
+          "input_tokens": 71458,
+          "output_tokens": 90,
+          "total_tokens": 71548,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I tap the parent categories tab, and recieve a blank screen.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "73e733d5-846e-4e77-a402-afcf40132897"
+        }
+      },
+      "meta_data": {
+        "latency": "5.354199993234943e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "Category details screen (tabs MEDIA / SUBCATEGORIES / PARENT CATEGORIES)",
+            "evidence": [
+              "When you’re on the Category details screen (tabs MEDIA / SUBCATEGORIES / PARENT CATEGORIES)"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Tap the “PARENT CATEGORIES” tab",
+            "evidence": [
+              "I tap the parent categories tab"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "A blank screen is shown after tapping the parent categories tab",
+            "evidence": [
+              "recieve a blank screen."
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "3.3172831659999247 s",
+        "node_token_consumption": {
+          "input_tokens": 879,
+          "output_tokens": 173,
+          "total_tokens": 1052,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.0872892080001293 s",
+        "node_token_consumption": {
+          "input_tokens": 492,
+          "output_tokens": 21,
+          "total_tokens": 513,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8",
+            "status": "confirmed",
+            "evidence": "Information element explicitly states: “When you’re on the Category details screen (tabs MEDIA / SUBCATEGORIES / PARENT CATEGORIES)”, which matches state 5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8 (CategoryDetailsActivity with those tabs)."
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+              "status": "confirmed",
+              "evidence": "User: “I tap the parent categories tab”. Transition 6be714d... is a click on TextView with tx=“PARENT CATEGORIES” from the CategoryDetailsActivity state 5f73d16... (it is the PARENT CATEGORIES tab click)."
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After tapping the “PARENT CATEGORIES” tab on the Category details screen, the app shows a blank screen.",
+            "status": "confirmed",
+            "evidence": "User: “recieve a blank screen.” happening after: “I tap the parent categories tab” on the Category details screen."
+          },
+          "correct_behavior": {
+            "value": "Parent Categories of the current category should be displayed",
+            "status": "confirmed",
+            "evidence": "Directly from user: “The Parent Categories of the current category should be displayed.”"
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a",
+              "status": "inferred",
+              "evidence": "To reach the triggering CategoryDetailsActivity screen from app start, the graph begins with the open-app transition."
+            },
+            {
+              "value": "b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d",
+              "status": "inferred",
+              "evidence": "From WelcomeActivity, user must proceed through onboarding; the graph shows swiping left as the navigation action."
+            },
+            {
+              "value": "e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4",
+              "status": "inferred",
+              "evidence": "Continuation of onboarding flow via swipe left to next welcome page."
+            },
+            {
+              "value": "8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1",
+              "status": "inferred",
+              "evidence": "Continuation of onboarding flow via swipe left to next welcome page."
+            },
+            {
+              "value": "b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8",
+              "status": "inferred",
+              "evidence": "Continuation of onboarding flow via swipe left to reach the final welcome page with YES! button."
+            },
+            {
+              "value": "603e704cb3a4d89b9512eb62fcb0c8f93d10ee708131c2492858fe54b37e7d93",
+              "status": "inferred",
+              "evidence": "On the last welcome screen, proceed by tapping “YES!” (welcomeYesButton) to continue into the app (as per transition 603e704...)."
+            },
+            {
+              "value": "6df23c28a1a85d0597031464e32240c7cee156351cf037a4274be446270632da",
+              "status": "inferred",
+              "evidence": "From a CategoryDetailsActivity view to the specific CategoryDetailsActivity where tabs are used, the graph path goes through the category list entry and into CategoryDetailsActivity (transition 6df23c...)."
+            },
+            {
+              "value": "31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f",
+              "status": "inferred",
+              "evidence": "Once in CategoryDetailsActivity, switch to the PARENT CATEGORIES tab set by tapping “PARENT CATEGORIES” (transition 31951c... to state 5f73d16...)."
+            },
+            {
+              "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+              "status": "confirmed",
+              "evidence": "User’s final action that triggers the bug: “I tap the parent categories tab” = transition 6be714d... (click on “PARENT CATEGORIES” tab)."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "13.613903166 s",
+        "node_token_consumption": {
+          "input_tokens": 72213,
+          "output_tokens": 1038,
+          "total_tokens": 73251,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "8.841599992592819e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Category details: tapping \"PARENT CATEGORIES\" tab shows a blank screen",
+          "observed_behavior": "On the Category details screen, if the user taps the “PARENT CATEGORIES” tab, the app shows a blank screen.",
+          "expected_behavior": "Parent Categories of the current category should be displayed.",
+          "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome screens.\n3. Swipe left on the welcome screens again.\n4. Swipe left on the welcome screens again.\n5. Swipe left on the welcome screens again.\n6. Tap “YES!” to proceed past the welcome flow.\n7. From the Bookmarks screen, open the navigation drawer (hamburger button).\n8. In the navigation drawer, tap “Log in”.\n9. On the Category details screen, tap the “PARENT CATEGORIES” tab."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the app shows a blank screen",
+          "triggering_gui_interactions": "taps the “PARENT CATEGORIES” tab",
+          "triggering_screen_reference": "On the Category details screen",
+          "correct_behavior": "Parent Categories of the current category should be displayed."
+        }
+      },
+      "meta_data": {
+        "latency": "6.5937639580001814 s",
+        "node_token_consumption": {
+          "input_tokens": 72213,
+          "output_tokens": 254,
+          "total_tokens": 72467,
+          "llm_calls": 2,
+          "llm_calls_with_usage": 2,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "conversation_summary",
+  "conversation_id": "0",
+  "started_at": "2026-03-03T19:45:23.937491+00:00",
+  "ended_at": "2026-03-03T19:46:57.775633+00:00",
+  "total_latency_seconds": 93.83814799999982,
+  "token_consumption": {
+    "input_tokens": 290492,
+    "output_tokens": 1926,
+    "total_tokens": 292418,
+    "llm_calls": 9,
+    "llm_calls_with_usage": 9,
+    "llm_calls_missing_usage": 0
+  }
+}

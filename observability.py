@@ -236,6 +236,7 @@ class ConversationLogger:
         """
         Write contents of self.conversation to log file in JSON format
         """
+        self.filepath.parent.mkdir(parents=True, exist_ok=True)
         with open(self.filepath, "w") as f:
             for action in self.conversation:
                 json_str = action.model_dump_json(indent=2)

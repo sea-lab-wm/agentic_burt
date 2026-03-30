@@ -1,0 +1,217 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "FTP server screen",
+            "evidence": [
+              "On the FTP server screen"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Stopping the FTP server and closing the app",
+            "evidence": [
+              "stopping it and closing the app"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The server restarts after being stopped when the app is closed",
+            "evidence": [
+              "makes the server restart"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The server should stay stopped after stopping it and closing the app",
+            "evidence": [
+              "even though it should stay stopped"
+            ]
+          },
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 0
+      },
+      "meta_data": {
+        "latency": "2.775972291000471 s",
+        "node_token_consumption": {
+          "input_tokens": 817,
+          "output_tokens": 182,
+          "total_tokens": 999,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.9343309579999186 s",
+        "node_token_consumption": {
+          "input_tokens": 496,
+          "output_tokens": 21,
+          "total_tokens": 517,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013",
+            "status": "confirmed",
+            "evidence": "User explicitly said the bug occurs \"On the FTP server screen\"; app graph contains state a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013 = \"FtpServerActivity(Window=Main)\" (title shows \"FTP server\")."
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+              "status": "inferred",
+              "evidence": "To \"stop\" the FTP server on the FTP server screen, the most plausible UI action is toggling the Status switch from ON to OFF. Transition 5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b is a click on Switch idx=switchWidget with tx=OFF on the FTP server screen (self-loop on a0ae2c...)."
+            },
+            {
+              "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+              "status": "inferred",
+              "evidence": "User then says \"closing the app\"; from the FTP server screen, the mapped close action is pressing Android Recents BACK (KeyButtonView BACK_MODAL), which takes the user to RecentsActivity. Transition 944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c goes from FTP server screen to RecentsActivity."
+            },
+            {
+              "value": "b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c",
+              "status": "inferred",
+              "evidence": "From RecentsActivity, \"closing the app\" can be done via the 'Dismiss Files' button. Transition b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c is click on ImageView dismiss_task with dsc=\"Dismiss Files.\"."
+            }
+          ],
+          "buggy_behavior": {
+            "value": "After stopping the FTP server and closing the app, the server restarts (turns back on) even though it was stopped.",
+            "status": "confirmed",
+            "evidence": "User report: \"stopping it and closing the app makes the server restart\"."
+          },
+          "correct_behavior": {
+            "value": "After stopping the FTP server and closing the app, the server should stay stopped (should not restart automatically).",
+            "status": "confirmed",
+            "evidence": "User report: \"even though it should stay stopped\"."
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2",
+              "status": "inferred",
+              "evidence": "App must be launched to reach the FTP server screen; transition aa09... is \"open app\"."
+            },
+            {
+              "value": "9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d",
+              "status": "inferred",
+              "evidence": "To proceed past permissions and reach app content, user would tap \"Allow\"; transition 9253... is click Allow on GrantPermissionsActivity."
+            },
+            {
+              "value": "369b8eaf3efcd653bf6c0f02fb30344d6eb464e81911ec741a41a9a26155318d",
+              "status": "inferred",
+              "evidence": "From FileListActivity, open navigation drawer via toolbar menu button to access FTP server entry; transition 369b... is click ImageButton idx=menu from FileListActivity to a drawer state."
+            },
+            {
+              "value": "3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49",
+              "status": "inferred",
+              "evidence": "From the navigation drawer screen, select \"FTP server\"; transition 3abd... is click on item with dsc=Navigate up leading to a drawer list, and then transition ed4ddd... selects \"FTP server\". (The graph requires an intermediate drawer state to click FTP server.)"
+            },
+            {
+              "value": "ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec",
+              "status": "inferred",
+              "evidence": "Transition ed4ddd... is click TextView title \"FTP server\" from the drawer list screen to the FTP server screen (FtpServerActivity)."
+            },
+            {
+              "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+              "status": "inferred",
+              "evidence": "Stop server by toggling Status switch OFF (matches user: \"stopping it\")."
+            },
+            {
+              "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+              "status": "inferred",
+              "evidence": "Go to recents/back out as part of closing the app (matches user: \"closing the app\")."
+            },
+            {
+              "value": "b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c",
+              "status": "inferred",
+              "evidence": "Dismiss/close Files from recents (matches user: \"closing the app\")."
+            }
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "23.997305249999954 s",
+        "node_token_consumption": {
+          "input_tokens": 270165,
+          "output_tokens": 1284,
+          "total_tokens": 271449,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "6.25829998170957e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "FTP server restarts after being stopped when app is closed from Recents",
+          "observed_behavior": "On the FTP server screen, if the user toggles the Status switch to OFF (stop the FTP server), then presses the system Back button to leave the screen and dismisses the app from the Android Recents screen, the FTP server restarts (turns back on) even though it was stopped.",
+          "expected_behavior": "The FTP server should stay stopped (should not restart automatically) after stopping it and closing the app.",
+          "steps_to_reproduce": "1. Open Material Files.\n2. On the Android permission prompt, tap \"Allow\".\n3. In the file list screen, tap the \"Navigate up\" button.\n4. From the navigation drawer/list, tap \"FTP server\".\n5. On the FTP server screen, tap the \"Status\" switch to turn it OFF (stop the server).\n6. Press the system Back button to leave the FTP server screen.\n7. In Android Recents, dismiss the Material Files app (swipe it away / tap the dismiss icon).\n8. Observe that the FTP server restarts (turns back on) even though it was stopped."
+        },
+        "extracted_information_elements": {
+          "buggy_behavior": "the FTP server restarts (turns back on) even though it was stopped.",
+          "triggering_gui_interactions": "toggles the Status switch to OFF (stop the FTP server), then presses the system Back button to leave the screen and dismisses the app from the Android Recents screen",
+          "triggering_screen_reference": "On the FTP server screen",
+          "correct_behavior": "The FTP server should stay stopped (should not restart automatically) after stopping it and closing the app."
+        }
+      },
+      "meta_data": {
+        "latency": "13.376248457999282 s",
+        "node_token_consumption": {
+          "input_tokens": 270413,
+          "output_tokens": 365,
+          "total_tokens": 270778,
+          "llm_calls": 2,
+          "llm_calls_with_usage": 2,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "conversation_summary",
+  "conversation_id": "0",
+  "started_at": "2026-03-03T04:23:09.824643+00:00",
+  "ended_at": "2026-03-03T04:23:51.920284+00:00",
+  "total_latency_seconds": 42.09578262500054,
+  "token_consumption": {
+    "input_tokens": 541891,
+    "output_tokens": 1852,
+    "total_tokens": 543743,
+    "llm_calls": 5,
+    "llm_calls_with_usage": 5,
+    "llm_calls_missing_usage": 0
+  }
+}
