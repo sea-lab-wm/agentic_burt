@@ -273,7 +273,8 @@ def llm_map(
 def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema) -> dict:
     """
     Converts ExtractionSchema containing bug report information to format compatible with langraph node state update functionality (dict).
-    Maintains current InfoSlots if LLM does not add them in its updated mapping.
+    Maintains current InfoSlots if LLM does not add them in its updated mapping,
+    then clears transient natural-language extraction state after mapping.
     
     :param state: Current BugAgentState object
     :type state: BugAgentState
@@ -295,7 +296,8 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
     )
     return {
         "BugInfo": updated,
-        #"last_extraction_raw": extraction.model_dump_json(),
+        "information_element_extraction": InformationElementExtraction(),
+        "clarification_window_start_idx": len(state.messages),
     }
 
 def find_unknown_or_ambiguous(info: InfoSlots):

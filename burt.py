@@ -122,11 +122,8 @@ def information_element_extraction(state: BugAgentState, config: RunnableConfig)
 
     # Outside a clarification cycle, extract from the latest user message only.
     # During a clarification cycle, extract from the tracked message window.
-    if state.clarification_window_start_idx == 0:
-        user_messages = [state.messages[-1].content]
-    else:
-        window_messages = state.messages[state.clarification_window_start_idx :]
-        user_messages = [message.content for message in window_messages]
+    window_messages = state.messages[state.clarification_window_start_idx:]
+    user_messages = [message.content for message in window_messages]
 
     is_follow_up_response = state.generated_question is not None and len(state.messages) > 1
     extraction_mode = "follow_up" if is_follow_up_response else "initial"
@@ -141,8 +138,7 @@ def information_element_extraction(state: BugAgentState, config: RunnableConfig)
     )
 
     return {
-        "information_element_extraction": extraction,
-        "clarification_window_start_idx": len(state.messages)-1
+        "information_element_extraction": extraction
     }
 
 #Node: Clarity Check
