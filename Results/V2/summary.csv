@@ -1,0 +1,3 @@
+bug_id,description_level,agent_version,log_file,log_path,title,status,parse_status,error
+10,HC_LP,V2,bug10_HC_LP.log,logs/V2/bug10_HC_LP.log,FTP server restarts after being stopped when app is closed from Recents,ok,ok,
+2,MC_MP,V2,bug2_MC_MP.log,logs/V2/bug2_MC_MP.log,Crash when enabling “Use percent values” in Reports > Incomes by Articles display options,ok,ok,

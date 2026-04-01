@@ -1,0 +1,60 @@
+{
+  "log_path": "logs/V2/bug2_MC_MP.log",
+  "bug_id": 2,
+  "description_level": "MC_MP",
+  "agent_version": "V2",
+  "app_name": "Family Finance",
+  "title": "Crash when enabling \u201cUse percent values\u201d in Reports > Incomes by Articles display options",
+  "full_report": {
+    "title": "Crash when enabling \u201cUse percent values\u201d in Reports > Incomes by Articles display options",
+    "observed_behavior": "On the Reports screen (Incomes by Articles tab), if the user opens the \u201cDisplay\u201d dialog and taps the \u201cUse percent values\u201d checkbox, the app crashes and shows a crash dialog/message: \u201cUnfortunately, Family Finance has stopped.\u201d",
+    "expected_behavior": "The view should switch from \u201cview values\u201d to \u201cuse percent values\u201d without crashing.",
+    "steps_to_reproduce": "1. Open the Family Finance app.\n2. On the permissions prompt, tap \u201cAllow\u201d.\n3. On the Dashboard, tap \u201cReports\u201d.\n4. In Reports, switch to the \u201cIncomes by Articles\u201d tab."
+  },
+  "ground_truth": {
+    "bug_id": "2",
+    "app_name": "Family Finance",
+    "info_elements_gt": "Buggy Behavior: the application crashes\nTriggering GUI Interaction: changes the appearance of the report from 'view values' to use percent values'\nTriggering Screen Reference: Display of Incomes by Articles pop-up of the Reports screen\nCorrect Behavior: The appearance of the report should be changed to 'use percent values'",
+    "S2R_ground_truth": "1. Open app <fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf>\n2. Click allow button <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>\n3. Click Report <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88\n4. Click Incomes By Articles or expenses by articles <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>\n5. Click View Button <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>\n6. Click view values checkbox <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>\n7. Click use percent values checkbox <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>\n8. Click OK <26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa>"
+  },
+  "recomputed_info_elements": {
+    "buggy_behavior": "the app crashes and shows a crash dialog/message: \u201cUnfortunately, Family Finance has stopped.\u201d",
+    "triggering_gui_interactions": "opens the \u201cDisplay\u201d dialog and taps the \u201cUse percent values\u201d checkbox",
+    "triggering_screen_reference": "On the Reports screen (Incomes by Articles tab)",
+    "correct_behavior": "The view should switch from \u201cview values\u201d to \u201cuse percent values\u201d without crashing."
+  },
+  "info_elements_judge": {
+    "buggy_behavior": "Correct",
+    "triggering_gui_interactions": "Correct",
+    "triggering_screen_reference": "Incomplete",
+    "correct_behavior": "Correct"
+  },
+  "s2r_judge": [
+    {
+      "generated_step": "Open the Family Finance app.",
+      "label": "CS",
+      "matched_gt_step": "Open app <fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf>"
+    },
+    {
+      "generated_step": "On the permissions prompt, tap \u201cAllow\u201d.",
+      "label": "CS",
+      "matched_gt_step": "Click allow button <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>"
+    },
+    {
+      "generated_step": "On the Dashboard, tap \u201cReports\u201d.",
+      "label": "CS",
+      "matched_gt_step": "Click Report <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88"
+    },
+    {
+      "generated_step": "In Reports, switch to the \u201cIncomes by Articles\u201d tab.",
+      "label": "CS",
+      "matched_gt_step": "Click Incomes By Articles or expenses by articles <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>"
+    }
+  ],
+  "judge_model": "gpt-5.2",
+  "evaluated_at": "2026-03-31T19:31:43.169026+00:00",
+  "status": "ok",
+  "error": null,
+  "parse_status": "ok",
+  "parse_error": null
+}
