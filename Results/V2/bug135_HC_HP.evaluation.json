@@ -1,0 +1,135 @@
+{
+  "log_path": "logs/V2/bug135_HC_HP.log",
+  "bug_id": 135,
+  "description_level": "HC_HP",
+  "agent_version": "V2",
+  "app_name": "Wikimedia Commons",
+  "title": "Category details \"PARENT CATEGORIES\" tab shows a blank page",
+  "full_report": {
+    "title": "Category details \"PARENT CATEGORIES\" tab shows a blank page",
+    "observed_behavior": "On the CategoryDetailsActivity screen for a category, if the user taps the \"PARENT CATEGORIES\" tab, the app shows a blank page (no content displayed).",
+    "expected_behavior": "The app should display the parent categories of the current category after tapping the \"PARENT CATEGORIES\" tab.",
+    "steps_to_reproduce": "1. Open the app.\n2. Swipe left on the welcome/onboarding screen.\n3. Swipe left again.\n4. Swipe left again.\n5. Swipe left again.\n6. Tap \"YES!\" on the final onboarding screen.\n7. Open the navigation drawer (hamburger button).\n8. Tap \"Bookmarks\".\n9. Tap the navigation drawer \"Open\" button.\n10. In the navigation drawer, tap \"Explore\".\n11. From Explore (category images grid), tap a category image.\n12. Swipe up.\n13. Tap a category image again.\n14. Swipe up.\n15. Swipe up.\n16. Tap a category image.\n17. Swipe up.\n18. Tap a category name under \"Categories\" (e.g., \"Focus stacking images of insects\") to open the category details screen.\n19. Tap the \"PARENT CATEGORIES\" tab."
+  },
+  "ground_truth": {
+    "bug_id": "135",
+    "app_name": "Wikimedia Commons",
+    "info_elements_gt": "Buggy Behavior: see a blank page\nTriggering GUI Interaction: clicks the Parent Categories tab\nTriggering Screen Reference: Category screen, Parent Categories tab\nCorrect Behavior: The Parent Categories of the current category should be displayed",
+    "S2R_ground_truth": "1. Open App <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>\n2. Swipe Left <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>\n3. Swipe Left <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>\n4. Swipe Left <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>\n5. Swipe Left <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>\n6. Click YES <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>\n7. Click Skip <bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4>\n8. Click YES <a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b>\n9. Click the navigation drawer button, i.e., the menu option <1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e>\n10. Click Explore <2cb54b6b2c319fadcb77770ddc6f08bc1620d2ea99af5e4315a0e04d97476e34>\n11. Click a picture <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>\n12. Swipe Up <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>\n13. Swipe Up <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>\n14. Click a category <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>\n15. Click parent Categories <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>"
+  },
+  "recomputed_info_elements": {
+    "buggy_behavior": "the app shows a blank page (no content displayed).",
+    "triggering_gui_interactions": "the user taps the \"PARENT CATEGORIES\" tab",
+    "triggering_screen_reference": "On the CategoryDetailsActivity screen for a category",
+    "correct_behavior": "The app should display the parent categories of the current category after tapping the \"PARENT CATEGORIES\" tab."
+  },
+  "info_elements_judge": {
+    "buggy_behavior": "Correct",
+    "triggering_gui_interactions": "Correct",
+    "triggering_screen_reference": "Correct",
+    "correct_behavior": "Correct"
+  },
+  "s2r_judge": [
+    {
+      "generated_step": "Open the app.",
+      "label": "CS",
+      "matched_gt_step": "Open App <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>"
+    },
+    {
+      "generated_step": "Swipe left on the welcome/onboarding screen.",
+      "label": "CS",
+      "matched_gt_step": "Swipe Left <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>"
+    },
+    {
+      "generated_step": "Swipe left again.",
+      "label": "CS",
+      "matched_gt_step": "Swipe Left <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>"
+    },
+    {
+      "generated_step": "Swipe left again.",
+      "label": "CS",
+      "matched_gt_step": "Swipe Left <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>"
+    },
+    {
+      "generated_step": "Swipe left again.",
+      "label": "CS",
+      "matched_gt_step": "Swipe Left <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>"
+    },
+    {
+      "generated_step": "Tap \"YES!\" on the final onboarding screen.",
+      "label": "CS",
+      "matched_gt_step": "Click YES <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>"
+    },
+    {
+      "generated_step": "Open the navigation drawer (hamburger button).",
+      "label": "CS",
+      "matched_gt_step": "Click the navigation drawer button, i.e., the menu option <1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e>"
+    },
+    {
+      "generated_step": "Tap \"Bookmarks\".",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Tap the navigation drawer \"Open\" button.",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "In the navigation drawer, tap \"Explore\".",
+      "label": "CS",
+      "matched_gt_step": "Click Explore <2cb54b6b2c319fadcb77770ddc6f08bc1620d2ea99af5e4315a0e04d97476e34>"
+    },
+    {
+      "generated_step": "From Explore (category images grid), tap a category image.",
+      "label": "CS",
+      "matched_gt_step": "Click a picture <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>"
+    },
+    {
+      "generated_step": "Swipe up.",
+      "label": "CS",
+      "matched_gt_step": "Swipe Up <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>"
+    },
+    {
+      "generated_step": "Tap a category image again.",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Swipe up.",
+      "label": "CS",
+      "matched_gt_step": "Swipe Up <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>"
+    },
+    {
+      "generated_step": "Swipe up.",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Tap a category image.",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Swipe up.",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Tap a category name under \"Categories\" (e.g., \"Focus stacking images of insects\") to open the category details screen.",
+      "label": "CS",
+      "matched_gt_step": "Click a category <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>"
+    },
+    {
+      "generated_step": "Tap the \"PARENT CATEGORIES\" tab.",
+      "label": "CS",
+      "matched_gt_step": "Click parent Categories <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>"
+    }
+  ],
+  "judge_model": "gpt-5.2",
+  "evaluated_at": "2026-04-01T20:31:28.367676+00:00",
+  "status": "ok",
+  "error": null,
+  "parse_status": "ok",
+  "parse_error": null
+}
