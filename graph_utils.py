@@ -1,9 +1,10 @@
 from state import BugAgentState, InfoSlots, SlotStatus, InformationElementExtraction
-from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema, ClaritySchema, ObservedExpectedToInfoElements
+from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema, ClaritySchema
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Any, Literal
 from functools import lru_cache
 from pathlib import Path
+from pprint import pprint
 import json
 from config import PROMPT_VERSION
 
@@ -68,7 +69,6 @@ def load_prompt_template(prompt_key: str, version: str | int | None = PROMPT_VER
             f"in {PROMPT_VERSIONING_JSON}."
         )
     return prompt_template
-
 
 def llm_extract(
     user_messages: list[str],
@@ -294,6 +294,9 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
         correct_behavior=extraction.correct_behavior or current.correct_behavior,
         steps_to_reproduce=extraction.steps_to_reproduce or current.steps_to_reproduce,
     )
+
+    pprint(updated, indent=2)
+
     return {
         "BugInfo": updated,
         "information_element_extraction": InformationElementExtraction(),
@@ -388,65 +391,6 @@ def process_bug_info(complete_bug_info : InfoSlots):
 
     return json.dumps(bug_info_values)
 
-def extract_information_elements_from_OB_EB(observed_behavior : str, expected_behavior : str, model : Any):
-    system_template = """# Task Summary:
-
-    You are an experienced Android application developer. Your task is to extract four information elements, i.e., **Buggy Behavior**, **Triggering GUI Interactions**, **Triggering Screen References**, and **Correct Behavior**, from the given **Observed Behavior (OB)** and **Expected Behavior (EB)** of an Android app bug report.
-
-    ---
-
-    # You are provided with:
-
-    - Definitions of the four **Information Elements** to extract.
-    - **Observed Behavior (OB)** and **Expected Behavior (EB)** of the bug report.
-
-    ---
-
-    # Definition of the Information Elements
-
-    - **Buggy Behavior** (What buggy behavior is observed by the user?): The specific buggy behavior (i.e., the problem) reported in the bug.
-    - **Triggering GUI Interactions** (What application interaction(/s) triggers the bug?): The user interaction(/s) on the application that triggers the bug.
-    - **Triggering Screen References** (Which application screen causes the bug and/or where the bug was observed?): The application screen where performing the interaction causes the bug and/or the screen where the bug was observed.
-    - **Correct Behavior** (What application behavior is expected by the user?): The specific correct application behavior that should happen instead of the buggy behavior.
-
-    ---
-    # Inputs
-
-    - **OB**: {ob}
-    - **EB**: {eb}
-
-    ---
-    # Instructions
-
-    1. Analyze the given OB and EB descriptions.
-    2. Extract **Buggy Behavior**, **Triggering GUI Interactions**, and **Triggering Screen References** from OB by following the respective definitions. Split the OB description into three parts to write these three information elements.
-    - Do not write duplicate phrases for these three elements.
-    3. Extract **Correct Behavior** from EB by following the definition.
-    4. Do not modify any text of OB and EB. Only extract the relevant phrases for each information element.
-    5. Return the extracted information elements in the response following the response format.
-    6. If any information element is not found, write ""N/A"".
-
-    ---
-
-    # Response Format
-    Return your response in the sturctured format defined by ObservedExpectedToInfoElements schema."""
-
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_template)
-    
-    ])
-
-    messages = prompt.format_messages(
-        ob = observed_behavior,
-        eb = expected_behavior,
-    )
-
-    structured = model.with_structured_output(ObservedExpectedToInfoElements)
-
-    extracted = structured.invoke(messages)
-
-    return extracted.model_dump()
-
 def generate_report(complete_bug_info: InfoSlots, app_graph: str, model: Any, app_name: str) -> str:
     """
     Generate High-Quality Textual Bug Report from Complete Bug InfoSlots
@@ -471,9 +415,4 @@ def generate_report(complete_bug_info: InfoSlots, app_graph: str, model: Any, ap
 
     output_bug_report = structured.invoke(messages)
 
-    extracted_information_elements = extract_information_elements_from_OB_EB(observed_behavior=output_bug_report.observed_behavior, expected_behavior=output_bug_report.expected_behavior, model=model)
-
-    return {
-        "full_report": output_bug_report.model_dump(),
-        "extracted_information_elements": extracted_information_elements,
-    }
+    return {"full_report": output_bug_report.model_dump()}

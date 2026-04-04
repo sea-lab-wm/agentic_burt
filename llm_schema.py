@@ -64,12 +64,6 @@ class ReportGenerationSchema(BaseModel):
         description="The steps to reproduce section of the generated bug report"
     )
 
-class ObservedExpectedToInfoElements(BaseModel):
-    buggy_behavior: StrictStr
-    triggering_gui_interactions: StrictStr
-    triggering_screen_reference: StrictStr
-    correct_behavior: StrictStr
-
 class ClaritySchema(BaseModel):
     clarity_route : Literal["continue", "needs_clarification"] = Field(
         description="The model's clarity decision: 'continue' when extracted elements are clear, otherwise 'needs_clarification'."

@@ -1,0 +1,2 @@
+bug_id,description_level,agent_version,log_file,log_path,title,status,parse_status,error
+10,LC_LP,mapping_and_clarity_check,bug10_LC_LP.log,logs/mapping_and_clarity_check/bug10_LC_LP.log,FTP server restarts automatically after being turned off and exiting the app,ok,ok,

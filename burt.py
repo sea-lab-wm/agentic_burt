@@ -76,7 +76,6 @@ def normalize_description_level(description_level: str) -> str:
 
     return f"{completeness_level}_{precision_level}"
 
-
 def load_initial_message(current_bug: int, description_level: str) -> str:
     normalized_level = normalize_description_level(description_level)
     description_column = f"{normalized_level} Desc"
@@ -97,7 +96,6 @@ def load_initial_message(current_bug: int, description_level: str) -> str:
     raise ValueError(
         f"Bug ID {current_bug} was not found in {DESCRIPTION_CSV_PATH}."
     )
-
 
 def initialize_runtime(current_bug: int, description_level: str) -> tuple[str, str]:
     session = SessionLocal()
@@ -350,7 +348,8 @@ def main() -> None:
         result = graph.invoke(Command(resume=user_response), config=config)
 
     print("FINAL BUG REPORT:\n\n")
-    print(gen_report(result["BugInfo"], app_graph=app_graph, app_name=app_name))
+    final_report = gen_report(result["BugInfo"], app_graph=app_graph, app_name=app_name)
+    print(final_report["full_report"])
     logger.finish_conversation()
     logger.write_log()
 

@@ -1,0 +1,441 @@
+{
+  "turn": 0,
+  "actions": [
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": {
+            "value": "It restarts on its own.",
+            "evidence": [
+              "It restarts on its own."
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.26448845799996 s",
+        "node_token_consumption": {
+          "input_tokens": 800,
+          "output_tokens": 61,
+          "total_tokens": 861,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Buggy Behavior is unclear: 'It' is not referentially resolved."
+        ]
+      },
+      "meta_data": {
+        "latency": "2.097653833000095 s",
+        "node_token_consumption": {
+          "input_tokens": 408,
+          "output_tokens": 41,
+          "total_tokens": 449,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "generated_question": "When you say “it restarts on its own,” what exactly is restarting—the Material Files app, your phone, or something else?",
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.9292167500002506 s",
+        "node_token_consumption": {
+          "input_tokens": 300,
+          "output_tokens": 41,
+          "total_tokens": 341,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The FTP server is restarting on its own.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "64707e7d-da2d-4381-88d6-95836326c86f"
+        }
+      },
+      "meta_data": {
+        "latency": "7.804100005159853e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": {
+            "value": "The FTP server is restarting on its own.",
+            "evidence": [
+              "It restarts on its own.",
+              "The FTP server is restarting on its own."
+            ]
+          },
+          "correct_behavior": {
+            "value": "The FTP server should not restart on its own.",
+            "evidence": [
+              "The FTP server is restarting on its own."
+            ]
+          },
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.349356291999811 s",
+        "node_token_consumption": {
+          "input_tokens": 835,
+          "output_tokens": 96,
+          "total_tokens": 931,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.9477681670000493 s",
+        "node_token_consumption": {
+          "input_tokens": 451,
+          "output_tokens": 21,
+          "total_tokens": 472,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": null,
+            "status": "unknown",
+            "evidence": null
+          },
+          "triggering_GUI_interactions": [],
+          "buggy_behavior": {
+            "value": "The FTP server is restarting on its own.",
+            "status": "confirmed",
+            "evidence": "User explicitly states: \"It restarts on its own\" and \"The FTP server is restarting on its own.\""
+          },
+          "correct_behavior": {
+            "value": "The FTP server should not restart on its own.",
+            "status": "confirmed",
+            "evidence": "Directly from user-provided correct behavior: \"The FTP server should not restart on its own.\""
+          },
+          "steps_to_reproduce": []
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "9.290000416000112 s",
+        "node_token_consumption": {
+          "input_tokens": 270109,
+          "output_tokens": 130,
+          "total_tokens": 270239,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_screen_reference",
+          "triggering_GUI_interactions",
+          "steps_to_reproduce"
+        ]
+      },
+      "meta_data": {
+        "latency": "4.883299970970256e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "generated_question": "What screen were you on when the FTP server restarted on its own—were you on the FTP server page itself (showing the Status/URL settings), or did it happen after a specific action there such as toggling the Status switch ON/OFF, changing a setting, or just while leaving it idle?"
+      },
+      "meta_data": {
+        "latency": "11.031654416000038 s",
+        "node_token_consumption": {
+          "input_tokens": 269461,
+          "output_tokens": 76,
+          "total_tokens": 269537,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "turn": 2,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I was on the FTP server page, and this happened after I had turned the server off and exited the app. ",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "4e90af14-a628-4137-b095-41fd09b4b3c7"
+        }
+      },
+      "meta_data": {
+        "latency": "3.720799986695056e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the FTP server page",
+            "evidence": [
+              "I was on the FTP server page"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "turned the server off and exited the app",
+            "evidence": [
+              "after I had turned the server off and exited the app"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the FTP server restarted on its own",
+            "evidence": [
+              "What screen were you on when the FTP server restarted on its own",
+              "this happened after I had turned the server off and exited the app"
+            ]
+          },
+          "correct_behavior": {
+            "value": "the FTP server should stay off after turning the server off and exiting the app",
+            "evidence": [
+              "turned the server off and exited the app",
+              "restarted on its own"
+            ]
+          },
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.8470285409998723 s",
+        "node_token_consumption": {
+          "input_tokens": 877,
+          "output_tokens": 159,
+          "total_tokens": 1036,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.122872582999662 s",
+        "node_token_consumption": {
+          "input_tokens": 535,
+          "output_tokens": 21,
+          "total_tokens": 556,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "value": "a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013",
+            "status": "confirmed",
+            "evidence": "User said they were on \"the FTP server page\"; state a0ae2c21... is FtpServerActivity(Window=Main) with title \"FTP server\"."
+          },
+          "triggering_GUI_interactions": [
+            {
+              "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+              "status": "confirmed",
+              "evidence": "User said they \"turned the server off\"; on the FTP server page, transition 5f369cd... clicks the Status switch from ON to OFF."
+            },
+            {
+              "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+              "status": "inferred",
+              "evidence": "User said they then \"exited the app\"; from the FTP server page, transition 944abf1... is the back action leaving FtpServerActivity. 'Exited the app' could involve additional OS actions, but this is the closest graph-supported app exit step."
+            }
+          ],
+          "buggy_behavior": {
+            "value": "The FTP server restarted on its own.",
+            "status": "confirmed",
+            "evidence": "User explicitly states: \"It restarts on its own\" and \"the FTP server restarted on its own\"."
+          },
+          "correct_behavior": {
+            "value": "The FTP server should stay off after turning the server off and exiting the app.",
+            "status": "confirmed",
+            "evidence": "User states it should \"stay off after turning the server off and exiting the app\"."
+          },
+          "steps_to_reproduce": [
+            {
+              "value": "3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49",
+              "status": "inferred",
+              "evidence": "Most plausible path to FTP server page from main file list is tapping Navigate up to open navigation drawer."
+            },
+            {
+              "value": "ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec",
+              "status": "inferred",
+              "evidence": "From the navigation drawer, selecting \"FTP server\" leads to the FTP server page."
+            },
+            {
+              "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+              "status": "confirmed",
+              "evidence": "User explicitly said they \"turned the server off\"."
+            },
+            {
+              "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+              "status": "inferred",
+              "evidence": "User said they \"exited the app\"; back from the FTP server page is the closest graph-supported exit action."
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 3
+      },
+      "meta_data": {
+        "latency": "11.718469083999935 s",
+        "node_token_consumption": {
+          "input_tokens": 270252,
+          "output_tokens": 652,
+          "total_tokens": 270904,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "3.8624999888270395e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "FTP server restarts automatically after being turned off and exiting the app",
+          "observed_behavior": "On the FTP server screen, if the user turns the server off and then exits the app using the Back button, the FTP server restarted on its own.",
+          "expected_behavior": "The FTP server should stay off after turning the server off and exiting the app.",
+          "steps_to_reproduce": "1. From the main Files screen, tap the Navigate up button to open the navigation drawer.\n2. In the navigation drawer, tap FTP server.\n3. On the FTP server screen, tap the Status switch to turn the server off.\n4. Press the Back button to exit the app."
+        }
+      },
+      "meta_data": {
+        "latency": "9.762287583000216 s",
+        "node_token_consumption": {
+          "input_tokens": 269545,
+          "output_tokens": 147,
+          "total_tokens": 269692,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "conversation_summary",
+  "conversation_id": "10",
+  "started_at": "2026-04-04T18:54:03.826603+00:00",
+  "ended_at": "2026-04-04T18:55:42.443647+00:00",
+  "total_latency_seconds": 98.61706104200039,
+  "token_consumption": {
+    "input_tokens": 1083573,
+    "output_tokens": 1445,
+    "total_tokens": 1085018,
+    "llm_calls": 11,
+    "llm_calls_with_usage": 11,
+    "llm_calls_missing_usage": 0
+  }
+}
