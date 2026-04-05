@@ -242,20 +242,20 @@ def llm_map(
     :rtype: ExtractionSchema
     """
 
-    system_template = load_prompt_template("extract_and_update")
+    system_template = load_prompt_template("map_to_graph")
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_template),
         (
             "human",
-            "=== Application GUI Graph ===\n{app_graph}\n\n=== Previously Collected Information Mapping ===\n{previously_collected_information}\n\n=== Information Elements ===\n{extracted_information_elements}\n\n"
+            "#Context:\n\n ##Structured Bug Report Mapping\n{structued_bug_report_mapping}\n\n ##Application GUI Graph\n{application_GUI_graph}\n\n##Extracted Information Elements\n{extracted_information_elements}\n\n"
         )
     ])
 
     messages = prompt.format_messages(
-        app_name=app_name,
-        app_graph = app_graph,
-        previously_collected_information = current_bug_info.model_dump_json(),
+        application_name=app_name,
+        application_GUI_graph = app_graph,
+        structued_bug_report_mapping = current_bug_info.model_dump_json(),
         extracted_information_elements=remove_empty_info_elements(extracted_information_elements)
         
     )
