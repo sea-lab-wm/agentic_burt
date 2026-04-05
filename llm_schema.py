@@ -4,38 +4,42 @@ from state import Slot
 
 class ExtractionSchema(BaseModel):
     """
-    Defines the structured ouput for LLM call in the extract_and_update phase/node, so that updated key bug information can be cleanly loaded into agent state
+    Defines the structured output for the map_to_graph node so updated key bug
+    information can be cleanly loaded into agent state.
     """
     triggering_screen_reference: Optional[Slot] = Field(
         default=None,
         description=(
-            "App graph screen hash representing the application screenwhere performing the interaction causes the bug and/or the screen where the bug was observed."
+            "Status plus candidate mappings for the application screen where performing the interaction causes the bug and/or the screen where the bug was observed. "
+            "Use zero candidates for unknown, exactly one candidate for inferred or confirmed, and 2-3 ranked candidates for ambiguous."
         ),
     )
     triggering_GUI_interactions: Optional[List[Slot]] = Field(
         default=None,
         description=(
-            "App graph transition hashes representing user interaction(s) on the application that triggers the bug."
+            "Status plus candidate mappings for user interaction(s) on the application that trigger the bug. "
+            "Each item must follow the slot rules for unknown, inferred, confirmed, or ambiguous."
         ),
     )
     buggy_behavior: Optional[Slot] = Field(
         default=None,
         description=(
-            "The specific buggy behavior (i.e., the problem) reported in the bug. "
-            "Please use user's exact language where possible"
+            "Status plus candidate mappings for the specific buggy behavior reported in the bug. "
+            "Each candidate should use the user's exact language where possible."
         ),
     )
     correct_behavior: Optional[Slot] = Field(
         default=None,
         description=(
-            "The specific correct application behavior that should happen instead of the buggy behavior."
-            "Please use user's exact language where possible"
+            "Status plus candidate mappings for the specific correct application behavior that should happen instead of the buggy behavior. "
+            "Each candidate should use the user's exact language where possible."
         ),
     )
     steps_to_reproduce: Optional[List[Slot]] = Field(
         default=None,
         description=(
-            "Ordered list of bug reproduction steps spanning app open to triggering_screen_reference. Each item is a Slot where value is one app graph transition hash number corresponding to one step to reproduce."
+            "Ordered list of bug reproduction steps spanning app open to triggering_screen_reference. Each item is a slot containing candidate mappings for one app graph transition hash. "
+            "Use zero candidates for unknown, exactly one candidate for inferred or confirmed, and 2-3 ranked candidates for ambiguous. "
             "If the user provides only part of the steps, include only those stated."
         ),
     )
