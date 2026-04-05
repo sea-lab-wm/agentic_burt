@@ -1,10 +1,16 @@
-from state import BugAgentState, InfoSlots, SlotStatus, InformationElementExtraction
+from state import (
+    BugAgentState,
+    CandidateMapping,
+    InfoSlots,
+    InformationElementExtraction,
+    Slot,
+    SlotStatus,
+)
 from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema, ClaritySchema
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Any, Literal
 from functools import lru_cache
 from pathlib import Path
-from pprint import pprint
 import json
 from config import PROMPT_VERSION
 
@@ -172,6 +178,47 @@ def remove_empty_info_elements(info_elements : InformationElementExtraction) -> 
 
     return "\n\n".join(non_empty_sections)
 
+
+def is_unresolved_slot(slot: Slot) -> bool:
+    return slot.status in {SlotStatus.unknown, SlotStatus.ambiguous}
+
+
+def get_resolved_candidate(slot: Slot, field_name: str) -> CandidateMapping:
+    if slot.status not in {SlotStatus.inferred, SlotStatus.confirmed}:
+        raise ValueError(
+            f"{field_name} must be resolved before use; got status={slot.status.value!r}."
+        )
+
+    return slot.candidates[0]
+
+
+def stringify_slot(slot: Slot) -> str:
+    return json.dumps(
+        {
+            "status": slot.status.value,
+            "candidates": [candidate.model_dump() for candidate in slot.candidates],
+        }
+    )
+
+
+def format_bug_info_for_prompt(info: InfoSlots) -> str:
+    sections = []
+
+    for name, content in info:
+        title = name.replace("_", " ").title()
+        if name in {"steps_to_reproduce", "triggering_GUI_interactions"}:
+            lines = [f"{title}:"]
+            if not content:
+                lines.append("- []")
+            else:
+                for i, slot in enumerate(content):
+                    lines.append(f"- [{i}] {stringify_slot(slot)}")
+            sections.append("\n".join(lines))
+        else:
+            sections.append(f"{title}:\n- {stringify_slot(content)}")
+
+    return "\n\n".join(sections)
+
 def llm_clarity_follow_up(
     information_element_extraction: InformationElementExtraction,
     clarity_issues: list[str],
@@ -255,7 +302,7 @@ def llm_map(
     messages = prompt.format_messages(
         application_name=app_name,
         application_GUI_graph = app_graph,
-        structued_bug_report_mapping = current_bug_info.model_dump_json(),
+        structued_bug_report_mapping = format_bug_info_for_prompt(current_bug_info),
         extracted_information_elements=remove_empty_info_elements(extracted_information_elements)
         
     )
@@ -295,8 +342,6 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
         steps_to_reproduce=extraction.steps_to_reproduce or current.steps_to_reproduce,
     )
 
-    pprint(updated, indent=2)
-
     return {
         "BugInfo": updated,
         "information_element_extraction": InformationElementExtraction(),
@@ -318,10 +363,10 @@ def find_unknown_or_ambiguous(info: InfoSlots):
                 flagged.add(f"{name}")
                 
             for i, step in enumerate(content):
-                if step.status in {SlotStatus.unknown, SlotStatus.ambiguous}:
+                if is_unresolved_slot(step):
                     flagged.add(f"{name}[{i}]")
         else:
-            if content.status in {SlotStatus.unknown, SlotStatus.ambiguous}:
+            if is_unresolved_slot(content):
                 flagged.add(name)
 
     return flagged
@@ -362,7 +407,7 @@ def llm_more_info_follow_up(
     messages = prompt.format_messages(
         app_name=app_name,
         app_graph = app_graph,
-        previously_collected_information = current_bug_info.model_dump_json(),
+        previously_collected_information = format_bug_info_for_prompt(current_bug_info),
         ambiguous_and_unknown_reference_list=formatted_unknown_and_low_confidence_info
     )
 
@@ -382,11 +427,26 @@ def process_bug_info(complete_bug_info : InfoSlots):
     :rtype: str
     """
     bug_info_values = {
-        "triggering_screen_reference": complete_bug_info.triggering_screen_reference.value,
-        "triggering_GUI_interactions": [interaction.value for interaction in complete_bug_info.triggering_GUI_interactions],
-        "buggy_behavior": complete_bug_info.buggy_behavior.value,
-        "correct_behavior": complete_bug_info.correct_behavior.value,
-        "steps_to_reproduce": [step.value for step in complete_bug_info.steps_to_reproduce],
+        "triggering_screen_reference": get_resolved_candidate(
+            complete_bug_info.triggering_screen_reference,
+            "triggering_screen_reference",
+        ).value,
+        "triggering_GUI_interactions": [
+            get_resolved_candidate(interaction, "triggering_GUI_interactions").value
+            for interaction in complete_bug_info.triggering_GUI_interactions
+        ],
+        "buggy_behavior": get_resolved_candidate(
+            complete_bug_info.buggy_behavior,
+            "buggy_behavior",
+        ).value,
+        "correct_behavior": get_resolved_candidate(
+            complete_bug_info.correct_behavior,
+            "correct_behavior",
+        ).value,
+        "steps_to_reproduce": [
+            get_resolved_candidate(step, "steps_to_reproduce").value
+            for step in complete_bug_info.steps_to_reproduce
+        ],
     }
 
     return json.dumps(bug_info_values)

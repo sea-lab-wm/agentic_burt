@@ -266,6 +266,11 @@ def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dic
 @log_action(logger=logger, entity=Entity.user, action_name=ActionName.generate_report)
 def gen_report(bug_info, app_graph, app_name):
     print("generating final bug report...\n")
+    unresolved = find_unknown_or_ambiguous(bug_info)
+    if unresolved:
+        raise ValueError(
+            f"Cannot generate report with unresolved bug info: {sorted(unresolved)}"
+        )
     return generate_report(bug_info, app_graph, MODEL, app_name)
 
 #Graph Construction:
