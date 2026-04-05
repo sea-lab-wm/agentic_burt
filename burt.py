@@ -2,7 +2,7 @@ import argparse
 import csv
 from dotenv import load_dotenv
 from database.db import SessionLocal
-from database.database_utils import fetch_app_graph_and_name
+from database.database_utils import fetch_graph_data
 from state import BugAgentState
 from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, llm_more_info_follow_up, generate_report
 import config
@@ -100,7 +100,7 @@ def load_initial_message(current_bug: int, description_level: str) -> str:
 def initialize_runtime(current_bug: int, description_level: str) -> tuple[str, str]:
     session = SessionLocal()
     try:
-        app_graph, app_name = fetch_app_graph_and_name(session=session, bug_id=current_bug)
+        app_graph, app_name, screen_descriptions = fetch_graph_data(session=session, bug_id=current_bug)
     finally:
         session.close()
 
@@ -110,7 +110,7 @@ def initialize_runtime(current_bug: int, description_level: str) -> tuple[str, s
     version = str(config.PROMPT_VERSION)
     logger.filepath = Path(f"logs/{version}/bug{current_bug}_{description_level}.log")
     logger.conversation_id = str(current_bug)
-    return app_graph, app_name
+    return app_graph, app_name, screen_descriptions
 
 #Node: Information Element Extraction
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.information_element_extraction)
@@ -197,6 +197,7 @@ def map_to_graph(state : BugAgentState, config : RunnableConfig):
     #fetch the current app execution model/graph for the extraction prompt
     app_graph = (config.get("configurable") or {}).get("app_graph")
     app_name = (config.get("configurable") or {}).get("app_name")
+    screen_name_and_description_list = (config.get("configurable") or {}).get("screen_descriptions")
 
     #fetch the most recent extracted information elements 
     extracted_infomration_elements = state.information_element_extraction 
@@ -204,6 +205,7 @@ def map_to_graph(state : BugAgentState, config : RunnableConfig):
     result = llm_map(
         current_bug_info=current_bug_info,
         app_graph=app_graph,
+        screen_name_and_description_list=screen_name_and_description_list,
         extracted_information_elements=extracted_infomration_elements,
         model=MODEL,
         app_name=app_name,
@@ -319,13 +321,13 @@ def main() -> None:
         current_bug=args.bug_id,
         description_level=args.description_level,
     )
-    app_graph, app_name = initialize_runtime(
+    app_graph, app_name, screen_descriptions = initialize_runtime(
         current_bug=args.bug_id,
         description_level=args.description_level,
     )
 
     #Specifying a thread-id is how we ensure persistant state even with interupt
-    config = {"configurable": {"app_graph": app_graph, "app_name": app_name, "thread_id": "1"}}
+    config = {"configurable": {"app_graph": app_graph, "app_name": app_name, "screen_descriptions": screen_descriptions, "thread_id": "1"}}
     state = BugAgentState(messages=[HumanMessage(content=initial_message)])
 
     logger.start_conversation()

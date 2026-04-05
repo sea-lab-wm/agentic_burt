@@ -1,0 +1,2 @@
+bug_id,description_level,agent_version,log_file,log_path,title,status,parse_status,error
+2,HC_HP,bugscribe_mutli-candidate_transitions_and_screen_descriptions,bug2_HC_HP.log,logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug2_HC_HP.log,App crashes when enabling percent values in the report display settings for Incomes by Articles,ok,ok,

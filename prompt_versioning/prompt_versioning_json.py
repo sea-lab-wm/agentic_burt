@@ -110,15 +110,15 @@ def _validate_prompt_tuple(prompt_update: PromptTuple) -> PromptTuple:
 
 if __name__ == "__main__":
     prompts_to_upsert = [
-        ("bugscribe_mutli-candidate_screen_loc",
+        ("bugscribe_mutli-candidate_transitions_and_screen_descriptions",
          "map_to_graph",
          """# Task Summary
-You are an expert developer of Android applications. Given **information elements** extracted from a **user description** of a bug on the **{application_name}** Android application, your task is to update/populate the fields of an **existing structured bug-report mapping** by grounding user-provided bug information in the application’s GUI graph. The mapping will be used to generate a precise, application accurate and reproducible bug report. 
-
+You are an expert developer of Android applications. Given **information elements** extracted from a **user description** of a bug on the **{application_name}** Android application, your task is to update/populate the fields of an **existing structured bug-report mapping** by grounding user-provided bug information in the application's GUI graph. The mapping will be used to generate a precise, application accurate and reproducible bug report.
+ 
 #Context Overview
-You will be provided with the following information: 
+You will be provided with the following information:
 1. The existing structured bug-report mapping that represents previously collected information from a conversation with the bug experiencing user mapped or cross referenced with states and edges on textual graph of application GUI structure. You can learn how to understand the structure of the mapping below in the UNDERSTANDING MAPPING section below.
-2. A textual graph that models the GUI hierarchy of the application the bug occurred within. You can learn how to understand the graph using the UNDERSTANDING THE APPLICATION GRAPH section below.
+2. A textual graph that models the GUI hierarchy of the application the bug occurred on. The graph has 2 parts: a set of app transitions that take users between app screens and a list of short descriptions and screen names for each app screen. You can learn how to understand the graph using the UNDERSTANDING APPLICATION GRAPH section below.
 3. A labeled set of key bug report information elements extracted from a user description of a bug they experienced. You can learn more about the labels and how to understand given information elements in the UNDERSTANDING INFORMATION ELEMENTS section below.
 
 #Understanding Each Provided Context
@@ -130,20 +130,20 @@ The structured bug-report mapping has 5 sections that correspond to an informati
 4. correct_behavior: A description of the application behavior that should have occurred following the triggering_GUI_interactions, as described by the user.
 5. steps_to_reproduce: A list of consecutive transition hash(es) from the application graph, starting at the applications opening screen and leading to the triggering_screen_reference. 
 
-Each entry in the mapping comes with evidence: quotes from the extracted information elements that informed the previous mapping, and a status, the confidence of the mapping. The possible status labels and their definitions are: 
+Each entry in the mapping comes with evidence, quotes from the extracted information elements that informed the previous mapping, and a status, the confidence of the mapping. The possible status labels and their definitions are: 
 'Confirmed': User evidence directly supports the mapped value (or near-paraphrase). No meaningful competing mapping.
 'Inferred': Mapped value is not directly stated, but is the single and most plausible conclusion from user evidence and context.
-'Ambiguous': User evidence is present but insufficiently specific; two or more plausible mappings remain. One tentative mapping has been chosen. For buggy behavior and correct behavior ambiguity refers to multiple plausible interpretations of described app behavior. For all other mappings, ambiguity refers to multiple plausible state(screen)/transition(GUI action) hashes.
+'Ambiguous': User evidence is present but insufficiently specific; two or three candidate mappings are provided. For buggy behavior and correct behavior ambiguity refers to multiple plausible interpretations of described app behavior. For all other entries, ambiguity refers to multiple plausible state(screen)/transition(GUI action) mappings.
 'Unknown': No user evidence yet for this element. 'Unknown' status indicates that the user has not provided that information element yet.
 
 ## UNDERSTANDING APPLICATION GRAPH
-The Application Graph is divided into 2 sections, Transitions and States.
+The Application Graph is divided into 2 sections, transitions and a screen name and descriptions list.
 
 Each line of the transitions section represents a GUI action or transition (button tap, swipe, etc.) that takes the user from a source application screen to a target application screen.
-Each transition line follows this structure: [Unique Transition Hash Number]: (s: [Source Screen Hash Number],t: [Target Screen Hash Number]): [id=0, ex=0, sq=1, act=(0) [Action Type (ie. click, tap, swipe)], cp=[, ty= [Component Type (ie. button, tab, image)], idx=[component name], idnx=1, tx=[component text]], x=[Component lateral position on screen]], y=[Component vertical position on screen], h=[Component height], w=[Component width], dsc=], txt=, exp=, tr=null] weight=[Numerical Weight Value Dictating How Often this Button Was Used When Traversing the Application] ds=TR sc=[Path to Screen Shot of Transition]] ex=0
+Each transition line follows this structure: [Transition Hash Number]: (s: [Source Screen Hash Number],t: [Target Screen Hash Number]): [id=0, ex=0, sq=1, act=(0) [Action Type (ie. click, tap, swipe)], cp=[, ty= [Component Type (ie. button, tab, image)], idx=[Component Name], idnx=1, tx=Component Text]], x=[Component Lateral Position on Screen]], y=[Component Vertical Position on Screen], h=[Component Height], w=[Component Width], dsc=], txt=, exp=, tr=null] weight=[Numerical Weight Value Dictating How Often this Button Was Used When Traversing the Application] ds=TR sc=[Path to Screen Shot of Transition]] ex=0
 
-Each line of the states section represents a screen accessible in the GUI structure of the application.
-Each state line follows this structure: [Unique Screen Hash Number], [Identifying Behavior of Screen]]..., TR, [Screen XML Meta Data]       
+Each screen hash in the transitions section has an entry in the screen name and descriptions list. The screen name and descriptions list follows this format:
+[Screen Hash Number] - [Screen Name]: [Screen Description]
 
 ## UNDERSTANDING INFORMATION ELEMENTS
  There are 5 possible information elements you can receive at any given time:
@@ -160,7 +160,7 @@ Include the triggering_GUI_interactions
 Each entry in the list should be a **single** transition hash number
 If the triggering_screen_reference occurs at an intermediate step, do **not** stop there, continue generating the **full sequence of steps** required to reproduce the bug
 The **target screen** of one S2R must be the **source screen** of the next.
-**Do not include** any steps that are not interactions or are not backed by a valid transition (e.g., "observe the error")
+**Do not include** any steps that are not interactions or are not backed by a valid transition (e.g., \"observe the error\")
 
 # General Constraints
 Do not hallucinate or introduce details not present in the context.

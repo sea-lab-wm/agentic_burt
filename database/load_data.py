@@ -1,9 +1,11 @@
 from db import SessionLocal
-from models import Bug, Transition, Screen
+from models import Bug
+from graph_data_parser import get_graph_file_path, filter_graph
+from generate_screen_descriptions import generate_screen_descriptions
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
 import os
-
-#Change to whatever location your graph data is located at
-DATA_DIR = "/Users/sambennett/desktop/BURT++/bug_reporting_with_llm/graph_data/graphs_json_data_AstroBR"
+from pathlib import Path
 
 SELECTED_DATA = {
     2: "Family_Finance",
@@ -22,47 +24,43 @@ SELECTED_DATA = {
 db_session = SessionLocal()
 
 def load_data():
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    load_dotenv(env_path)
+
+    screen_description_model = ChatOpenAI(model="gpt-5.4")
+    mode = "dev" #change to test to load test set data 
+
+    if mode == "dev":
+        DATA_DIR = "/Users/sambennett/desktop/BURT++/bug_reporting_with_llm/graph_data/graphs_json_data_AstroBR"
+    elif mode == "test":
+        DATA_DIR = ""
+    else:
+        raise(ValueError("Please set mode to either 'dev' or 'test"))
+
+
     print("Walking Bug Reports")
     if not os.path.isdir(DATA_DIR):
         raise FileNotFoundError(f"DATA_DIR does not exist or is not a directory: {DATA_DIR}")
 
-    # Only process Bug{N} folders where N is in SELECTED_DATA
-    for bug in os.scandir(DATA_DIR):
-        if not bug.is_dir():
-            continue
-        name = bug.name
-        if not name.startswith("Bug"):
-            continue
-        suffix = name[3:]
-        if not suffix.isdigit():
-            continue
-        bug_num = int(suffix)
-        if bug_num not in SELECTED_DATA:
+    for bug_num, app_name in SELECTED_DATA.items():
+        try:
+            graph_file_path = get_graph_file_path(DATA_DIR, bug_num)
+        except FileNotFoundError as exc:
+            print(f"Skipping Bug{bug_num}: {exc}")
             continue
 
-        bug_dir = bug.path
-        # Find the txt file containing "BUG-graph" inside the bug's subfolder
-        target_file = None
-        for root, _dirs, files in os.walk(bug_dir):
-            for filename in files:
-                if "graph" in filename and filename.lower().endswith(".txt"):
-                    target_file = os.path.join(root, filename)
-                    break
-            if target_file:
-                break
+        with open(graph_file_path, "r", encoding="utf-8") as f:
+            unfiltered_graph_text = f.read()
+            filtered_graph_text = filter_graph(unfiltered_graph_text=unfiltered_graph_text)
 
-        if not target_file:
-            print(f"No BUG-graph txt found for {name}")
-            continue
+        #generate screen descriptions for graph
+        screen_descriptions = generate_screen_descriptions(unfiltered_graph_text, screen_description_model)
+        print(f"generated bug descriptions for bug {bug_num}")
 
-        with open(target_file, "r", encoding="utf-8") as f:
-            graph_text = f.read()
-
-        app_name = SELECTED_DATA.get(bug_num, f"Bug{bug_num}")
-        app_row = Bug(bug_id=bug_num, application_name=app_name, gui_graph=graph_text)
+        app_row = Bug(bug_id=bug_num, application_name=app_name, gui_graph=filtered_graph_text, screen_descriptions=screen_descriptions)
         db_session.add(app_row)
         db_session.commit()
-        print(f"Inserted Bug: {bug_num} (graph chars: {len(graph_text)})")
+        print(f"Inserted Bug: {bug_num} (graph chars: {len(filtered_graph_text)} screen_desc chars: {len(screen_descriptions)})")
 
 if __name__ == "__main__":
     load_data()
