@@ -265,6 +265,7 @@ def llm_clarity_follow_up(
 def llm_map(
     current_bug_info: InfoSlots,
     app_graph: str,
+    screen_name_and_description_list: str,
     extracted_information_elements: InformationElementExtraction,
     model: Any,
     app_name: str,
@@ -295,13 +296,14 @@ def llm_map(
         ("system", system_template),
         (
             "human",
-            "#Context:\n\n ##Structured Bug Report Mapping\n{structued_bug_report_mapping}\n\n ##Application GUI Graph\n{application_GUI_graph}\n\n##Extracted Information Elements\n{extracted_information_elements}\n\n"
+            "#Context:\n\n ##Structured Bug Report Mapping:\n{structued_bug_report_mapping}\n\n ##Application GUI Graph\n###Transitions:\n{transitions}\n###Screen Name and Description List:\n{screen_name_and_description_list}\n\n##Extracted Information Elements:\n{extracted_information_elements}\n\n"
         )
     ])
 
     messages = prompt.format_messages(
         application_name=app_name,
-        application_GUI_graph = app_graph,
+        transitions = app_graph,
+        screen_name_and_description_list = screen_name_and_description_list,
         structued_bug_report_mapping = format_bug_info_for_prompt(current_bug_info),
         extracted_information_elements=remove_empty_info_elements(extracted_information_elements)
         
