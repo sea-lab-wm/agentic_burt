@@ -140,7 +140,8 @@ Each entry in the mapping comes with evidence, quotes from the extracted informa
 The Application Graph is divided into 2 sections, transitions and a screen name and descriptions list.
 
 Each line of the transitions section represents a GUI action or transition (button tap, swipe, etc.) that takes the user from a source application screen to a target application screen.
-Each transition line follows this structure: [Transition Hash Number]: (s: [Source Screen Hash Number],t: [Target Screen Hash Number]): [id=0, ex=0, sq=1, act=(0) [Action Type (ie. click, tap, swipe)], cp=[, ty= [Component Type (ie. button, tab, image)], idx=[Component Name], idnx=1, tx=Component Text]], x=[Component Lateral Position on Screen]], y=[Component Vertical Position on Screen], h=[Component Height], w=[Component Width], dsc=], txt=, exp=, tr=null] weight=[Numerical Weight Value Dictating How Often this Button Was Used When Traversing the Application] ds=TR sc=[Path to Screen Shot of Transition]] ex=0
+Each transition line follows this structure: [Transition Hash Number]: (s: [Source Screen Hash Number],t: [Target Screen Hash Number]): [id=0, ex=0, sq=1, act=(0) [Action Type (ie. click, tap, swipe)], cp=[, ty= [Component Type (ie. button, tab, image)], idx=[Component Name], idnx=1, tx=Component Text]], x=[Component Lateral Position on Screen]], y=[Component Vertical Position on Screen], h=[Component Height], w=[Component Width], dsc=], txt=, exp=, tr=null] weight=[Numerical Weight Value Dictating How Often this Button Was Used When Traversing the Application] ds=TR sc=[Path to Screen Shot of Transition]] ex=0. 
+Transitions are separated into blocks by source screen. The first block of transitions will be open app transitions. 
 
 Each screen hash in the transitions section has an entry in the screen name and descriptions list. The screen name and descriptions list follows this format:
 [Screen Hash Number] - [Screen Name]: [Screen Description]
@@ -154,18 +155,26 @@ Each screen hash in the transitions section has an entry in the screen name and 
 5. steps_to_reproduce: A contiguous sequence of application interactions starting from app launch and ending at the triggering screen.
 
 # Specific Constraints on Updating Sections of the Mapping
+## triggering_screen_reference
+If you can confirm the **buggy_behavior** or **expected_behavior** you must attempt to locate the **triggering_screen_reference** from the screens in the application graph.
+## buggy_behavior 
+If you can confirm the **buggy_behavior**, you must attempt to generate the **correct_behavior**.
+## correct_behavior
+If you can confirm the **correct_behavior**,  you must attempt to generate the **buggy_behavior**.
 ## steps_to_reproduce:
-Always *start* with opening the application
-Include the triggering_GUI_interactions
-Each entry in the list should be a **single** transition hash number
-If the triggering_screen_reference occurs at an intermediate step, do **not** stop there, continue generating the **full sequence of steps** required to reproduce the bug
+Always *start* with opening the application.
+Include the triggering_GUI_interactions.
+Each entry in the list should be a **single** transition hash number.
+If the triggering_screen_reference occurs at an intermediate step, do **not** stop there, continue generating the **full sequence of steps** required to reproduce the bug.
 The **target screen** of one S2R must be the **source screen** of the next.
-**Do not include** any steps that are not interactions or are not backed by a valid transition (e.g., \"observe the error\")
+**Do not include** any steps that are not interactions or are not backed by a valid transition (e.g., \"observe the error\").
 
 # General Constraints
 Do not hallucinate or introduce details not present in the context.
 Maintain language clarity, precision, and consistency 
 Once a status of 'confirmed' is assigned to an entry in the mapping, the entry CAN NOT be changed
+Ambiguous status is reserved for situations when there are 2-3 strong, evidence-backed alternatives for a specific mapping entry based on user wording. If user wording leaves more than 3 plausible candidates, 'unknown' status should be used.
+Mapping entries assigned Ambiguous status must have 2-3 candidates MAXIMUM.
 
 # Output Format
 Generate according to the provided schema
