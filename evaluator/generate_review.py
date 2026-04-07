@@ -12,8 +12,7 @@ from evaluator.parsing import REPO_ROOT, load_ground_truth_rows
 
 
 RESULTS_ROOT = REPO_ROOT / "Results"
-S2R_REVIEW_WORKBOOK = "s2r_manual_review.xlsx"
-INFO_ELEMENTS_REVIEW_WORKBOOK = "information_elements_manual_review.xlsx"
+MANUAL_REVIEW_WORKBOOK = "manual_review.xlsx"
 SEPARATOR_FILL = PatternFill(fill_type="solid", fgColor="D9D9D9")
 
 
@@ -58,16 +57,29 @@ def rebuild_summary_csv(agent_version: str) -> Path:
     return summary_path
 
 
-def rebuild_s2r_review_workbook(agent_version: str) -> Path:
-    """Build a manual-review workbook for S2R judge outputs."""
+def rebuild_manual_review_workbook(agent_version: str) -> Path:
+    """Build a manual-review workbook with both S2R and info-elements review sheets."""
     version_dir = RESULTS_ROOT / agent_version
-    workbook_path = version_dir / S2R_REVIEW_WORKBOOK
+    workbook_path = version_dir / MANUAL_REVIEW_WORKBOOK
     evaluation_paths = sorted(version_dir.glob("*.evaluation.json"))
     ground_truth_rows = load_ground_truth_rows()
 
     workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "S2R Review"
+    s2r_sheet = workbook.active
+    s2r_sheet.title = "S2R Review"
+    _populate_s2r_review_sheet(s2r_sheet, evaluation_paths, ground_truth_rows)
+
+    info_element_sheet = workbook.create_sheet("Info Elements Review")
+    _populate_info_elements_review_sheet(info_element_sheet, evaluation_paths, ground_truth_rows)
+
+    workbook.save(workbook_path)
+    return workbook_path
+
+
+def _populate_s2r_review_sheet(
+    sheet: Any, evaluation_paths: list[Path], ground_truth_rows: dict[int, dict[str, str]]
+) -> None:
+    """Populate the S2R review sheet for the combined manual-review workbook."""
     headers = [
         "bug_id",
         "app_name",
@@ -142,20 +154,10 @@ def rebuild_s2r_review_workbook(agent_version: str) -> Path:
             _append_separator_row(sheet, len(headers), next_row)
             next_row += 1
 
-    workbook.save(workbook_path)
-    return workbook_path
-
-
-def rebuild_info_elements_review_workbook(agent_version: str) -> Path:
-    """Build a manual-review workbook for information-elements judge outputs."""
-    version_dir = RESULTS_ROOT / agent_version
-    workbook_path = version_dir / INFO_ELEMENTS_REVIEW_WORKBOOK
-    evaluation_paths = sorted(version_dir.glob("*.evaluation.json"))
-    ground_truth_rows = load_ground_truth_rows()
-
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "Info Elements Review"
+def _populate_info_elements_review_sheet(
+    sheet: Any, evaluation_paths: list[Path], ground_truth_rows: dict[int, dict[str, str]]
+) -> None:
+    """Populate the information-elements review sheet for the combined manual-review workbook."""
     headers = [
         "bug_id",
         "app_name",
@@ -218,10 +220,6 @@ def rebuild_info_elements_review_workbook(agent_version: str) -> Path:
         if evaluation_index < len(evaluation_paths) - 1:
             _append_separator_row(sheet, len(headers), next_row)
             next_row += 1
-
-    workbook.save(workbook_path)
-    return workbook_path
-
 
 def _lookup_description_text(gt_row: dict[str, str] | None, description_level: str | None) -> str:
     """Resolve the input description text for the bug/description pair from the dev CSV."""
