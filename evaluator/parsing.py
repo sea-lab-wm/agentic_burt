@@ -105,11 +105,27 @@ def find_generate_report_action(records: list[dict[str, Any]]) -> dict[str, Any]
     return None
 
 
+def find_conversation_summary_record(records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Find the final conversation_summary record appended to the log."""
+    for record in reversed(records):
+        if record.get("record_type") == "conversation_summary":
+            return record
+    return None
+
+
 def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str]]) -> dict[str, Any]:
     """Build the normalized evaluator input for one log file."""
     metadata = extract_log_metadata(log_path)
     records = parse_json_records(log_path)
     generate_report_action = find_generate_report_action(records)
+    summary_record = find_conversation_summary_record(records)
+    token_consumption = (
+        summary_record.get("token_consumption")
+        if isinstance(summary_record, dict)
+        else None
+    )
+    if not isinstance(token_consumption, dict):
+        token_consumption = {}
 
     context: dict[str, Any] = {
         **metadata,
@@ -119,6 +135,19 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         "logged_extracted_information_elements": None,
         "ground_truth": None,
         "app_name": None,
+        "total_input_tokens_consumed": token_consumption.get("input_tokens"),
+        "total_output_tokens_consumed": token_consumption.get("output_tokens"),
+        "total_tokens_consumed": token_consumption.get("total_tokens"),
+        "total_time_seconds_of_conversation": (
+            summary_record.get("total_latency_seconds")
+            if isinstance(summary_record, dict)
+            else None
+        ),
+        "total_conversation_turns": (
+            summary_record.get("total_conversation_turns")
+            if isinstance(summary_record, dict)
+            else None
+        ),
     }
 
     if generate_report_action is None:
