@@ -88,6 +88,25 @@ class InformationElementExtraction(BaseModel):
     steps_to_reproduce: Optional[NaturalLanguageElement] = None
 
 
+class FollowUpKind(str, Enum):
+    """
+    Follow-up discriminator used to interpret the next user response.
+    """
+
+    more_info = "more_info"
+    clarity = "clarity"
+
+
+class ActiveFollowUp(BaseModel):
+    """
+    Structured context for the currently active follow-up question.
+    """
+
+    kind: FollowUpKind
+    question: str
+    target_info_elements: List[str] = Field(default_factory=list)
+
+
 class BugAgentState(BaseModel):
     """
     Defines the final internal agent state/memory.
@@ -103,4 +122,4 @@ class BugAgentState(BaseModel):
     clarification_rounds: int = 0
     clarification_window_start_idx: int = 0
     unknown_and_low_confidence_info: set[str] = Field(default_factory=set)
-    generated_question: Optional[str] = None
+    active_follow_up: Optional[ActiveFollowUp] = None

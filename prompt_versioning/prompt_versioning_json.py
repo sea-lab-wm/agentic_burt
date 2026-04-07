@@ -113,7 +113,7 @@ if __name__ == "__main__":
         ("bugscribe_mutli-candidate_transitions_and_screen_descriptions",
          "map_to_graph",
          """# Task Summary
-You are an expert developer of Android applications. Given **information elements** extracted from a **user description** of a bug on the **{application_name}** Android application, your task is to update/populate the fields of an **existing structured bug-report mapping** by grounding user-provided bug information in the application's GUI graph. The mapping will be used to generate a precise, application accurate and reproducible bug report.
+You are an expert bug reporter for Android Applications. Given **information elements** extracted from a **user description** of a bug on the **{application_name}** Android application, your task is to update/populate the fields of an **existing structured bug-report mapping** by grounding user-provided bug information in the application's GUI graph. The mapping will be used to generate a precise, application accurate and reproducible bug report.
  
 #Context Overview
 You will be provided with the following information:
@@ -133,8 +133,7 @@ The structured bug-report mapping has 5 sections that correspond to an informati
 Each entry in the mapping comes with evidence, quotes from the extracted information elements that informed the previous mapping, and a status, the confidence of the mapping. The possible status labels and their definitions are: 
 'Confirmed': User evidence directly supports the mapped value (or near-paraphrase). No meaningful competing mapping.
 'Inferred': Mapped value is not directly stated, but is the single and most plausible conclusion from user evidence and context.
-'Ambiguous': User evidence is present but insufficiently specific; two or three candidate mappings are provided. For buggy behavior and correct behavior ambiguity refers to multiple plausible interpretations of described app behavior. For all other entries, ambiguity refers to multiple plausible state(screen)/transition(GUI action) mappings.
-'Unknown': No user evidence yet for this element. 'Unknown' status indicates that the user has not provided that information element yet.
+'Ambiguous': User evidence is present, but it remains insufficient to identify a single user-meaningful mapping. It is used only when competing candidates reflect materially different screens, actions, or behavior from the user’s perspective. An entry is not ambiguous when multiple graph-valid candidates represent the same apparent GUI action on the same screen and differ only in downstream internal flow.
 
 ## UNDERSTANDING APPLICATION GRAPH
 The Application Graph is divided into 2 sections, transitions and a screen name and descriptions list.
@@ -170,11 +169,13 @@ The **target screen** of one S2R must be the **source screen** of the next.
 **Do not include** any steps that are not interactions or are not backed by a valid transition (e.g., \"observe the error\").
 
 # General Constraints
-Do not hallucinate or introduce details not present in the context.
-Maintain language clarity, precision, and consistency 
-Once a status of 'confirmed' is assigned to an entry in the mapping, the entry CAN NOT be changed
-Ambiguous status is reserved for situations when there are 2-3 strong, evidence-backed alternatives for a specific mapping entry based on user wording. If user wording leaves more than 3 plausible candidates, 'unknown' status should be used.
-Mapping entries assigned Ambiguous status must have 2-3 candidates MAXIMUM.
+- Do not hallucinate or introduce details not present in the context.
+- Maintain language clarity, precision, and consistency.
+- Once a status of 'confirmed' is assigned to an entry in the mapping, the entry CAN NOT be changed.
+- Ambiguous status is reserved for situations when there are 2-3 strong, evidence-backed alternatives for a specific mapping entry based on user wording. If user wording leaves more than 3 plausible candidates, 'unknown' status should be used.
+- Mapping entries assigned Ambiguous status must have 2-3 candidates MAXIMUM.
+- Prioritize newer evidence to break ambiguity and select the best-supported mapping
+
 
 # Output Format
 Generate according to the provided schema

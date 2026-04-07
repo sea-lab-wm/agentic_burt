@@ -44,13 +44,28 @@ class ExtractionSchema(BaseModel):
         ),
     )
 
-class FollowUpSchema(BaseModel):
+class ClarityFollowUpSchema(BaseModel):
     """
-    Defines the structured ouput for LLM call in the follow_up phase/node, so that generated follow up question can be cleanly loaded into agent state
+    Structured output for clarity-focused follow-up generation.
     """
-    follow_up_question : StrictStr = Field(
+
+    follow_up_question: StrictStr = Field(
+        description="A follow-up question that resolves clarity issues in extracted user information."
+    )
+
+
+class MoreInfoFollowUpSchema(BaseModel):
+    """
+    Structured output for missing-information follow-up generation.
+    """
+
+    follow_up_question: StrictStr = Field(
+        description="A follow-up question that asks the user for missing or ambiguous bug information."
+    )
+    clarification_target_info_elements: List[StrictStr] = Field(
+        default_factory=list,
         description=(
-            "A follow up question that prompts to the user to provide calrifying information about low_confidence or missing status bug info"
+            "Flat list of whole information-element names targeted by the follow-up question."
         ),
     )
 

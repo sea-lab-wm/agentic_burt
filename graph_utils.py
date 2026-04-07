@@ -6,7 +6,13 @@ from state import (
     Slot,
     SlotStatus,
 )
-from llm_schema import ExtractionSchema, FollowUpSchema, ReportGenerationSchema, ClaritySchema
+from llm_schema import (
+    ClarityFollowUpSchema,
+    ClaritySchema,
+    ExtractionSchema,
+    MoreInfoFollowUpSchema,
+    ReportGenerationSchema,
+)
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Any, Literal
 from functools import lru_cache
@@ -81,7 +87,8 @@ def llm_extract(
     model: Any,
     app_name: str,
     follow_up_question: str | None = None,
-    extraction_mode: Literal["initial", "follow_up"] = "initial",
+    target_info_elements: list[str] | None = None,
+    extraction_mode: Literal["initial", "more_info_follow_up", "clarity_follow_up"] = "initial",
 ) -> InformationElementExtraction:
     """
     Handles LLM query for information_element_extraction node.
@@ -94,32 +101,72 @@ def llm_extract(
     :type app_name: str
     :param follow_up_question: last agent follow-up question, when extracting from a follow-up response
     :type follow_up_question: str | None
-    :param extraction_mode: whether input text is an initial description or a follow-up response
-    :type extraction_mode: Literal["initial", "follow_up"]
+    :param target_info_elements: flat list of targeted info elements for more-info follow-ups
+    :type target_info_elements: list[str] | None
+    :param extraction_mode: whether input text is an initial description or a specific follow-up response
+    :type extraction_mode: Literal["initial", "more_info_follow_up", "clarity_follow_up"]
     :return: extracted natural language information elements
     :rtype: InformationElementExtraction
     """
 
     system_template = load_prompt_template("information_element_extraction")
+    user_messages_text = "\n".join(f"- {message}" for message in user_messages)
+
+    if extraction_mode == "initial":
+        human_template = (
+            "Extraction mode: {extraction_mode}\n\n"
+            "User descriptions:\n{user_messages}"
+        )
+        format_kwargs = {
+            "app_name": app_name,
+            "extraction_mode": extraction_mode,
+            "user_messages": user_messages_text,
+        }
+    elif extraction_mode == "clarity_follow_up":
+        if follow_up_question is None:
+            raise ValueError(
+                "follow_up_question is required for clarity_follow_up extraction mode."
+            )
+        human_template = (
+            "Extraction mode: {extraction_mode}\n"
+            "Follow-up question:\n{follow_up_question}\n\n"
+            "User descriptions:\n{user_messages}"
+        )
+        format_kwargs = {
+            "app_name": app_name,
+            "extraction_mode": extraction_mode,
+            "follow_up_question": follow_up_question,
+            "user_messages": user_messages_text,
+        }
+    elif extraction_mode == "more_info_follow_up":
+        if follow_up_question is None:
+            raise ValueError(
+                "follow_up_question is required for more_info_follow_up extraction mode."
+            )
+        human_template = (
+            "Extraction mode: {extraction_mode}\n"
+            "Follow-up question:\n{follow_up_question}\n"
+            "Target info elements:\n{target_info_elements}\n\n"
+            "User descriptions:\n{user_messages}"
+        )
+        format_kwargs = {
+            "app_name": app_name,
+            "extraction_mode": extraction_mode,
+            "follow_up_question": follow_up_question,
+            "target_info_elements": ", ".join(target_info_elements or []),
+            "user_messages": user_messages_text,
+        }
+    else:
+        raise ValueError(f"Unsupported extraction_mode: {extraction_mode!r}")
 
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", system_template),
-            (
-                "human",
-                "Extraction mode: {extraction_mode}\n"
-                "Follow-up question (only relevant in follow_up mode):\n{follow_up_question}\n\n"
-                "User descriptions:\n{user_messages}",
-            ),
+            ("human", human_template),
         ]
     )
 
-    formatted_messages = prompt.format_messages(
-        app_name=app_name,
-        extraction_mode=extraction_mode,
-        follow_up_question=follow_up_question or "N/A",
-        user_messages="\n".join(f"- {message}" for message in user_messages),
-    )
+    formatted_messages = prompt.format_messages(**format_kwargs)
 
     structured = model.with_structured_output(InformationElementExtraction)
     extraction = structured.invoke(formatted_messages)
@@ -219,6 +266,45 @@ def format_bug_info_for_prompt(info: InfoSlots) -> str:
 
     return "\n\n".join(sections)
 
+
+def _reference_label(field_name: str) -> str:
+    if field_name == "triggering_GUI_interactions":
+        return "triggering_gui_interactions"
+    return field_name
+
+
+def format_unknown_or_ambiguous_references(
+    info: InfoSlots,
+    references: set[str] | list[str],
+) -> ClarityFollowUpSchema:
+    """
+    Format unresolved mapping references as an ordered, user-model-facing list.
+
+    Unknown entries are listed before ambiguous entries to match the updated
+    follow-up prompt priority guidance. Reference labels are normalized to the
+    prompt's expected naming convention.
+    """
+
+    formatted_entries: list[tuple[int, str]] = []
+
+    for reference in references:
+        base_name, has_index, suffix = reference.partition("[")
+        prompt_name = _reference_label(base_name)
+        prompt_reference = f"{prompt_name}[{suffix}" if has_index else prompt_name
+
+        content = getattr(info, base_name)
+        if has_index:
+            index = int(suffix[:-1])
+            status = content[index].status
+        else:
+            status = content.status if isinstance(content, Slot) else SlotStatus.unknown
+
+        priority = 0 if status == SlotStatus.unknown else 1
+        formatted_entries.append((priority, prompt_reference))
+
+    formatted_entries.sort(key=lambda item: (item[0], item[1]))
+    return "\n".join(f"- {reference}" for _, reference in formatted_entries)
+
 def llm_clarity_follow_up(
     information_element_extraction: InformationElementExtraction,
     clarity_issues: list[str],
@@ -236,8 +322,8 @@ def llm_clarity_follow_up(
     :type model: Any
     :param app_name: application name for bug context
     :type app_name: str
-    :return: follow-up question(s) to resolve clarity issues
-    :rtype: str
+    :return: structured follow-up question(s) to resolve clarity issues
+    :rtype: ClarityFollowUpSchema
     """
 
     system_template = load_prompt_template("clarity_follow_up")
@@ -258,9 +344,8 @@ def llm_clarity_follow_up(
         clarity_issues="\n".join(f"- {issue}" for issue in clarity_issues),
     )
 
-    structured = model.with_structured_output(FollowUpSchema)
-    result = structured.invoke(messages)
-    return result.follow_up_question
+    structured = model.with_structured_output(ClarityFollowUpSchema)
+    return structured.invoke(messages)
 
 def llm_map(
     current_bug_info: InfoSlots,
@@ -296,7 +381,7 @@ def llm_map(
         ("system", system_template),
         (
             "human",
-            "#Context:\n\n ##Structured Bug Report Mapping:\n{structued_bug_report_mapping}\n\n ##Application GUI Graph\n###Transitions:\n{transitions}\n###Screen Name and Description List:\n{screen_name_and_description_list}\n\n##Extracted Information Elements:\n{extracted_information_elements}\n\n"
+            "#Context:\n\n ##Structured Bug Report Mapping:\n{structured_bug_report_mapping}\n\n ##Application GUI Graph\n###Transitions:\n{transitions}\n###Screen Name and Description List:\n{screen_name_and_description_list}\n\n##Extracted Information Elements:\n{extracted_information_elements}\n\n"
         )
     ])
 
@@ -304,7 +389,7 @@ def llm_map(
         application_name=app_name,
         transitions = app_graph,
         screen_name_and_description_list = screen_name_and_description_list,
-        structued_bug_report_mapping = format_bug_info_for_prompt(current_bug_info),
+        structured_bug_report_mapping = format_bug_info_for_prompt(current_bug_info),
         extracted_information_elements=remove_empty_info_elements(extracted_information_elements)
         
     )
@@ -376,10 +461,11 @@ def find_unknown_or_ambiguous(info: InfoSlots):
 def llm_more_info_follow_up(
     current_bug_info: InfoSlots,
     app_graph: str,
+    screen_name_and_description_list: str,
     formatted_unknown_and_low_confidence_info: str,
     model: Any,
     app_name: str,
-) -> FollowUpSchema:
+) -> MoreInfoFollowUpSchema:
 
     """
     Handles LLM query to generate follow up question based on unknown and ambiguous InfoSlots in current agent state.
@@ -392,8 +478,8 @@ def llm_more_info_follow_up(
     :type formatted_unknown_and_low_confidence_info: str
     :param app_name: application name for bug context
     :type app_name: str
-    :return: A FollowUpSchema object containing a follow up question to be present to the user
-    :rtype: Any
+    :return: Structured follow-up output containing question text and targeted info elements
+    :rtype: MoreInfoFollowUpSchema
     """
 
     system_template = load_prompt_template("more_info_follow_up")
@@ -402,74 +488,67 @@ def llm_more_info_follow_up(
         ("system", system_template),
         (
             "human",
-            "=== Application GUI Graph ===\n{app_graph}\n\n=== Previously Collected Information Mapping ===\n{previously_collected_information}\n\n=== Ambiguous and Unknown Reference List ===\n{ambiguous_and_unknown_reference_list}\n\n"
+            "#Context:\n\n##Structured Bug Report Mapping:\n{previously_collected_information}\n\n##Application GUI Graph\n###Transitions:\n{transitions}\n###Screen Name and Description List:\n{screen_name_and_description_list}\n\n##Ambiguous and Unknown Reference List:\n{ambiguous_and_unknown_reference_list}\n"
         )
     ])
 
     messages = prompt.format_messages(
-        app_name=app_name,
-        app_graph = app_graph,
+        application_name=app_name,
+        transitions=app_graph,
+        screen_name_and_description_list=screen_name_and_description_list,
         previously_collected_information = format_bug_info_for_prompt(current_bug_info),
         ambiguous_and_unknown_reference_list=formatted_unknown_and_low_confidence_info
     )
 
-    structured = model.with_structured_output(FollowUpSchema)
+    structured = model.with_structured_output(MoreInfoFollowUpSchema)
 
-    result = structured.invoke(messages)
+    return structured.invoke(messages)
 
-    return result.follow_up_question
-
-def process_bug_info(complete_bug_info : InfoSlots):
+def validate_info_status(complete_bug_info : InfoSlots) -> None:
     """
-    Extracts values from InfoSlots into a plain dict and returns a string dump.
+    Validate that all bug-info slots are fully resolved before downstream use.
 
     :param complete_state: Completed BugAgentState object
     :type complete_state: BugAgentState
-    :return: Stringified dict of bug info values
-    :rtype: str
     """
-    bug_info_values = {
-        "triggering_screen_reference": get_resolved_candidate(
-            complete_bug_info.triggering_screen_reference,
-            "triggering_screen_reference",
-        ).value,
-        "triggering_GUI_interactions": [
-            get_resolved_candidate(interaction, "triggering_GUI_interactions").value
-            for interaction in complete_bug_info.triggering_GUI_interactions
-        ],
-        "buggy_behavior": get_resolved_candidate(
-            complete_bug_info.buggy_behavior,
-            "buggy_behavior",
-        ).value,
-        "correct_behavior": get_resolved_candidate(
-            complete_bug_info.correct_behavior,
-            "correct_behavior",
-        ).value,
-        "steps_to_reproduce": [
-            get_resolved_candidate(step, "steps_to_reproduce").value
-            for step in complete_bug_info.steps_to_reproduce
-        ],
-    }
-
-    return json.dumps(bug_info_values)
+    get_resolved_candidate(
+        complete_bug_info.triggering_screen_reference,
+        "triggering_screen_reference",
+    )
+    for interaction in complete_bug_info.triggering_GUI_interactions:
+        get_resolved_candidate(interaction, "triggering_GUI_interactions")
+    get_resolved_candidate(
+        complete_bug_info.buggy_behavior,
+        "buggy_behavior",
+    )
+    get_resolved_candidate(
+        complete_bug_info.correct_behavior,
+        "correct_behavior",
+    )
+    for step in complete_bug_info.steps_to_reproduce:
+        get_resolved_candidate(step, "steps_to_reproduce")
 
 def generate_report(complete_bug_info: InfoSlots, app_graph: str, model: Any, app_name: str) -> str:
     """
     Generate High-Quality Textual Bug Report from Complete Bug InfoSlots
     """
 
-    bug_info = process_bug_info(complete_bug_info)
+    validate_info_status(complete_bug_info)
+    structured_bug_report_mapping = format_bug_info_for_prompt(complete_bug_info)
 
     system_template = load_prompt_template("generate_report")
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", system_template)
-    
+        ("system", system_template),
+        (
+            "human",
+            "#Context:\n\n##Structured Bug Report Mapping:\n{structured_bug_report_mapping}\n\n##Application GUI Graph\n{app_graph}\n"
+        ),
     ])
 
     messages = prompt.format_messages(
         app_name=app_name,
-        bug_info = bug_info,
+        structured_bug_report_mapping = structured_bug_report_mapping,
         app_graph = app_graph,
     )
 

@@ -3,8 +3,8 @@ import csv
 from dotenv import load_dotenv
 from database.db import SessionLocal
 from database.database_utils import fetch_graph_data
-from state import BugAgentState
-from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, llm_more_info_follow_up, generate_report
+from state import ActiveFollowUp, BugAgentState, FollowUpKind
+from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
 import config
 from observability import (
     ActionName,
@@ -123,9 +123,18 @@ def information_element_extraction(state: BugAgentState, config: RunnableConfig)
     window_messages = state.messages[state.clarification_window_start_idx:]
     user_messages = [message.content for message in window_messages]
 
-    is_follow_up_response = state.generated_question is not None and len(state.messages) > 1
-    extraction_mode = "follow_up" if is_follow_up_response else "initial"
-    follow_up_question = state.generated_question if is_follow_up_response else None
+    active_follow_up = state.active_follow_up
+    extraction_mode = "initial"
+    follow_up_question = None
+    target_info_elements = None
+
+    if active_follow_up is not None:
+        follow_up_question = active_follow_up.question
+        if active_follow_up.kind == FollowUpKind.more_info:
+            extraction_mode = "more_info_follow_up"
+            target_info_elements = active_follow_up.target_info_elements
+        else:
+            extraction_mode = "clarity_follow_up"
 
     extraction = llm_extract(
         user_messages=user_messages,
@@ -133,6 +142,7 @@ def information_element_extraction(state: BugAgentState, config: RunnableConfig)
         app_name=app_name,
         follow_up_question=follow_up_question,
         extraction_mode=extraction_mode,
+        target_info_elements=target_info_elements,
     )
 
     return {
@@ -166,11 +176,15 @@ def clarity_follow_up(state: BugAgentState, config: RunnableConfig) -> dict:
     app_name = (config.get("configurable") or {}).get("app_name")
     clarity_issues = state.clarity_issues
     information_elements = state.information_element_extraction
-    follow_up_question = llm_clarity_follow_up(
+    follow_up = llm_clarity_follow_up(
         information_elements, clarity_issues, MODEL, app_name
     )
     return {
-        "generated_question": follow_up_question,
+        "active_follow_up": ActiveFollowUp(
+            kind=FollowUpKind.clarity,
+            question=follow_up.follow_up_question,
+            target_info_elements=[],
+        ),
         "clarification_rounds": (state.clarification_rounds + 1),
     }
 
@@ -233,7 +247,7 @@ def should_continue(state : BugAgentState):
 #Node 3: Generate Follow Up Questions to Fill in Gaps in Bug Report State
     #A: Extract/Stringfy Low Confidence and Unknown bug info from the BugInfo slots based on references in missing_and_low_confidence_info
     #B: Compile and Ship prompt requesting that LLM choose field and ask follow up questions (Enforce Structured Output)
-    #C: Capture generated follow up question and return partial update to 'generated_question' field of BugAgentState
+    #C: Capture generated follow up question and return partial update to active_follow_up in BugAgentState
 @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.follow_up)
 def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
     print("following up on missing information...\n")
@@ -243,25 +257,37 @@ def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
     #Application Execution Model/Graph
     app_graph = (config.get("configurable") or {}).get("app_graph")
     app_name = (config.get("configurable") or {}).get("app_name")
+    screen_name_and_description_list = (config.get("configurable") or {}).get("screen_descriptions")
 
     #Reference to low_confidence and missing bug info fields to speed up reasoning
-    formatted_unknown_and_low_confidence_info = str(state.unknown_and_low_confidence_info)
+    formatted_unknown_and_low_confidence_info = format_unknown_or_ambiguous_references(
+        current_bug_info,
+        state.unknown_and_low_confidence_info,
+    )
 
-    follow_up_question = llm_more_info_follow_up(
+    follow_up = llm_more_info_follow_up(
         current_bug_info,
         app_graph,
+        screen_name_and_description_list,
         formatted_unknown_and_low_confidence_info,
         MODEL,
         app_name,
     )
 
-    return {"generated_question" : follow_up_question}
+    return {
+        "active_follow_up": ActiveFollowUp(
+            kind=FollowUpKind.more_info,
+            question=follow_up.follow_up_question,
+            target_info_elements=follow_up.clarification_target_info_elements,
+        )
+    }
 
 #Node 4: Interupt (Stops the Graph Cycle so we can display generated follow question(s) and retrive answer's written by user) 
 #See Review and Edit State section of LangChain intterupt docs for guidance: https://docs.langchain.com/oss/python/langgraph/interrupts
 @log_action(logger=logger, entity=Entity.user, action_name=ActionName.user_description)
 def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dict:
-    user_response = interrupt({"Follow Up Question": state.generated_question})
+    question = state.active_follow_up.question if state.active_follow_up else None
+    user_response = interrupt({"Follow Up Question": question})
     return {"messages" : HumanMessage(content=user_response)}
 
 #Generate Final Bug Report

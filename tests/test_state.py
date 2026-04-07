@@ -2,8 +2,8 @@ import unittest
 
 from pydantic import ValidationError
 
-from llm_schema import ExtractionSchema
-from state import CandidateMapping, Slot, SlotStatus
+from llm_schema import ClarityFollowUpSchema, ExtractionSchema, MoreInfoFollowUpSchema
+from state import ActiveFollowUp, BugAgentState, CandidateMapping, FollowUpKind, Slot, SlotStatus
 
 
 class StateModelTests(unittest.TestCase):
@@ -113,6 +113,54 @@ class StateModelTests(unittest.TestCase):
         self.assertEqual(extraction.triggering_screen_reference.status, SlotStatus.confirmed)
         self.assertEqual(extraction.buggy_behavior.status, SlotStatus.ambiguous)
         self.assertEqual(extraction.correct_behavior.status, SlotStatus.unknown)
+
+    def test_active_follow_up_defaults_targets_to_empty(self):
+        follow_up = ActiveFollowUp(
+            kind=FollowUpKind.clarity,
+            question="What do you mean by it?",
+        )
+
+        self.assertEqual(follow_up.kind, FollowUpKind.clarity)
+        self.assertEqual(follow_up.target_info_elements, [])
+
+    def test_bug_agent_state_accepts_active_follow_up(self):
+        state = BugAgentState(
+            active_follow_up=ActiveFollowUp(
+                kind=FollowUpKind.more_info,
+                question="Which screen were you on?",
+                target_info_elements=["triggering_screen_reference"],
+            )
+        )
+
+        self.assertEqual(state.active_follow_up.kind, FollowUpKind.more_info)
+        self.assertEqual(
+            state.active_follow_up.target_info_elements,
+            ["triggering_screen_reference"],
+        )
+
+    def test_clarity_follow_up_schema_parses_question_only(self):
+        result = ClarityFollowUpSchema.model_validate(
+            {"follow_up_question": "What do you mean by it?"}
+        )
+
+        self.assertEqual(result.follow_up_question, "What do you mean by it?")
+
+    def test_more_info_follow_up_schema_parses_targets(self):
+        result = MoreInfoFollowUpSchema.model_validate(
+            {
+                "follow_up_question": "Which screen were you on?",
+                "clarification_target_info_elements": [
+                    "triggering_screen_reference",
+                    "steps_to_reproduce",
+                ],
+            }
+        )
+
+        self.assertEqual(result.follow_up_question, "Which screen were you on?")
+        self.assertEqual(
+            result.clarification_target_info_elements,
+            ["triggering_screen_reference", "steps_to_reproduce"],
+        )
 
 
 if __name__ == "__main__":
