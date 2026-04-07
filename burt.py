@@ -35,6 +35,11 @@ MODEL = ChatOpenAI(model=config.MODEL_NAME, callbacks=[usage_callback])
 DESCRIPTION_CSV_PATH = Path(config.DESCRIPTION_CSV_PATH)
 
 
+@log_action(logger=logger, entity=Entity.user, action_name=ActionName.user_description)
+def ingest_user_description(user_text: str) -> dict:
+    return {"messages": HumanMessage(content=user_text)}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the BURT bug-report workflow.")
     parser.add_argument(
@@ -284,11 +289,10 @@ def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
 
 #Node 4: Interupt (Stops the Graph Cycle so we can display generated follow question(s) and retrive answer's written by user) 
 #See Review and Edit State section of LangChain intterupt docs for guidance: https://docs.langchain.com/oss/python/langgraph/interrupts
-@log_action(logger=logger, entity=Entity.user, action_name=ActionName.user_description)
 def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dict:
     question = state.active_follow_up.question if state.active_follow_up else None
     user_response = interrupt({"Follow Up Question": question})
-    return {"messages" : HumanMessage(content=user_response)}
+    return ingest_user_description(user_response)
 
 #Generate Final Bug Report
 @log_action(logger=logger, entity=Entity.user, action_name=ActionName.generate_report)
@@ -354,7 +358,8 @@ def main() -> None:
 
     #Specifying a thread-id is how we ensure persistant state even with interupt
     config = {"configurable": {"app_graph": app_graph, "app_name": app_name, "screen_descriptions": screen_descriptions, "thread_id": "1"}}
-    state = BugAgentState(messages=[HumanMessage(content=initial_message)])
+    initial_state_update = ingest_user_description(initial_message)
+    state = BugAgentState(messages=[initial_state_update["messages"]])
 
     logger.start_conversation()
     result = graph.invoke(state, config=config)

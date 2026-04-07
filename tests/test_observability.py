@@ -4,6 +4,8 @@ import time
 import unittest
 from pathlib import Path
 
+from langchain_core.messages import HumanMessage
+
 from observability import (
     ActionName,
     ConversationLogger,
@@ -33,6 +35,16 @@ class FakeResponse:
 
 class ObservabilityTests(unittest.TestCase):
     @staticmethod
+    def _log_user_description(logger: ConversationLogger, text: str):
+        @log_action(
+            logger=logger, entity=Entity.user, action_name=ActionName.user_description
+        )
+        def user_node():
+            return {"messages": HumanMessage(content=text)}
+
+        return user_node()
+
+    @staticmethod
     def _parse_json_stream(text: str):
         decoder = json.JSONDecoder()
         idx = 0
@@ -55,6 +67,7 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-1"
             )
+            self._log_user_description(logger, "initial bug description")
 
             @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.follow_up)
             def node():
@@ -69,7 +82,7 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node()
-            action = logger.conversation[0].actions[0]
+            action = logger.conversation[0].actions[1]
             self.assertIsNotNone(action.meta_data.node_token_consumption)
             self.assertEqual(action.meta_data.node_token_consumption.input_tokens, 10)
             self.assertEqual(action.meta_data.node_token_consumption.output_tokens, 4)
@@ -81,6 +94,7 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-2"
             )
+            self._log_user_description(logger, "initial bug description")
 
             @log_action(
                 logger=logger, entity=Entity.bot, action_name=ActionName.extract_and_update
@@ -105,7 +119,7 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node()
-            summary = logger.conversation[0].actions[0].meta_data.node_token_consumption
+            summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
             self.assertEqual(summary.input_tokens, 8)
             self.assertEqual(summary.output_tokens, 9)
             self.assertEqual(summary.total_tokens, 17)
@@ -118,6 +132,7 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-3"
             )
+            self._log_user_description(logger, "initial bug description")
 
             @log_action(
                 logger=logger,
@@ -136,7 +151,7 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node()
-            summary = logger.conversation[0].actions[0].meta_data.node_token_consumption
+            summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
             self.assertIsNone(summary.input_tokens)
             self.assertIsNone(summary.output_tokens)
             self.assertIsNone(summary.total_tokens)
@@ -149,14 +164,62 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-4"
             )
+            self._log_user_description(logger, "initial bug description")
 
             @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.evaluate)
             def node():
                 return {"ok": True}
 
             node()
-            summary = logger.conversation[0].actions[0].meta_data.node_token_consumption
+            summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
             self.assertIsNone(summary)
+
+    def test_non_user_action_requires_existing_turn(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = ConversationLogger(
+                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-pre-user"
+            )
+
+            @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.evaluate)
+            def node():
+                return {"ok": True}
+
+            with self.assertRaisesRegex(
+                ValueError, "Cannot log non-user action before the first user_description"
+            ):
+                node()
+
+    def test_user_turns_are_one_indexed_and_increment_per_description(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = ConversationLogger(
+                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-turns"
+            )
+
+            first = self._log_user_description(logger, "initial description")
+            self.assertEqual(first["messages"].content, "initial description")
+            self.assertEqual(logger.num_turns, 1)
+            self.assertEqual(len(logger.conversation), 1)
+            self.assertEqual(logger.conversation[0].turn, 1)
+            self.assertEqual(
+                logger.conversation[0].actions[0].action_name, ActionName.user_description
+            )
+
+            self._log_user_description(logger, "follow-up description")
+            self.assertEqual(logger.num_turns, 2)
+            self.assertEqual(len(logger.conversation), 2)
+            self.assertEqual(logger.conversation[1].turn, 2)
+
+    def test_user_description_helper_returns_human_message_payload(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = ConversationLogger(
+                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-helper"
+            )
+
+            update = self._log_user_description(logger, "describe the bug")
+            self.assertIn("messages", update)
+            self.assertIsInstance(update["messages"], HumanMessage)
+            self.assertEqual(update["messages"].content, "describe the bug")
+            self.assertEqual(logger.conversation[0].actions[0].entity, Entity.user)
 
     def test_summary_record_appended_and_totals_match(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -165,6 +228,7 @@ class ObservabilityTests(unittest.TestCase):
             callback = ObservabilityTokenCallback(logger=logger)
 
             logger.start_conversation()
+            self._log_user_description(logger, "initial bug description")
 
             @log_action(
                 logger=logger, entity=Entity.bot, action_name=ActionName.clarity_check
@@ -193,9 +257,42 @@ class ObservabilityTests(unittest.TestCase):
             summary = lines[-1]
             self.assertEqual(summary["record_type"], "conversation_summary")
             self.assertGreater(summary["total_latency_seconds"], 0)
+            self.assertEqual(summary["total_conversation_turns"], 1)
             self.assertEqual(summary["token_consumption"]["input_tokens"], 6)
             self.assertEqual(summary["token_consumption"]["output_tokens"], 4)
             self.assertEqual(summary["token_consumption"]["total_tokens"], 10)
+
+    def test_written_log_starts_with_initial_user_description_in_turn_one(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "test.log"
+            logger = ConversationLogger(filepath=str(log_path), conversation_id="conv-log")
+
+            logger.start_conversation()
+            initial_update = self._log_user_description(logger, "initial bug description")
+
+            @log_action(
+                logger=logger,
+                entity=Entity.bot,
+                action_name=ActionName.information_element_extraction,
+            )
+            def node():
+                return {"messages_seen": [initial_update["messages"].content]}
+
+            node()
+            logger.finish_conversation()
+            logger.write_log()
+
+            records = self._parse_json_stream(log_path.read_text())
+            self.assertEqual(records[0]["turn"], 1)
+            self.assertEqual(records[0]["actions"][0]["action_name"], "user_description")
+            self.assertEqual(
+                records[0]["actions"][0]["output"]["messages"]["content"],
+                "initial bug description",
+            )
+            self.assertEqual(
+                records[0]["actions"][1]["action_name"], "information_element_extraction"
+            )
+            self.assertEqual(records[-1]["total_conversation_turns"], 1)
 
 
 if __name__ == "__main__":
