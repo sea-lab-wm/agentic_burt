@@ -1,3 +1,0 @@
-bug_id,description_level,agent_version,log_file,log_path,title,status,parse_status,error
-10,LC_LP,bugscribe_mutli-candidate_transitions_and_screen_descriptions,bug10_LC_LP.log,logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug10_LC_LP.log,FTP server restarts on its own after being toggled and the app is dismissed from Recents,ok,ok,
-2,HC_HP,bugscribe_mutli-candidate_transitions_and_screen_descriptions,bug2_HC_HP.log,logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug2_HC_HP.log,"App crashes when applying the ""Use percent values"" display option for the Incomes by Articles report.",ok,ok,

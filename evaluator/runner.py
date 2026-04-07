@@ -13,7 +13,6 @@ import config
 from evaluator.generate_review import (
     RESULTS_ROOT,
     rebuild_manual_review_workbook,
-    rebuild_summary_csv,
 )
 from evaluator.judges import (
     InfoElementsJudgeResult,
@@ -58,7 +57,6 @@ def main() -> None:
         results_by_version.setdefault(result["agent_version"], []).append(output_path)
 
     for agent_version in results_by_version:
-        rebuild_summary_csv(agent_version)
         rebuild_manual_review_workbook(agent_version)
 
 

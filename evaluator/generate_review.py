@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import json
 from pathlib import Path
 from typing import Any
@@ -14,47 +13,6 @@ from evaluator.parsing import REPO_ROOT, load_ground_truth_rows
 RESULTS_ROOT = REPO_ROOT / "Results"
 MANUAL_REVIEW_WORKBOOK = "manual_review.xlsx"
 SEPARATOR_FILL = PatternFill(fill_type="solid", fgColor="D9D9D9")
-
-
-def rebuild_summary_csv(agent_version: str) -> Path:
-    """Regenerate the version-local summary CSV from evaluation JSON files."""
-    version_dir = RESULTS_ROOT / agent_version
-    summary_path = version_dir / "summary.csv"
-    evaluation_paths = sorted(version_dir.glob("*.evaluation.json"))
-
-    fieldnames = [
-        "bug_id",
-        "description_level",
-        "agent_version",
-        "log_file",
-        "log_path",
-        "title",
-        "status",
-        "parse_status",
-        "error",
-    ]
-
-    with summary_path.open("w", newline="", encoding="utf-8") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for evaluation_path in evaluation_paths:
-            result = json.loads(evaluation_path.read_text(encoding="utf-8"))
-            writer.writerow(
-                {
-                    "bug_id": result.get("bug_id"),
-                    "description_level": result.get("description_level"),
-                    "agent_version": result.get("agent_version"),
-                    "log_file": Path(result.get("log_path", "")).name,
-                    "log_path": result.get("log_path"),
-                    "title": result.get("title"),
-                    "status": result.get("status"),
-                    "parse_status": result.get("parse_status"),
-                    "error": result.get("error"),
-                }
-            )
-
-    return summary_path
 
 
 def rebuild_manual_review_workbook(agent_version: str) -> Path:
