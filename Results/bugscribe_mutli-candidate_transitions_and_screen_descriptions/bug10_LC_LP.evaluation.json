@@ -1,0 +1,80 @@
+{
+  "log_path": "logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug10_LC_LP.log",
+  "bug_id": 10,
+  "description_level": "LC_LP",
+  "agent_version": "bugscribe_mutli-candidate_transitions_and_screen_descriptions",
+  "app_name": "Material Files",
+  "title": "FTP server restarts on its own after being toggled and the app is dismissed from Recents",
+  "full_report": {
+    "title": "FTP server restarts on its own after being toggled and the app is dismissed from Recents",
+    "observed_behavior": "On the FTP server screen, if the user turns the FTP server on, turns it off, presses Back to leave the app, and dismisses the Files app from the Recents screen, the FTP server restarts on its own.",
+    "expected_behavior": "The FTP server should not restart on its own.",
+    "steps_to_reproduce": "1. Open the Files app.\n2. On the permission dialog, tap Allow.\n3. Tap the Navigate up button.\n4. Tap FTP server.\n5. On the FTP server screen, tap the switch to turn the FTP server on.\n6. Tap the switch to turn the FTP server off.\n7. Press Back to leave the app.\n8. In the Recents screen, dismiss the Files app."
+  },
+  "ground_truth": {
+    "bug_id": "10",
+    "app_name": "Material Files",
+    "info_elements_gt": "Buggy Behavior: the server restarts automatically\nTriggering GUI Interaction: stops the FTP server and then closes the app\nTriggering Screen Reference: FTP server screen\nCorrect Behavior: The FTP server should remain stopped",
+    "S2R_ground_truth": "1. Open app <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>\n2. Click allow <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>\n3. Click the navigation drawer button, i.e., the menu option <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>\n4. Click FTP server <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>\n5. Click the status toggle button (switch server on) <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 >\n6. Click the status toggle button (switch server off) <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>"
+  },
+  "recomputed_info_elements": {
+    "buggy_behavior": "the FTP server restarts on its own",
+    "triggering_gui_interactions": "turns the FTP server on, turns it off, presses Back to leave the app, and dismisses the Files app from the Recents screen",
+    "triggering_screen_reference": "On the FTP server screen",
+    "correct_behavior": "The FTP server should not restart on its own."
+  },
+  "info_elements_judge": {
+    "buggy_behavior": "Correct",
+    "triggering_gui_interactions": "Correct",
+    "triggering_screen_reference": "Correct",
+    "correct_behavior": "Correct"
+  },
+  "s2r_judge": [
+    {
+      "generated_step": "Open the Files app.",
+      "label": "CS",
+      "matched_gt_step": "Open app <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>"
+    },
+    {
+      "generated_step": "On the permission dialog, tap Allow.",
+      "label": "CS",
+      "matched_gt_step": "Click allow <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>"
+    },
+    {
+      "generated_step": "Tap the Navigate up button.",
+      "label": "CS",
+      "matched_gt_step": "Click the navigation drawer button, i.e., the menu option <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>"
+    },
+    {
+      "generated_step": "Tap FTP server.",
+      "label": "CS",
+      "matched_gt_step": "Click FTP server <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>"
+    },
+    {
+      "generated_step": "On the FTP server screen, tap the switch to turn the FTP server on.",
+      "label": "CS",
+      "matched_gt_step": "Click the status toggle button (switch server on) <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 >"
+    },
+    {
+      "generated_step": "Tap the switch to turn the FTP server off.",
+      "label": "CS",
+      "matched_gt_step": "Click the status toggle button (switch server off) <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>"
+    },
+    {
+      "generated_step": "Press Back to leave the app.",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "In the Recents screen, dismiss the Files app.",
+      "label": "ES",
+      "matched_gt_step": ""
+    }
+  ],
+  "judge_model": "gpt-5.4",
+  "evaluated_at": "2026-04-07T16:51:18.891102+00:00",
+  "status": "ok",
+  "error": null,
+  "parse_status": "ok",
+  "parse_error": null
+}

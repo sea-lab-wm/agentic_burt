@@ -12,9 +12,7 @@ from langchain_openai import ChatOpenAI
 import config
 from evaluator.generate_review import (
     RESULTS_ROOT,
-    rebuild_info_elements_review_workbook,
-    rebuild_s2r_review_workbook,
-    rebuild_summary_csv,
+    rebuild_manual_review_workbook,
 )
 from evaluator.judges import (
     InfoElementsJudgeResult,
@@ -59,9 +57,7 @@ def main() -> None:
         results_by_version.setdefault(result["agent_version"], []).append(output_path)
 
     for agent_version in results_by_version:
-        rebuild_summary_csv(agent_version)
-        rebuild_s2r_review_workbook(agent_version)
-        rebuild_info_elements_review_workbook(agent_version)
+        rebuild_manual_review_workbook(agent_version)
 
 
 def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[str, str]]) -> dict[str, Any]:
