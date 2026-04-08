@@ -25,7 +25,7 @@
   },
   "info_elements_judge": {
     "buggy_behavior": "Correct",
-    "triggering_gui_interactions": "Correct",
+    "triggering_gui_interactions": "Incorrect",
     "triggering_screen_reference": "Correct",
     "correct_behavior": "Correct"
   },
@@ -72,9 +72,14 @@
     }
   ],
   "judge_model": "gpt-5.4",
-  "evaluated_at": "2026-04-07T16:51:18.891102+00:00",
+  "evaluated_at": "2026-04-08T13:58:52.064919+00:00",
   "status": "ok",
   "error": null,
   "parse_status": "ok",
-  "parse_error": null
+  "parse_error": null,
+  "total_input_tokens_consumed": 177993,
+  "total_output_tokens_consumed": 2081,
+  "total_tokens_consumed": 180074,
+  "total_time_seconds_of_conversation": 236.99474491699948,
+  "total_conversation_turns": null
 }

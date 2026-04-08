@@ -83,6 +83,13 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         "error": None,
         "parse_status": context["parse_status"],
         "parse_error": context["parse_error"],
+        "total_input_tokens_consumed": context.get("total_input_tokens_consumed"),
+        "total_output_tokens_consumed": context.get("total_output_tokens_consumed"),
+        "total_tokens_consumed": context.get("total_tokens_consumed"),
+        "total_time_seconds_of_conversation": context.get(
+            "total_time_seconds_of_conversation"
+        ),
+        "total_conversation_turns": context.get("total_conversation_turns"),
     }
 
     if context["parse_status"] != "ok":

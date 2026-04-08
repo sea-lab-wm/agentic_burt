@@ -4,12 +4,12 @@
   "description_level": "HC_HP",
   "agent_version": "bugscribe_mutli-candidate_transitions_and_screen_descriptions",
   "app_name": "Family Finance",
-  "title": "App crashes when applying the \"Use percent values\" display option for the Incomes by Articles report.",
+  "title": "App crashes when enabling View values and Use percent values for the Incomes by Articles report and tapping OK",
   "full_report": {
-    "title": "App crashes when applying the \"Use percent values\" display option for the Incomes by Articles report.",
-    "observed_behavior": "On the Display of Incomes by Articles pop-up of the Reports screen, if the user checks \"View values,\" checks \"Use percent values,\" and taps \"OK,\" the application crashes.",
+    "title": "App crashes when enabling View values and Use percent values for the Incomes by Articles report and tapping OK",
+    "observed_behavior": "On the Display of Incomes by Articles pop-up of the Reports screen, if the user checks the View values checkbox, checks the Use percent values checkbox, and taps OK, the application crashes.",
     "expected_behavior": "The appearance of the report should be changed to use percent values.",
-    "steps_to_reproduce": "1. Open the app. <fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf>\n2. Tap \"Allow\" on the SMS permission dialog. <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>\n3. Tap \"Reports\" from the dashboard. <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88>\n4. Tap \"Incomes by Articles\" on the Reports screen. <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>\n5. Tap \"Display\" on the Incomes by Articles report screen. <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>\n6. Check the \"View values\" checkbox. <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>\n7. Check the \"Use percent values\" checkbox. <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>\n8. Tap \"OK.\" <26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa>"
+    "steps_to_reproduce": "1. Open the app. <fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf>\n2. Tap Allow on the SMS permission dialog. <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>\n3. Tap Reports from the main screen. <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88>\n4. Open the Incomes by Articles tab. <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>\n5. Tap Display. <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>\n6. Check View values. <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>\n7. Check Use percent values. <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>\n8. Tap OK. <ef26a526444b0c0827ef99ce6360670c18cb2ac563b206cf97bd84c9479fa5f6>\n9. If a crash dialog appears, tap OK. <6aa06c426f17d83ac768c98cc6d31a987166d855462845d0b306e83f26fa76f9>"
   },
   "ground_truth": {
     "bug_id": "2",
@@ -19,7 +19,7 @@
   },
   "recomputed_info_elements": {
     "buggy_behavior": "the application crashes",
-    "triggering_gui_interactions": "checks \"View values,\" checks \"Use percent values,\" and taps \"OK\"",
+    "triggering_gui_interactions": "checks the View values checkbox, checks the Use percent values checkbox, and taps OK",
     "triggering_screen_reference": "On the Display of Incomes by Articles pop-up of the Reports screen",
     "correct_behavior": "The appearance of the report should be changed to use percent values."
   },
@@ -36,45 +36,55 @@
       "matched_gt_step": "Open app <fa8baa4de2d1015dd5da60a38bcc25a725e918d25bafb6b4b8bafe8f727ccfcf>"
     },
     {
-      "generated_step": "Tap \"Allow\" on the SMS permission dialog. <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>",
+      "generated_step": "Tap Allow on the SMS permission dialog. <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>",
       "label": "CS",
       "matched_gt_step": "Click allow button <8407e328c4a9d75304cf3edee19af6616ae654caca4e79229e0df0c827909816>"
     },
     {
-      "generated_step": "Tap \"Reports\" from the dashboard. <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88>",
+      "generated_step": "Tap Reports from the main screen. <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88>",
       "label": "CS",
       "matched_gt_step": "Click Report <9a4f389ec16dc06bc51519fd35159ab49c667d2cae3e0323df9bf08cd98bda88"
     },
     {
-      "generated_step": "Tap \"Incomes by Articles\" on the Reports screen. <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>",
+      "generated_step": "Open the Incomes by Articles tab. <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>",
       "label": "CS",
       "matched_gt_step": "Click Incomes By Articles or expenses by articles <c010db1badf9deb0564b10c46916ad505c7d1acca0f840fdc12c4867c81990d0>"
     },
     {
-      "generated_step": "Tap \"Display\" on the Incomes by Articles report screen. <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>",
+      "generated_step": "Tap Display. <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>",
       "label": "CS",
       "matched_gt_step": "Click View Button <c7c181b4d07f85b6731edefa0c51eca8637b088e992c8d07e2349379db3cd413>"
     },
     {
-      "generated_step": "Check the \"View values\" checkbox. <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>",
+      "generated_step": "Check View values. <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>",
       "label": "CS",
       "matched_gt_step": "Click view values checkbox <dc01c666d81db01f9ceb751ff256033bcc27f75ab0951ef2f9eff49e39233d64>"
     },
     {
-      "generated_step": "Check the \"Use percent values\" checkbox. <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>",
+      "generated_step": "Check Use percent values. <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>",
       "label": "CS",
       "matched_gt_step": "Click use percent values checkbox <c3292f1abb084883da9f0bf06776dd33343b186505d53bedfbb8b83717e4b319>"
     },
     {
-      "generated_step": "Tap \"OK.\" <26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa>",
+      "generated_step": "Tap OK. <ef26a526444b0c0827ef99ce6360670c18cb2ac563b206cf97bd84c9479fa5f6>",
       "label": "CS",
       "matched_gt_step": "Click OK <26c0ae2d76021672cf80c07928394773aec07f5be831f91ab09b5f7c2392b6aa>"
+    },
+    {
+      "generated_step": "If a crash dialog appears, tap OK. <6aa06c426f17d83ac768c98cc6d31a987166d855462845d0b306e83f26fa76f9>",
+      "label": "ES",
+      "matched_gt_step": ""
     }
   ],
   "judge_model": "gpt-5.4",
-  "evaluated_at": "2026-04-07T16:51:27.433736+00:00",
+  "evaluated_at": "2026-04-08T13:59:00.114238+00:00",
   "status": "ok",
   "error": null,
   "parse_status": "ok",
-  "parse_error": null
+  "parse_error": null,
+  "total_input_tokens_consumed": 127020,
+  "total_output_tokens_consumed": 4202,
+  "total_tokens_consumed": 131222,
+  "total_time_seconds_of_conversation": 172.12570849999975,
+  "total_conversation_turns": 3
 }

@@ -19,7 +19,7 @@
   },
   "recomputed_info_elements": {
     "buggy_behavior": "the FTP server restarts (turns back on) even though it was stopped",
-    "triggering_gui_interactions": "toggles the Status switch to OFF (stop the FTP server), then presses the system Back button to leave the screen and dismisses the app from the Android Recents screen",
+    "triggering_gui_interactions": "the user toggles the Status switch to OFF (stop the FTP server), then presses the system Back button to leave the screen and dismisses the app from the Android Recents screen",
     "triggering_screen_reference": "On the FTP server screen",
     "correct_behavior": "The FTP server should stay stopped (should not restart automatically) after stopping it and closing the app."
   },
@@ -71,10 +71,15 @@
       "matched_gt_step": ""
     }
   ],
-  "judge_model": "gpt-5.2",
-  "evaluated_at": "2026-04-01T20:30:53.155773+00:00",
+  "judge_model": "gpt-5.4",
+  "evaluated_at": "2026-04-07T18:14:48.158821+00:00",
   "status": "ok",
   "error": null,
   "parse_status": "ok",
-  "parse_error": null
+  "parse_error": null,
+  "total_input_tokens_consumed": 541891,
+  "total_output_tokens_consumed": 1852,
+  "total_tokens_consumed": 543743,
+  "total_time_seconds_of_conversation": 42.09578262500054,
+  "total_conversation_turns": null
 }

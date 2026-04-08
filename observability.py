@@ -125,6 +125,7 @@ class ConversationSummaryRecord(BaseModel):
     started_at: Optional[str] = None
     ended_at: Optional[str] = None
     total_latency_seconds: Optional[float] = None
+    total_conversation_turns: int
     token_consumption: TokenConsumptionSummary
 
 
@@ -137,7 +138,7 @@ class ConversationLogger:
         self.filepath = Path(filepath)
         self.conversation_id = str(conversation_id)
         self.num_turns : int = 0
-        self.conversation : List[ConversationTurn] = [ConversationTurn(turn=self.num_turns, actions=[])]
+        self.conversation : List[ConversationTurn] = []
         self._current_action_name: Optional[ActionName] = None
         self._current_action_usage_events: List[LLMUsageEvent] = []
         self._conversation_usage_events: List[LLMUsageEvent] = []
@@ -174,6 +175,7 @@ class ConversationLogger:
             started_at=self._started_at.isoformat() if self._started_at else None,
             ended_at=self._ended_at.isoformat() if self._ended_at else None,
             total_latency_seconds=self._conversation_total_latency_seconds,
+            total_conversation_turns=self.num_turns,
             token_consumption=TokenConsumptionSummary.from_events(
                 self._conversation_usage_events
             ),
@@ -228,6 +230,10 @@ class ConversationLogger:
         if action_name == ActionName.user_description:
             self.num_turns += 1
             self.conversation.append(ConversationTurn(turn=self.num_turns, actions=[]))
+        elif not self.conversation:
+            raise ValueError(
+                "Cannot log non-user action before the first user_description turn exists."
+            )
 
         new_action = Action(entity=entity, action_name=action_name, output=output, meta_data=meta_data)
         self.conversation[-1].actions.append(new_action)
