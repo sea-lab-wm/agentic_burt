@@ -4,12 +4,12 @@
   "description_level": "LC_LP",
   "agent_version": "bugscribe_mutli-candidate_transitions_and_screen_descriptions",
   "app_name": "Material Files",
-  "title": "FTP server restarts on its own after being toggled and the app is dismissed from Recents",
+  "title": "FTP server restarts automatically after being turned off and leaving the FTP server screen",
   "full_report": {
-    "title": "FTP server restarts on its own after being toggled and the app is dismissed from Recents",
-    "observed_behavior": "On the FTP server screen, if the user turns the FTP server on, turns it off, presses Back to leave the app, and dismisses the Files app from the Recents screen, the FTP server restarts on its own.",
-    "expected_behavior": "The FTP server should not restart on its own.",
-    "steps_to_reproduce": "1. Open the Files app.\n2. On the permission dialog, tap Allow.\n3. Tap the Navigate up button.\n4. Tap FTP server.\n5. On the FTP server screen, tap the switch to turn the FTP server on.\n6. Tap the switch to turn the FTP server off.\n7. Press Back to leave the app.\n8. In the Recents screen, dismiss the Files app."
+    "title": "FTP server restarts automatically after being turned off and leaving the FTP server screen",
+    "observed_behavior": "On the FTP server screen, if the user turns the server on, turns it off, leaves the FTP server screen, and then swipes the app away from Recents, the FTP server is restarting on its own.",
+    "expected_behavior": "The FTP server should remain off after the user toggles it off and leaves the FTP server screen, and it should not restart automatically on its own.",
+    "steps_to_reproduce": "1. Open the app. <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>\n2. On the permission dialog, tap Allow. <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>\n3. Open the navigation menu by tapping Navigate up. <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>\n4. Select FTP server from the navigation drawer. <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>\n5. Tap the FTP server status switch while it is OFF to turn it ON. <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>\n6. Tap the FTP server status switch while it is ON to turn it OFF. <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5>\n7. Leave the FTP server screen by tapping Navigate up. <f5deb5a7a067fcecd183ba802aa26e2dfb3c5e38306d9407fd3b178866210afb>\n8. Tap the list item to return to the FTP server screen path context. <6766d1c12b54808176b7d8e110b78ee25e2843492f806acedcc0d8e1da70972c>\n9. Open Recents using the system Back/Recents control. <944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c>\n10. Dismiss the Files app task from Recents. <b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c>"
   },
   "ground_truth": {
     "bug_id": "10",
@@ -18,68 +18,78 @@
     "S2R_ground_truth": "1. Open app <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>\n2. Click allow <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>\n3. Click the navigation drawer button, i.e., the menu option <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>\n4. Click FTP server <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>\n5. Click the status toggle button (switch server on) <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 >\n6. Click the status toggle button (switch server off) <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>"
   },
   "recomputed_info_elements": {
-    "buggy_behavior": "the FTP server restarts on its own",
-    "triggering_gui_interactions": "turns the FTP server on, turns it off, presses Back to leave the app, and dismisses the Files app from the Recents screen",
+    "buggy_behavior": "the FTP server is restarting on its own",
+    "triggering_gui_interactions": "turns the server on, turns it off, leaves the FTP server screen, and then swipes the app away from Recents",
     "triggering_screen_reference": "On the FTP server screen",
-    "correct_behavior": "The FTP server should not restart on its own."
+    "correct_behavior": "The FTP server should remain off after the user toggles it off and leaves the FTP server screen, and it should not restart automatically on its own."
   },
   "info_elements_judge": {
     "buggy_behavior": "Correct",
-    "triggering_gui_interactions": "Incorrect",
+    "triggering_gui_interactions": "Correct",
     "triggering_screen_reference": "Correct",
     "correct_behavior": "Correct"
   },
   "s2r_judge": [
     {
-      "generated_step": "Open the Files app.",
+      "generated_step": "Open the app. <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>",
       "label": "CS",
       "matched_gt_step": "Open app <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>"
     },
     {
-      "generated_step": "On the permission dialog, tap Allow.",
+      "generated_step": "On the permission dialog, tap Allow. <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>",
       "label": "CS",
       "matched_gt_step": "Click allow <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>"
     },
     {
-      "generated_step": "Tap the Navigate up button.",
+      "generated_step": "Open the navigation menu by tapping Navigate up. <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>",
       "label": "CS",
       "matched_gt_step": "Click the navigation drawer button, i.e., the menu option <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>"
     },
     {
-      "generated_step": "Tap FTP server.",
+      "generated_step": "Select FTP server from the navigation drawer. <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>",
       "label": "CS",
       "matched_gt_step": "Click FTP server <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>"
     },
     {
-      "generated_step": "On the FTP server screen, tap the switch to turn the FTP server on.",
-      "label": "CS",
-      "matched_gt_step": "Click the status toggle button (switch server on) <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 >"
-    },
-    {
-      "generated_step": "Tap the switch to turn the FTP server off.",
+      "generated_step": "Tap the FTP server status switch while it is OFF to turn it ON. <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>",
       "label": "CS",
       "matched_gt_step": "Click the status toggle button (switch server off) <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>"
     },
     {
-      "generated_step": "Press Back to leave the app.",
+      "generated_step": "Tap the FTP server status switch while it is ON to turn it OFF. <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5>",
+      "label": "CS",
+      "matched_gt_step": "Click the status toggle button (switch server on) <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 >"
+    },
+    {
+      "generated_step": "Leave the FTP server screen by tapping Navigate up. <f5deb5a7a067fcecd183ba802aa26e2dfb3c5e38306d9407fd3b178866210afb>",
       "label": "ES",
       "matched_gt_step": ""
     },
     {
-      "generated_step": "In the Recents screen, dismiss the Files app.",
+      "generated_step": "Tap the list item to return to the FTP server screen path context. <6766d1c12b54808176b7d8e110b78ee25e2843492f806acedcc0d8e1da70972c>",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Open Recents using the system Back/Recents control. <944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c>",
+      "label": "ES",
+      "matched_gt_step": ""
+    },
+    {
+      "generated_step": "Dismiss the Files app task from Recents. <b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c>",
       "label": "ES",
       "matched_gt_step": ""
     }
   ],
   "judge_model": "gpt-5.4",
-  "evaluated_at": "2026-04-08T14:20:38.286946+00:00",
+  "evaluated_at": "2026-04-08T14:58:33.095799+00:00",
   "status": "ok",
   "error": null,
   "parse_status": "ok",
   "parse_error": null,
-  "total_input_tokens_consumed": 177993,
-  "total_output_tokens_consumed": 2081,
-  "total_tokens_consumed": 180074,
-  "total_time_seconds_of_conversation": 236.99474491699948,
-  "total_conversation_turns": null
+  "total_input_tokens_consumed": 187950,
+  "total_output_tokens_consumed": 2911,
+  "total_tokens_consumed": 190861,
+  "total_time_seconds_of_conversation": 224.47931954100022,
+  "total_conversation_turns": 3
 }

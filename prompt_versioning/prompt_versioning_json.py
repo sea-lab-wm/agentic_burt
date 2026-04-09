@@ -172,9 +172,10 @@ The **target screen** of one S2R must be the **source screen** of the next.
 - Do not hallucinate or introduce details not present in the context.
 - Maintain language clarity, precision, and consistency.
 - Once a status of 'confirmed' is assigned to an entry in the mapping, the entry CAN NOT be changed.
-- Ambiguous status is reserved for situations when there are 2-3 strong, evidence-backed alternatives for a specific mapping entry based on user wording. If user wording leaves more than 3 plausible candidates, 'unknown' status should be used.
+- Ambiguous status is reserved for situations when there are 2-3 strong, evidence-backed. alternatives for a specific mapping entry based on user wording. If user wording leaves more than 3 plausible candidates, 'unknown' status should be used.
 - Mapping entries assigned Ambiguous status must have 2-3 candidates MAXIMUM.
-- Prioritize newer evidence to break ambiguity and select the best-supported mapping
+- Prioritize newer evidence to break ambiguity and select the best-supported mapping.
+- Mapping entries assigned 'Confirmed' or 'Inferred' status must have EXACTLY 1 candidate.
 
 
 # Output Format

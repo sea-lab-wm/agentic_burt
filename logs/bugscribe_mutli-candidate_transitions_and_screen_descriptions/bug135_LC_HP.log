@@ -1,0 +1,323 @@
+{
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The Parent Categories of the current category should be displayed.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "d9187b0f-0c24-4c62-8b3d-58e0c4c4e11c"
+        }
+      },
+      "meta_data": {
+        "latency": "1.6792000678833574e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": {
+            "value": "The Parent Categories of the current category should be displayed.",
+            "evidence": [
+              "The Parent Categories of the current category should be displayed."
+            ]
+          },
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.502528541999709 s",
+        "node_token_consumption": {
+          "input_tokens": 888,
+          "output_tokens": 69,
+          "total_tokens": 957,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "2.9876517089996923 s",
+        "node_token_consumption": {
+          "input_tokens": 415,
+          "output_tokens": 21,
+          "total_tokens": 436,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8",
+                "evidence": "Expected behavior says 'The Parent Categories of the current category should be displayed.' The screen with a 'PARENT CATEGORIES' tab for the current category is CategoryDetailsActivity for 'Category:Focus stacking images of insects'."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+                  "evidence": "The expected behavior refers specifically to displaying 'Parent Categories of the current category', which most plausibly corresponds to tapping the 'PARENT CATEGORIES' tab on the category details screen."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The Parent Categories of the current category are not displayed after selecting the PARENT CATEGORIES tab.",
+                "evidence": "Derived from the stated correct behavior: 'The Parent Categories of the current category should be displayed.'"
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The Parent Categories of the current category should be displayed.",
+                "evidence": "The Parent Categories of the current category should be displayed."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a",
+                  "evidence": "Always start with opening the application."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d",
+                  "evidence": "Part of the onboarding flow leading from app launch to the main app screens."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4",
+                  "evidence": "Part of the onboarding flow leading to the final welcome screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1",
+                  "evidence": "Part of the onboarding flow leading to the final welcome screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8",
+                  "evidence": "Part of the onboarding flow leading to the final welcome screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5",
+                  "evidence": "Tap YES! to finish onboarding and continue."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4",
+                  "evidence": "Skip login to proceed into the app without authentication."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b",
+                  "evidence": "Confirm skip login to enter the Explore screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "8a5e9e75126660d60392ee6c2946d0f28be30676865462118ea818c1459fda98",
+                  "evidence": "Swipe in Explore until the screen state that contains a media item and open navigation/search controls is reached."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1",
+                  "evidence": "Open a media item from the Explore grid."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac",
+                  "evidence": "Scroll in the media details to reach the categories list."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7",
+                  "evidence": "Continue scrolling in the media details to the visible category entries."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc",
+                  "evidence": "Open the category 'Focus stacking images of insects' from the media details."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f",
+                  "evidence": "Navigate to the category's tabbed details screen where 'PARENT CATEGORIES' is available."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5",
+                  "evidence": "Triggering interaction: tap 'PARENT CATEGORIES'; the expected behavior says the parent categories should be displayed."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "17.8232827920001 s",
+        "node_token_consumption": {
+          "input_tokens": 22010,
+          "output_tokens": 1334,
+          "total_tokens": 23344,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "4.2583000322338194e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "user",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Parent categories are not shown after selecting the PARENT CATEGORIES tab on a category details screen",
+          "observed_behavior": "On the category details screen for \"Focus stacking images of insects,\" if the user taps the \"PARENT CATEGORIES\" tab, the parent categories of the current category are not displayed.",
+          "expected_behavior": "The parent categories of the current category should be displayed.",
+          "steps_to_reproduce": "1. Open the app. <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>\n2. Swipe left through the first onboarding screen. <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>\n3. Swipe left through the next onboarding screen. <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>\n4. Swipe left through the next onboarding screen. <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>\n5. Swipe left through the next onboarding screen. <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>\n6. Tap \"YES!\" to finish onboarding. <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>\n7. Tap \"Skip\" on the login screen. <bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4>\n8. Tap \"YES\" to confirm skipping login. <a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b>\n9. Swipe up in Explore to reach a screen with a media item. <8a5e9e75126660d60392ee6c2946d0f28be30676865462118ea818c1459fda98>\n10. Open a media item from Explore. <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>\n11. Swipe up in the media details screen to scroll toward the categories section. <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>\n12. Continue swiping up until the category entries are visible. <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>\n13. Tap the category \"Focus stacking images of insects.\" <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>\n14. Tap the \"PARENT CATEGORIES\" tab on the category screen. <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>\n15. Tap the \"PARENT CATEGORIES\" tab again. <6be714d047ab21effd5c736c32506e18bd08b4c8e44ecb14442be1e47d5253a5>"
+        }
+      },
+      "meta_data": {
+        "latency": "11.111696209000002 s",
+        "node_token_consumption": {
+          "input_tokens": 18769,
+          "output_tokens": 873,
+          "total_tokens": 19642,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "conversation_summary",
+  "conversation_id": "135",
+  "started_at": "2026-04-08T14:57:11.396235+00:00",
+  "ended_at": "2026-04-08T14:57:44.824420+00:00",
+  "total_latency_seconds": 33.42978250000033,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 42082,
+    "output_tokens": 2297,
+    "total_tokens": 44379,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}
