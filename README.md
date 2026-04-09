@@ -1,22 +1,29 @@
 # Agentic BURT
 
-This repository contains the BUR++ bug-reporting agent, the observability logs it produces, and the evaluator pipeline that scores generated bug reports against the development-set ground truth.
+This repository contains the BURT++ bug-reporting agent, its observability logging system, and the evaluation pipeline used to score generated bug reports against the development-set ground truth.
 
-## Repository Flow
+The current workflow is:
 
-The project has two main stages:
+1. Run the agent for one bug/description pair or for a full or diminished development set.
+2. Evaluate the resulting logs with the LLM-as-judge pipeline.
+3. Manually validate the judge outputs using the generated review workbook.
 
-1. Run BURT on a `(bug_id, description_level)` input pair.
-2. Evaluate the resulting log files and generate review artifacts.
+## Current Defaults
 
-At a high level:
+The active defaults live in [config.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/config.py). Below you can see what each deafault effects:
 
-- Input descriptions come from [`data/dev_set_info_element_gt_and_input_desc.csv`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/data/dev_set_info_element_gt_and_input_desc.csv).
-- App graphs are loaded from the SQLite-backed database used by [`burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py).
-- BURT++ writes observability logs under `logs/<prompt_version>/`.
-- The evaluator reads those logs and writes outputs under `Results/<agent_version>/`.
+1. `MODEL_NAME = ...`
+    - What gpt model the agent uses
+2. `PROMPT_VERSION = ...`
+    - what set of prompts stored in prompt_versioning is active
+    - where BURT writes logs: `logs/<PROMPT_VERSION>/`
+    - where the evaluator writes results: `Results/<agent_version>/`
+3. `DESCRIPTION_CSV_PATH = ...`
+    - the path of dev set gt and bug descriptions
+4. `DATABASE_URL = ...`
+    - the database access url
 
-## Prerequisites
+## Setup
 
 Install dependencies:
 
@@ -26,240 +33,189 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Create a `.env` file with the OpenAI credentials required by `langchain-openai`. The runtime loads environment variables with `python-dotenv` in both [`burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) and [`evaluator/runner.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py).
+Create a `.env` file in root with the OpenAI credentials required by `langchain-openai`. Both [burt.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) and [evaluator/runner.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py) load environment variables with `python-dotenv`.
 
-The current default configuration lives in [`config.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/config.py).
+Before running the agent, make sure these inputs exist:
 
-## Data Inputs
+- the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](/Users/sambennett/Desktop/BURT++/Agentic_Burt/data/dev_set_info_element_gt_and_input_desc.csv)
+- the SQLite app database at `database/apps.db`
 
-### Description CSV
+## Run The Agent
 
-[`data/dev_set_info_element_gt_and_input_desc.csv`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/data/dev_set_info_element_gt_and_input_desc.csv) is the central experiment table. It contains:
-
-- `bug_id`
-- `app_name`
-- description columns such as `LC_LP Desc`, `MC_MP Desc`, `HC_HP Desc`
-- ground-truth fields used by evaluation, including `info_elements_gt` and `S2R_ground_truth`
-
-BURT++ reads the selected description column for the initial user message. The evaluator joins the same CSV back in to recover ground truth and description text.
-
-### App Graph Database
-
-BURT expects the application execution graph and app name to be available in the SQLite database accessed by [`database/db.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/database/db.py) and [`database/database_utils.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/database/database_utils.py).
-
-If you need to load graph data, the repo includes [`database/load_data.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/database/load_data.py). That script is currently wired to a local absolute `DATA_DIR`, so you will likely need to edit it before using it in another environment.
-
-## Running BURT
-
-### Single Run
-
-Example Use [`burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) for one bug/description pair:
+Use [burt.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) for a single interactive run:
 
 ```bash
 python burt.py --bug-id 10 --description-level LC_LP
 ```
 
-`description_level` must be in the form `LC_LP`, `MC_MP`, `HC_HP`, etc. The script normalizes case and `-` vs `_`, but it still expects the `[L|M|H]C_[L|M|H]P` structure.
+Notes:
 
-### What Happens During a Run
+- `description-level` must use the format `LC_LP`, `MC_MP`, `HC_HP`, etc.
+- BURT++ pulls the initial user description from the matching `<description level> Desc` column in the dev CSV.
+- BURT++ loads the app graph and screen descriptions from the database for the requested `bug_id`.
+- If the agent needs clarification, it will interrupt in the terminal and ask follow-up questions.
+- When the run completes, BURT++ prints the final bug report and writes an observability log.
 
-The BUR++ state graph is defined in [`burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) and follows this loop:
+## Run The Full Experiment
 
-1. `information_element_extraction`
-2. `clarity_check`
-3. Optional `clarity_follow_up`
-4. `map_to_graph`
-5. `evaluate_state`
-6. Optional `more_info_follow_up`
-7. `interrupt_and_present`
-8. Repeat until no unknown or low-confidence information remains
-9. `generate_report`
-
-Operationally (Current Dev Version):
-
-- The initial message is pulled from the CSV column matching the requested description level.
-- BURT++ loads the app graph and app name for the bug ID from the database.
-- If the graph decides more information is needed, the run interrupts and asks the user follow-up questions in the terminal.
-- Once the graph is satisfied, BURT++ prints the final bug report.
-
-### Log Output
-
-BURT++ writes full conversation logs per run to:
-
-```text
-logs/<PROMPT_VERSION>/bug<bug_id>_<description_level>.log
-```
-
-Example:
-
-```text
-logs/mapping_and_clarity_check/bug10_LC_LP.log
-```
-
-The evaluator later parses these logs and looks specifically for the `generate_report` action payload.
-
-## Batch Execution
-
-[`run_all_burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/run_all_burt.py) is intended to iterate over every non-empty description cell in the CSV and run BURT for each `(bug_id, description_level)` pair.
-
-Expected usage:
+Use [run_all_burt.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/run_all_burt.py) to run every non-empty description in the CSV:
 
 ```bash
 python run_all_burt.py
 ```
 
+To restrict the batch run to specific bug/description pairs:
+
+```bash
+python run_all_burt.py --limit-desc-to "[(10, 'LC_LP'), (135, 'MC_HP')]"
+```
+
 Behavior:
 
-- It discovers every CSV column ending in ` Desc`.
-- For each row, it schedules one run for every populated description column.
-- It launches `burt.py` once per pair.
-- It prints a batch summary with failures at the end.
+- the script discovers every CSV column ending in ` Desc`
+- it runs [burt.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) once per populated `(bug_id, description_level)` pair
+- after the runs finish, it automatically evaluates the logs in `logs/<PROMPT_VERSION>/`
 
-Current caveat:
+## Agent Logging
 
-- [`run_all_burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/run_all_burt.py) currently invokes `burt.py` with `--current-bug-id`, while [`burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py) expects `--bug-id`. If you plan to use the batch script as-is, fix that argument mismatch first.
+BURT++ writes one observability log per run. These logs are the input to the evaluator.
 
-## Evaluating Logs
+Log location:
 
-Use [`evaluator/runner.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py) to evaluate one log, many logs, or an entire log directory:
-
-```bash
-python -m evaluator.runner logs/V2
+```text
+logs/<PROMPT_VERSION>/bug<bug_id>_<description_level>.log
 ```
 
-You can also point it at specific files:
+What each log includes:
+
+- one JSON record per conversation turn
+- within each turn, an `actions` list covering the user description and each logged agent step
+- for each action: the acting entity, action name, output payload, latency, and any available token-usage summary
+- the final `generate_report` action output, including the generated bug report used by the evaluator
+- a final `conversation_summary` JSON record with run-level totals such as total latency, total turns, and aggregate token consumption
+
+Logged action names currently include:
+
+- `user_description`
+- `information_element_extraction`
+- `clarity_check`
+- `clarity_follow_up`
+- `extract_and_update`
+- `evaluate`
+- `follow_up`
+- `generate_report`
+
+## Evaluate The Agent
+
+Use [evaluator/runner.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py) to evaluate one log, many logs, or a full log directory.
+
+Evaluate the current prompt-version directory:
 
 ```bash
-python -m evaluator.runner logs/V2/bug10_LC_LP.log logs/V2/bug2_MC_MP.log
+python -m evaluator.runner logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions
 ```
 
-Optional model override:
+Evaluate specific log files:
 
 ```bash
-python -m evaluator.runner logs/V2 --model gpt-5.2
+python -m evaluator.runner \
+  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug10_LC_LP.log \
+  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug135_MC_HP.log
 ```
 
-### Evaluation Steps
+Override the judge model:
 
-For each discovered log file, the evaluator:
+```bash
+python -m evaluator.runner logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions --model gpt-5.4
+```
 
-1. Parses the observability JSON records.
-2. Extracts `bug_id`, `description_level`, and `agent_version` from the log path and filename.
-3. Finds the `generate_report` action.
-4. Reads the generated `full_report` from that action.
-5. Loads the matching ground-truth row from the dev CSV.
-6. Computes information elements from observed and expected behavior.
-7. Judges information-elements with LLM.
-8. Judges S2Rs with LLM.
-9. Writes one `.evaluation.json` artifact.
-10. Rebuilds aggregate review artifacts for the version directory.
+For each log, the evaluator:
+
+1. parses the observability records
+2. extracts `bug_id`, `description_level`, and `agent_version` from the log path
+3. finds the `generate_report` action
+4. reads the final generated bug report
+5. joins the matching ground-truth row from the dev CSV
+6. recomputes information elements from the generated report
+7. runs LLM judging for information elements
+8. runs LLM judging for steps to reproduce
+9. writes one `*.evaluation.json` artifact
+10. rebuilds the manual review workbook for that agent version
 
 ## Evaluation Outputs
 
-For each `agent_version` inferred from the log directory, the evaluator writes to:
+The evaluator writes outputs under:
 
 ```text
 Results/<agent_version>/
 ```
 
-Artifacts:
+For the current default setup, that is typically:
+
+```text
+Results/bugscribe_mutli-candidate_transitions_and_screen_descriptions/
+```
+
+Current generated artifacts:
 
 - `*.evaluation.json`: one file per evaluated log
-- `summary.csv`: one row per evaluated log
-- `s2r_manual_review.xlsx`: manual review workbook for S2R judgments
-- `information_elements_manual_review.xlsx`: manual review workbook for info-element judgments
+- `manual_review.xlsx`: combined manual review workbook for all evaluated runs in one agent version
 
 Example:
 
 ```text
-Results/V2/bug10_HC_LP.evaluation.json
-Results/V2/summary.csv
-Results/V2/s2r_manual_review.xlsx
-Results/V2/information_elements_manual_review.xlsx
+Results/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug10_LC_LP.evaluation.json
+Results/bugscribe_mutli-candidate_transitions_and_screen_descriptions/manual_review.xlsx
 ```
 
-### `summary.csv`
+## Manual Validation Of LLM-As-Judge Results
 
-[`evaluator/runner.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py) rebuilds `summary.csv` from all `*.evaluation.json` files in the version directory. It includes:
+The manual review workbook currently contains three sheets:
 
-- `bug_id`
-- `description_level`
-- `agent_version`
-- `log_file`
-- `log_path`
-- `title`
-- `status`
-- `parse_status`
-- `error`
+- `S2R Review`
+- `Info Elements Review`
+- `Summary`
 
-### `s2r_manual_review.xlsx`
+What each sheet is for:
 
-The S2R review workbook is built from the judged S2R steps and currently contains:
+- `S2R Review`: manual validation of LLM labels for generated steps-to-reproduce
+- `Info Elements Review`: manual validation of LLM information-element grading
+- `Summary`: aggregated metrics across the workbook
 
-- `bug_id`
-- `app_name`
-- `agent_version`
-- `description_level`
-- `description_text`
-- `full_bug_report`
-- `s2r_gt`
-- `agent_generate_steps`
-- `LLM_evaluation`
-- `Matched_GT_by_LLM`
-- `human_evaluation`
-- `Precision`
-- `Recall`
+Important implementation detail:
 
-Important detail:
+- the current evaluator generates a single combined `manual_review.xlsx`
+- older result folders in this repo may still contain legacy files such as `s2r_manual_review.xlsx`, `information_elements_manual_review.xlsx`, or `summary.csv`
+- those older files are historical artifacts, not the current output format produced by [evaluator/generate_review.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/generate_review.py)
 
-- `human_evaluation` is initialized from `LLM_evaluation`.
-- The `Precision` and `Recall` formulas count `CS` values from `human_evaluation`, not from the original LLM column.
-- This workbook is intended for manual correction after the automatic judge pass.
+## Recommended End-To-End Flow
 
-### `information_elements_manual_review.xlsx`
-
-The information-elements review workbook contains:
-
-- `bug_id`
-- `app_name`
-- `agent_version`
-- `description_level`
-- `description_text`
-- `full_generated_bug_report`
-- `info_elements_gt`
-- `agent_generated_info_elements`
-- `buggy_behavior_grade`
-- `triggering_gui_interactions_grade`
-- `triggering_screen_reference_grade`
-- `correct_behavior_grade`
-
-Important detail:
-- This workbook is intended for manual correction after the automatic judge pass.
-
-## Recommended End-to-End Workflow
-
-For a normal experiment cycle:
-
-1. Ensure the description CSV and app-graph database are populated.
-2. Run BURT for the desired `(bug_id, description_level)` pairs.
-3. Confirm logs were written to `logs/<prompt_version>/`.
-4. Run the evaluator on those logs.
-5. Inspect `Results/<agent_version>/summary.csv` for failures.
-6. Manually review `s2r_manual_review.xlsx`.
-7. Manually review `information_elements_manual_review.xlsx`.
-
-Minimal example:
+Single run:
 
 ```bash
-python burt.py --bug-id 10 --description-level LC_LP
-python -m evaluator.runner logs/mapping_and_clarity_check
+python burt.py --bug-id [bug_id] --description-level [desc_level]
+python -m evaluator.runner logs/[agent_version_of_previous_run]/bug[bug_id]_[desc_level].log
 ```
+
+Batch run:
+
+```bash
+python run_all_burt.py
+```
+
+After evaluation:
+
+1. open `Results/<agent_version>/manual_review.xlsx`
+2. review the `S2R Review` sheet
+3. review the `Info Elements Review` sheet
+4. use the `Summary` sheet for aggregated counts and averages
 
 ## Key Files
 
-- [`burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py): single-run interactive BURT CLI
-- [`run_all_burt.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/run_all_burt.py): batch launcher across the CSV
-- [`evaluator/runner.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py): evaluation entry point and workbook generation
-- [`evaluator/parsing.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/parsing.py): log discovery and parsing helpers
-- [`data/dev_set_info_element_gt_and_input_desc.csv`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/data/dev_set_info_element_gt_and_input_desc.csv): experiment input and ground-truth CSV
-- [`config.py`](/Users/sambennett/Desktop/BURT++/Agentic_Burt/config.py): default model/version configuration
+- [burt.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/burt.py): single-run BURT CLI
+- [run_all_burt.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/run_all_burt.py): batch runner plus evaluator trigger
+- [evaluator/runner.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/runner.py): evaluation entry point
+- [evaluator/generate_review.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/generate_review.py): manual review workbook generation
+- [evaluator/parsing.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/evaluator/parsing.py): log discovery and parsing
+- [data/dev_set_info_element_gt_and_input_desc.csv](/Users/sambennett/Desktop/BURT++/Agentic_Burt/data/dev_set_info_element_gt_and_input_desc.csv): input descriptions and ground truth
+- [config.py](/Users/sambennett/Desktop/BURT++/Agentic_Burt/config.py): active model and prompt-version defaults
