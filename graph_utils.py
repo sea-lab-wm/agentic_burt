@@ -1,3 +1,5 @@
+"""Prompt-loading and LLM helper utilities for the BURT runtime."""
+
 from state import (
     BugAgentState,
     CandidateMapping,
@@ -26,6 +28,7 @@ PROMPT_VERSIONING_JSON = Path(__file__).with_name("prompt_versioning") / "prompt
 
 @lru_cache(maxsize=1)
 def _load_prompt_records() -> list[dict[str, Any]]:
+    """Load the full prompt-version history from the JSON source file."""
     with PROMPT_VERSIONING_JSON.open("r", encoding="utf-8") as json_file:
         prompt_records = json.load(json_file)
 
@@ -38,6 +41,7 @@ def _load_prompt_records() -> list[dict[str, Any]]:
 
 
 def _load_prompt_record(version: str | int | None = PROMPT_VERSION) -> dict[str, Any]:
+    """Load one prompt-version record by title or 1-based index."""
     prompt_records = _load_prompt_records()
     if not prompt_records:
         raise ValueError(f"No prompt versions were found in {PROMPT_VERSIONING_JSON}.")
@@ -65,6 +69,7 @@ def _load_prompt_record(version: str | int | None = PROMPT_VERSION) -> dict[str,
 
 
 def load_prompt_template(prompt_key: str, version: str | int | None = PROMPT_VERSION) -> str:
+    """Load one prompt template string from the selected prompt version."""
     prompt_record = _load_prompt_record(version)
     prompts = prompt_record.get("prompts")
     if not isinstance(prompts, dict):
@@ -90,24 +95,7 @@ def llm_extract(
     target_info_elements: list[str] | None = None,
     extraction_mode: Literal["initial", "more_info_follow_up", "clarity_follow_up"] = "initial",
 ) -> InformationElementExtraction:
-    """
-    Handles LLM query for information_element_extraction node.
-
-    :param user_messages: ordered list of user descriptions from the active clarification window
-    :type user_messages: list[str]
-    :param model: active chat model
-    :type model: Any
-    :param app_name: application name for bug context
-    :type app_name: str
-    :param follow_up_question: last agent follow-up question, when extracting from a follow-up response
-    :type follow_up_question: str | None
-    :param target_info_elements: flat list of targeted info elements for more-info follow-ups
-    :type target_info_elements: list[str] | None
-    :param extraction_mode: whether input text is an initial description or a specific follow-up response
-    :type extraction_mode: Literal["initial", "more_info_follow_up", "clarity_follow_up"]
-    :return: extracted natural language information elements
-    :rtype: InformationElementExtraction
-    """
+    """Extract information elements from user messages in the requested mode."""
 
     system_template = load_prompt_template("information_element_extraction")
     user_messages_text = "\n".join(f"- {message}" for message in user_messages)
@@ -176,18 +164,7 @@ def llm_extract(
 def llm_check_clarity(
     information_element_extraction: InformationElementExtraction, model: Any, app_name: str
 ) -> ClaritySchema:
-    """
-    Handles LLM query for clarity_check node.
-
-    :param information_element_extraction: current extracted natural language information elements
-    :type information_element_extraction: InformationElementExtraction
-    :param model: active chat model
-    :type model: Any
-    :param app_name: application name for bug context
-    :type app_name: str
-    :return: route decision and clarity issues
-    :rtype: ClaritySchema
-    """
+    """Run the clarity-check prompt against extracted information elements."""
 
     system_template = load_prompt_template("clarity_check")
 
@@ -208,6 +185,7 @@ def llm_check_clarity(
     return clarity_result
 
 def remove_empty_info_elements(info_elements : InformationElementExtraction) -> str:
+    """Render only populated information elements into prompt-friendly text."""
     non_empty_sections = []
 
     for field_name, element in info_elements:
@@ -227,10 +205,12 @@ def remove_empty_info_elements(info_elements : InformationElementExtraction) -> 
 
 
 def is_unresolved_slot(slot: Slot) -> bool:
+    """Return whether a slot is still unknown or ambiguous."""
     return slot.status in {SlotStatus.unknown, SlotStatus.ambiguous}
 
 
 def get_resolved_candidate(slot: Slot, field_name: str) -> CandidateMapping:
+    """Return the single resolved candidate for a confirmed or inferred slot."""
     if slot.status not in {SlotStatus.inferred, SlotStatus.confirmed}:
         raise ValueError(
             f"{field_name} must be resolved before use; got status={slot.status.value!r}."
@@ -240,6 +220,7 @@ def get_resolved_candidate(slot: Slot, field_name: str) -> CandidateMapping:
 
 
 def stringify_slot(slot: Slot) -> str:
+    """Serialize one slot into compact JSON for prompt inclusion."""
     return json.dumps(
         {
             "status": slot.status.value,
@@ -249,6 +230,7 @@ def stringify_slot(slot: Slot) -> str:
 
 
 def format_bug_info_for_prompt(info: InfoSlots) -> str:
+    """Render structured bug info into the text block used by prompt templates."""
     sections = []
 
     for name, content in info:
@@ -268,6 +250,7 @@ def format_bug_info_for_prompt(info: InfoSlots) -> str:
 
 
 def _reference_label(field_name: str) -> str:
+    """Normalize internal field names to the label form expected by prompts."""
     if field_name == "triggering_GUI_interactions":
         return "triggering_gui_interactions"
     return field_name
@@ -276,7 +259,7 @@ def _reference_label(field_name: str) -> str:
 def format_unknown_or_ambiguous_references(
     info: InfoSlots,
     references: set[str] | list[str],
-) -> ClarityFollowUpSchema:
+) -> str:
     """
     Format unresolved mapping references as an ordered, user-model-facing list.
 
@@ -310,21 +293,8 @@ def llm_clarity_follow_up(
     clarity_issues: list[str],
     model: Any,
     app_name: str,
-) -> str:
-    """
-    Handles LLM query to generate clarity-focused follow-up question(s).
-
-    :param information_element_extraction: extracted natural language information elements
-    :type information_element_extraction: InformationElementExtraction
-    :param clarity_issues: list of clarity issues identified by clarity_check
-    :type clarity_issues: list[str]
-    :param model: active chat model
-    :type model: Any
-    :param app_name: application name for bug context
-    :type app_name: str
-    :return: structured follow-up question(s) to resolve clarity issues
-    :rtype: ClarityFollowUpSchema
-    """
+) -> ClarityFollowUpSchema:
+    """Generate a structured follow-up question for clarity issues."""
 
     system_template = load_prompt_template("clarity_follow_up")
 
@@ -355,25 +325,7 @@ def llm_map(
     model: Any,
     app_name: str,
 ) -> ExtractionSchema:
-    """
-    Handles LLM query for the map_to_graph node.
-
-    Uses extracted natural-language information elements and the existing mapped bug
-    state to produce a structured mapping update grounded in the application graph.
-
-    :param current_bug_info: Current grounded bug information state
-    :type current_bug_info: InfoSlots
-    :param app_graph: String representation of current application execution model
-    :type app_graph: str
-    :param extracted_information_elements: Labeled natural-language information elements
-    :type extracted_information_elements: InformationElementExtraction
-    :param model: Active chat model used for structured mapping
-    :type model: Any
-    :param app_name: application name for bug context
-    :type app_name: str
-    :return: Structured mapping update for bug information slots
-    :rtype: ExtractionSchema
-    """
+    """Ground extracted information elements into the structured bug mapping."""
 
     system_template = load_prompt_template("map_to_graph")
 
@@ -393,34 +345,20 @@ def llm_map(
         extracted_information_elements=remove_empty_info_elements(extracted_information_elements)
         
     )
-
-    #create a wrapper around model calling that enforces that the model return information according to the ExtractionSchema above
     structured = model.with_structured_output(ExtractionSchema)
 
     extraction = structured.invoke(messages)
 
     return extraction
 
-#This method will eventually check that the llm extracted information for triggering_screen_reference, triggering_GUI_interactions, and steps_to_reproduce are all valid hashes from the execution model
-#def validate_llm_extract():
-
 def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema) -> dict:
-    """
-    Converts ExtractionSchema containing bug report information to format compatible with langraph node state update functionality (dict).
-    Maintains current InfoSlots if LLM does not add them in its updated mapping,
-    then clears transient natural-language extraction state after mapping.
-    
-    :param state: Current BugAgentState object
-    :type state: BugAgentState
-    :param extraction: Schema defining
-    :type extraction: ExtractionSchema
-    :return: Description
-    :rtype: dict
+    """Convert a mapping extraction into a LangGraph-compatible state update.
+
+    Existing bug-info values are retained for any fields the model leaves unset,
+    and transient extraction state is cleared after the mapping update.
     """
     current = state.BugInfo
 
-    #In this current state, if the LLM does not add anything to the sate during its current extraction, the old state values are kept
-    #Might need to change this later as the LLM should have the ability to reset a value to unknown if new information disuades it from its last selection for a specific field
     updated = InfoSlots(
         triggering_screen_reference=extraction.triggering_screen_reference or current.triggering_screen_reference,
         triggering_GUI_interactions=extraction.triggering_GUI_interactions or current.triggering_GUI_interactions,
@@ -435,13 +373,8 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
         "clarification_window_start_idx": len(state.messages),
     }
 
-def find_unknown_or_ambiguous(info: InfoSlots):
-    """
-    Scans through all bug info slots(buggy screen, expected behavior, etc.) and flags info slots with low confidence or unknown status
-    
-    :param info: InfoSlots from active BugAgentState object
-    :type info: InfoSlots
-    """
+def find_unknown_or_ambiguous(info: InfoSlots) -> set[str]:
+    """Return references to any bug-info slots that remain unresolved."""
     flagged = set()
 
     for name, content in info:
@@ -466,21 +399,7 @@ def llm_more_info_follow_up(
     model: Any,
     app_name: str,
 ) -> MoreInfoFollowUpSchema:
-
-    """
-    Handles LLM query to generate follow up question based on unknown and ambiguous InfoSlots in current agent state.
-    
-    :param stringified_bug_info: String representation of current agent state
-    :type stringified_bug_info: str
-    :param app_graph: String representation of current application execution model
-    :type app_graph: str
-    :param formatted_unknown_and_low_confidence_info: Stringified reference list of names of fields identified as ambiguous or unknown
-    :type formatted_unknown_and_low_confidence_info: str
-    :param app_name: application name for bug context
-    :type app_name: str
-    :return: Structured follow-up output containing question text and targeted info elements
-    :rtype: MoreInfoFollowUpSchema
-    """
+    """Generate a structured follow-up question for unresolved bug-info slots."""
 
     system_template = load_prompt_template("more_info_follow_up")
 
@@ -505,12 +424,7 @@ def llm_more_info_follow_up(
     return structured.invoke(messages)
 
 def validate_info_status(complete_bug_info : InfoSlots) -> None:
-    """
-    Validate that all bug-info slots are fully resolved before downstream use.
-
-    :param complete_state: Completed BugAgentState object
-    :type complete_state: BugAgentState
-    """
+    """Validate that all bug-info slots are resolved before report generation."""
     get_resolved_candidate(
         complete_bug_info.triggering_screen_reference,
         "triggering_screen_reference",
@@ -528,10 +442,8 @@ def validate_info_status(complete_bug_info : InfoSlots) -> None:
     for step in complete_bug_info.steps_to_reproduce:
         get_resolved_candidate(step, "steps_to_reproduce")
 
-def generate_report(complete_bug_info: InfoSlots, app_graph: str, model: Any, app_name: str) -> str:
-    """
-    Generate High-Quality Textual Bug Report from Complete Bug InfoSlots
-    """
+def generate_report(complete_bug_info: InfoSlots, app_graph: str, model: Any, app_name: str) -> dict[str, Any]:
+    """Generate the final structured bug-report payload from resolved bug info."""
 
     validate_info_status(complete_bug_info)
     structured_bug_report_mapping = format_bug_info_for_prompt(complete_bug_info)
