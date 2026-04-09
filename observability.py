@@ -1,3 +1,5 @@
+"""Observability models and helpers for runtime logging and token tracking."""
+
 from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps
@@ -9,16 +11,12 @@ from langchain_core.callbacks import BaseCallbackHandler
 from pydantic import BaseModel, StrictStr
 
 class Entity(str, Enum):
-    """
-    Defines entities that can execute actions in the application.
-    """
+    """Actors that can produce logged actions."""
     user = "user"
     bot = "bot"
 
 class ActionName(str, Enum):
-    """
-    Defines names of actions that can be executed during the lifecycle of the application
-    """
+    """Runtime action names that can appear in observability logs."""
     user_description = "user_description"
     information_element_extraction = "information_element_extraction"
     clarity_check = "clarity_check"
@@ -29,28 +27,25 @@ class ActionName(str, Enum):
     generate_report = "generate_report"
 
 class MetaData(BaseModel):
-    """
-    Defines Meta
-    """
+    """Per-action metadata stored alongside a logged output."""
     latency: str
     node_token_consumption: Optional["TokenConsumptionSummary"] = None
 
 class Action(BaseModel):
-    """
-    Defines how agent and user actions are logged.
-    Each action in the application must have an entity (see Entity class above), an action name (see ActionName class above), an output (partial state update or user description) and meta data (latency, tokens consumed, etc.)
-    """
+    """One logged user or agent action inside a conversation turn."""
     entity : Entity
     action_name : ActionName
     output : dict[str, Any] | StrictStr
     meta_data : MetaData
 
 class ConversationTurn(BaseModel):
+    """One logged conversation turn containing one or more actions."""
     turn : int
     actions : List[Action]
 
 
 class LLMUsageEvent(BaseModel):
+    """Normalized token-usage event captured from one provider response."""
     input_tokens: Optional[int] = None
     output_tokens: Optional[int] = None
     total_tokens: Optional[int] = None
@@ -60,6 +55,7 @@ class LLMUsageEvent(BaseModel):
 
 
 class TokenConsumptionSummary(BaseModel):
+    """Aggregate token-usage totals and capture-quality counters."""
     input_tokens: Optional[int] = None
     output_tokens: Optional[int] = None
     total_tokens: Optional[int] = None
@@ -120,6 +116,7 @@ class TokenConsumptionSummary(BaseModel):
 
 
 class ConversationSummaryRecord(BaseModel):
+    """Final conversation-level summary appended to each log file."""
     record_type: str = "conversation_summary"
     conversation_id: str
     started_at: Optional[str] = None
@@ -130,9 +127,7 @@ class ConversationSummaryRecord(BaseModel):
 
 
 class ConversationLogger:
-    """
-    Captures conversation between user and bot.
-    """
+    """Collect and serialize turn-by-turn runtime observability records."""
 
     def __init__(self, filepath: str, conversation_id: str):
         self.filepath = Path(filepath)
@@ -149,9 +144,7 @@ class ConversationLogger:
         self._summary_record: Optional[ConversationSummaryRecord] = None
 
     def start_conversation(self):
-        """
-        Mark the beginning of a conversation for global latency tracking.
-        """
+        """Mark the beginning of a conversation for global latency tracking."""
         self._started_at = datetime.now(timezone.utc)
         self._conversation_start_perf = time.perf_counter()
 
@@ -182,9 +175,7 @@ class ConversationLogger:
         )
 
     def start_action(self, action_name: ActionName):
-        """
-        Begin node/action-scoped LLM usage capture.
-        """
+        """Begin action-scoped LLM-usage capture for the next logged action."""
         self._current_action_name = action_name
         self._current_action_usage_events = []
 
@@ -201,11 +192,7 @@ class ConversationLogger:
         self._conversation_usage_events.append(usage_event)
 
     def end_action(self) -> Optional[TokenConsumptionSummary]:
-        """
-        End node/action-scoped capture and return its aggregate token summary.
-
-        Returns None when no LLM calls were observed for the action.
-        """
+        """End action-scoped capture and return its aggregate token summary."""
         if not self._current_action_usage_events:
             self._current_action_name = None
             return None
@@ -216,16 +203,10 @@ class ConversationLogger:
         return summary
 
     def add_action_to_conversation(self, entity : Entity, action_name : ActionName, output, meta_data : MetaData):
-        """
-        Add action to log of current conversation turn. 
-        Adds conversation turn to conversation at the beginning of new conversation turn (ie. new user response recieved)
-        
-        :param entity: Entity that performed the action
-        :type entity: Entity
-        :param action_name: Name of action that was performed
-        :type action_name: ActionName
-        :param output: Output of action that was performed
-        :type output: str or dict[str, Any]
+        """Append one action to the current conversation turn.
+
+        A new turn is created when the logged action is ``user_description``.
+        All other actions are appended to the most recent turn.
         """
         if action_name == ActionName.user_description:
             self.num_turns += 1
@@ -239,9 +220,7 @@ class ConversationLogger:
         self.conversation[-1].actions.append(new_action)
 
     def write_log(self):
-        """
-        Write contents of self.conversation to log file in JSON format
-        """
+        """Write conversation turns and the final summary record to disk."""
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
         with open(self.filepath, "w") as f:
             for action in self.conversation:
@@ -255,9 +234,7 @@ class ConversationLogger:
 
 
 def _coerce_optional_int(value: Any) -> Optional[int]:
-    """
-    Best-effort conversion of numeric-like values to int.
-    """
+    """Best-effort conversion of a numeric-like value to ``int``."""
     if value is None:
         return None
     try:
@@ -267,9 +244,7 @@ def _coerce_optional_int(value: Any) -> Optional[int]:
 
 
 def _extract_token_usage(token_usage: dict[str, Any]) -> tuple[Optional[int], Optional[int], Optional[int]]:
-    """
-    Normalize provider token-usage payload keys into (input, output, total).
-    """
+    """Normalize provider token-usage payload keys into input/output/total."""
     input_tokens = _coerce_optional_int(
         token_usage.get("input_tokens", token_usage.get("prompt_tokens"))
     )
@@ -283,14 +258,10 @@ def _extract_token_usage(token_usage: dict[str, Any]) -> tuple[Optional[int], Op
 
 
 class ObservabilityTokenCallback(BaseCallbackHandler):
-    """
-    Captures provider-reported token usage and forwards normalized events to ConversationLogger.
-    """
+    """Capture provider token usage and forward normalized events to the logger."""
 
     def __init__(self, logger: ConversationLogger, provider: str = "openai"):
-        """
-        Initialize callback with logger sink and provider label.
-        """
+        """Initialize the callback with a logger sink and provider label."""
         super().__init__()
         self.logger = logger
         self.provider = provider
@@ -379,16 +350,7 @@ class ObservabilityTokenCallback(BaseCallbackHandler):
         )
 
 def log_action(logger : ConversationLogger, entity : Entity, action_name : ActionName):
-    """
-    Decorator Factory that allows for traceable per-action logging of application events.
-    
-    :param logger: Active logger object
-    :type logger: ConversationLogger
-    :param entity: Entity that performed the action to be logged
-    :type entity: Entity
-    :param action_name: Name of action to be logged
-    :type action_name: ActionName
-    """
+    """Build a decorator that logs one runtime action and its metadata."""
     def decorator(node_func):
         @wraps(node_func)
         def wrapper(*args, **kwargs):

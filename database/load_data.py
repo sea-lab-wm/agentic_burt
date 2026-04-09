@@ -1,3 +1,5 @@
+"""Utilities for loading selected graph data into the local SQLite database."""
+
 from db import SessionLocal
 from models import Bug
 from graph_data_parser import get_graph_file_path, filter_graph
@@ -24,6 +26,18 @@ SELECTED_DATA = {
 db_session = SessionLocal()
 
 def load_data():
+    """Load the selected bug graphs into the database.
+
+    For each bug listed in ``SELECTED_DATA``, this script:
+
+    1. locates the raw ``graph.txt`` file on disk
+    2. filters the graph content used at runtime
+    3. generates screen descriptions from the unfiltered graph
+    4. inserts the resulting graph payloads into the ``Bug`` table
+
+    The script currently expects a locally available graph-data directory and is
+    intended as a manual data-loading utility rather than a portable CLI.
+    """
     env_path = Path(__file__).resolve().parent.parent / ".env"
     load_dotenv(env_path)
 
@@ -31,8 +45,10 @@ def load_data():
     mode = "dev" #change to test to load test set data 
 
     if mode == "dev":
+        #TODO: change this to a in repository directory holding AstroBR and EULER graphs
         DATA_DIR = "/Users/sambennett/desktop/BURT++/bug_reporting_with_llm/graph_data/graphs_json_data_AstroBR"
     elif mode == "test":
+        #TODO: wire up test set
         DATA_DIR = ""
     else:
         raise(ValueError("Please set mode to either 'dev' or 'test"))

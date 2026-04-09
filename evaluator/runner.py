@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""CLI entry point for evaluating BURT observability logs."""
+
 import argparse
 import json
 from datetime import datetime, timezone
@@ -61,7 +63,12 @@ def main() -> None:
 
 
 def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[str, str]]) -> dict[str, Any]:
-    """Evaluate one parsed BURT log and return the persisted JSON payload."""
+    """Evaluate one BURT log and return the JSON-ready result payload.
+
+    This function combines parsed runtime metadata, recomputed information
+    elements, and both judge passes into the artifact structure later written to
+    ``Results/<agent_version>/``.
+    """
     context = build_log_context(log_path, ground_truth_rows)
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -154,7 +161,7 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
 
 
 def write_evaluation_result(result: dict[str, Any]) -> Path:
-    """Write one evaluation JSON under Results/<agent_version>/."""
+    """Persist one evaluation JSON artifact under ``Results/<agent_version>/``."""
     version_dir = RESULTS_ROOT / result["agent_version"]
     version_dir.mkdir(parents=True, exist_ok=True)
     output_path = version_dir / f"{Path(result['log_path']).stem}.evaluation.json"

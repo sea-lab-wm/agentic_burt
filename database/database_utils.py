@@ -4,7 +4,7 @@ from database.models import Bug
 
 def fetch_graph_data(session: Session, bug_id: int) -> str | None:
     """
-    Fetch the application execution graph from the SQLite database by bug_id
+    Fetches the application execution information necesarry for reasoning on the current bug description from the SQLite database by bug_id
     """
 
     graph = select(Bug.gui_graph).where(Bug.bug_id == bug_id)

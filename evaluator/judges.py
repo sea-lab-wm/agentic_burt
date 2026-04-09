@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Structured LLM judge helpers used by the evaluator pipeline."""
+
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -45,7 +47,12 @@ class S2RJudgeResult(BaseModel):
 
 
 def extract_information_elements_from_OB_EB(observed_behavior: str, expected_behavior: str, model: Any) -> dict[str, str]:
-    """Evaluator-local copy of the runtime OB/EB extraction helper."""
+    """Extract information elements from observed and expected behavior text.
+
+    The evaluator derives these elements directly from the final generated bug
+    report so downstream judging can compare a structured extraction against the
+    CSV ground truth.
+    """
     system_template = """# Task Summary:
 
     You are an experienced Android application developer. Your task is to extract four information elements, i.e., **Buggy Behavior**, **Triggering GUI Interactions**, **Triggering Screen References**, and **Correct Behavior**, from the given **Observed Behavior (OB)** and **Expected Behavior (EB)** of an Android app bug report.
@@ -107,7 +114,7 @@ def judge_information_elements(
     ground_truth_info_elements: str,
     model: Any,
 ) -> InfoElementsJudgeResult:
-    """Score recomputed information elements against CSV ground truth."""
+    """Score information elements against CSV ground truth labels."""
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", INFO_ELEMENTS_JUDGE_PROMPT),
@@ -124,7 +131,7 @@ def judge_information_elements(
 
 
 def judge_s2r(generated_s2rs: str, ground_truth_s2r: str, model: Any) -> S2RJudgeResult:
-    """Judge generated steps-to-reproduce against CSV ground truth."""
+    """Judge generated steps-to-reproduce against ground-truth steps."""
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", S2R_JUDGE_PROMPT),

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Parsing helpers for turning BURT log files into evaluator input records."""
+
 import csv
 import json
 import re
@@ -114,7 +116,12 @@ def find_conversation_summary_record(records: list[dict[str, Any]]) -> dict[str,
 
 
 def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str]]) -> dict[str, Any]:
-    """Build the normalized evaluator input for one log file."""
+    """Build the normalized evaluator input context for one log file.
+
+    The returned dictionary combines path-derived metadata, parsed log contents,
+    conversation-summary metrics, and the matching ground-truth CSV row when one
+    can be resolved.
+    """
     metadata = extract_log_metadata(log_path)
     records = parse_json_records(log_path)
     generate_report_action = find_generate_report_action(records)

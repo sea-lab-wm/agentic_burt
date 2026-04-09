@@ -1,12 +1,11 @@
+"""Structured-output schemas used by runtime LLM calls."""
+
 from pydantic import BaseModel, Field, StrictStr
 from typing import List, Optional, Literal
 from state import Slot
 
 class ExtractionSchema(BaseModel):
-    """
-    Defines the structured output for the map_to_graph node so updated key bug
-    information can be cleanly loaded into agent state.
-    """
+    """Structured mapping update returned by the graph-grounding step."""
     triggering_screen_reference: Optional[Slot] = Field(
         default=None,
         description=(
@@ -45,9 +44,7 @@ class ExtractionSchema(BaseModel):
     )
 
 class ClarityFollowUpSchema(BaseModel):
-    """
-    Structured output for clarity-focused follow-up generation.
-    """
+    """Structured output for clarity-focused follow-up generation."""
 
     follow_up_question: StrictStr = Field(
         description="A follow-up question that resolves clarity issues in extracted user information."
@@ -55,9 +52,7 @@ class ClarityFollowUpSchema(BaseModel):
 
 
 class MoreInfoFollowUpSchema(BaseModel):
-    """
-    Structured output for missing-information follow-up generation.
-    """
+    """Structured output for missing-information follow-up generation."""
 
     follow_up_question: StrictStr = Field(
         description="A follow-up question that asks the user for missing or ambiguous bug information."
@@ -70,6 +65,7 @@ class MoreInfoFollowUpSchema(BaseModel):
     )
 
 class ReportGenerationSchema(BaseModel):
+    """Structured bug-report payload returned by final report generation."""
     title : StrictStr = Field(
         description="The title of the generated bug report"
     )
@@ -84,6 +80,7 @@ class ReportGenerationSchema(BaseModel):
     )
 
 class ClaritySchema(BaseModel):
+    """Structured clarity decision returned by the clarity-check step."""
     clarity_route : Literal["continue", "needs_clarification"] = Field(
         description="The model's clarity decision: 'continue' when extracted elements are clear, otherwise 'needs_clarification'."
     )

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Workbook-generation helpers for manual review of evaluator outputs."""
+
 import json
 from pathlib import Path
 from typing import Any
@@ -16,7 +18,7 @@ SEPARATOR_FILL = PatternFill(fill_type="solid", fgColor="D9D9D9")
 
 
 def rebuild_manual_review_workbook(agent_version: str) -> Path:
-    """Build a manual-review workbook with both S2R and info-elements review sheets."""
+    """Rebuild the combined manual-review workbook for one agent version."""
     version_dir = RESULTS_ROOT / agent_version
     workbook_path = version_dir / MANUAL_REVIEW_WORKBOOK
     evaluation_paths = sorted(version_dir.glob("*.evaluation.json"))
@@ -195,7 +197,7 @@ def _populate_info_elements_review_sheet(
 def _populate_summary_sheet(
     sheet: Any, agent_version: str, evaluation_results: list[dict[str, Any]]
 ) -> None:
-    """Populate one workbook-level summary row for the current agent version."""
+    """Populate the workbook summary sheet for the current agent version."""
     headers = [
         "agent_version",
         "s2r_cs_count",
@@ -265,7 +267,7 @@ def _populate_summary_sheet(
 
 
 def _append_numeric_metric(values: list[float], candidate: Any) -> None:
-    """Append a numeric metric value when present."""
+    """Append one numeric metric to an accumulator list when it is valid."""
     if isinstance(candidate, (int, float)) and not isinstance(candidate, bool):
         values.append(float(candidate))
 
@@ -288,7 +290,7 @@ def _build_s2r_ms_count_formula(row_number: int) -> str:
 
 
 def _build_sheet_average_formula(sheet_name: str, value_column: str) -> str:
-    """Average non-blank values for one workbook review column."""
+    """Build an Excel formula that averages non-blank values in one column."""
     return (
         f'=IFERROR(SUM(\'{sheet_name}\'!${value_column}$2:${value_column}$1048576)/'
         f'COUNTIF(\'{sheet_name}\'!${value_column}$2:${value_column}$1048576,"<>"),"")'
@@ -313,7 +315,7 @@ def _lookup_description_text(gt_row: dict[str, str] | None, description_level: s
 
 
 def _build_full_bug_report_text(result: dict[str, Any]) -> str:
-    """Compose a consistent generated bug report text block."""
+    """Compose a display-friendly bug-report text block for workbook cells."""
     full_report = result.get("full_report") or {}
     parts = [
         ("Title", full_report.get("title")),
@@ -338,12 +340,12 @@ def _format_agent_generated_info_elements(info_elements: dict[str, str] | None) 
 
 
 def _build_precision_formula(start_row: int, end_row: int) -> str:
-    """Build the per-block precision formula from the human evaluation column."""
+    """Build the per-block precision formula from human-evaluation labels."""
     return f'=IFERROR(COUNTIF(K{start_row}:K{end_row},"CS")/COUNTA(K{start_row}:K{end_row}),"")'
 
 
 def _build_recall_formula(start_row: int, end_row: int, gt_count: int) -> str:
-    """Build the per-block recall formula from the human evaluation column."""
+    """Build the per-block recall formula from human-evaluation labels."""
     if gt_count <= 0:
         return ""
     return f'=COUNTIF(K{start_row}:K{end_row},"CS")/{gt_count}'

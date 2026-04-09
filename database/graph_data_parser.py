@@ -3,6 +3,11 @@ import os
 
 
 def get_graph_file_path(data_folder_path, bug_id):
+    """Return the first graph file found for a bug's graph-data folder.
+
+    The on-disk dataset is expected to be organized as ``Bug<id>/<run_dir>/*graph.txt``.
+    This helper resolves that structure and returns the first matching graph file.
+    """
     bug_folder_path = os.path.join(data_folder_path, f"Bug{bug_id}")
     if not os.path.isdir(bug_folder_path):
         raise FileNotFoundError(f"Bug folder not found: {bug_folder_path}")
@@ -32,6 +37,11 @@ def get_graph_file_path(data_folder_path, bug_id):
     return graph_file_path
 
 def remove_states_from_graph(graph_text):
+    """Trim the raw graph text before the ``States`` section.
+
+    BURT currently uses the transition-heavy prefix of the graph file at runtime and
+    excludes the verbose ``States`` block from the stored graph text.
+    """
     states_header_match = re.search(r"^States \(\d+\):\s*$", graph_text, re.MULTILINE)
     
     if not states_header_match:
@@ -40,15 +50,17 @@ def remove_states_from_graph(graph_text):
     return graph_text[:states_header_match.start()].rstrip()
 
 def filter_graph(unfiltered_graph_text):
+    """Apply the current runtime graph filtering policy to raw graph text."""
     graph_text_states_removed = remove_states_from_graph(unfiltered_graph_text)
     return graph_text_states_removed
 
 def _build_screen_id_maps_from_text(full_content):
     """
-    Helper function to create sorted screen ID mappings by processing raw graph text.
-    This version assigns S1, S2, S3... IDs based on the ORDER OF APPEARANCE
-    of screen definitions in the 'States' section of the graph file.
-    Hashes found only in transitions will be appended at the end.
+    Build stable simplified screen-ID mappings from raw graph text.
+
+    Screen hashes are converted to ``S1``, ``S2``, and so on based on the order in
+    which they appear in the ``States`` section. Hashes that appear only in
+    transitions are appended afterward so the mapping still covers the full graph.
     """
 
     # --- Step 1: Collect hashes and names from the 'States' section, preserving their order ---
@@ -168,6 +180,7 @@ def get_screens_with_information_from_text(graph_text):
     return full_screen_logical_blocks, screen_id_map, reverse_screen_id_map
 
 def _build_screen_id_maps(graph_path):
+    """Read a graph file from disk and build its simplified screen-ID mappings."""
     with open(graph_path, 'r', encoding='utf-8') as f:
         full_content = f.read()
 
@@ -199,6 +212,12 @@ def get_screens_with_information(graph_path):
     return screens_with_information, screen_id_map, reverse_screen_id_map
 
 def get_transitions(graph_path):
+    """Return simplified transitions plus lookup maps for one graph file.
+
+    Transition hashes are converted to ``T#`` IDs and referenced screen hashes are
+    converted to their corresponding ``S#`` IDs so downstream prompts can work with
+    shorter, more readable identifiers.
+    """
     screen_id_map, reverse_screen_id_map, _ = _build_screen_id_maps(graph_path)
 
     transition_id_map = {}
@@ -277,6 +296,7 @@ def clean_transitions(transitions_list):
     return cleaned_list
 
 def get_screens(graph_path):
+    """Return a newline-delimited list of simplified screen IDs and names."""
     screen_id_map, reverse_screen_id_map, unique_screen_hashes = _build_screen_id_maps(graph_path)
 
     screen_names_output = []
@@ -296,14 +316,10 @@ def get_screens(graph_path):
 
 def get_original_transition_ids(text, transition_id_map):
     """
-    Replaces simplified transition IDs in various forms with their original IDs.
-    Always outputs in <original_id> format.
+    Replace simplified transition references with original transition hashes.
 
-    Handles:
-    - <T1>, <1>, <0>, (T1), (1), (0), [T1], [1]
-    - <transition_id=6>, (transition_id=0), [transition_id: T46], transition_id-7
-    - (transition T1), <transition T2>, Transition: T11, Transition T11
-    - Bare T5 / t5 at end of line
+    The matcher accepts several shorthand reference styles and normalizes them to
+    ``<original_id>`` form in the returned text.
     """
 
     # Normalize mapping keys to uppercase (T# form)
@@ -337,8 +353,7 @@ def get_original_transition_ids(text, transition_id_map):
 
 def get_simplified_transition_ids(text, reverse_transition_id_map):
     """
-    Replaces long hash transition IDs with simplified IDs (T#).
-    Always outputs in <T#> format.
+    Replace original transition hashes with simplified ``T#`` identifiers.
 
     Args:
         text (str): input text containing <hash> IDs
@@ -357,8 +372,7 @@ def get_simplified_transition_ids(text, reverse_transition_id_map):
 
 def get_extracted_transitions(simplified_transitions):
     """
-    Parses a list of simplified transition strings and extracts important information,
-    formatting it into a cleaner, more readable representation.
+    Extract human-readable transition summaries from simplified transition lines.
 
     Args:
         simplified_transitions (list): A list of strings, where each string is
@@ -474,8 +488,7 @@ def replace_simplified_screen_ids_with_original_ids(screen_descriptions_text, sc
 
 def replace_original_screen_ids_with_simplified_ids(text_content, reverse_screen_id_map):
     """
-    Replaces original screen IDs (hash/numeric) in a text with their corresponding
-    simplified S# IDs.
+    Replace original screen IDs in text with the corresponding simplified ``S#`` IDs.
 
     Args:
         text_content (str): The input text containing original screen IDs.

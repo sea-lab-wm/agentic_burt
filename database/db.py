@@ -1,11 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
-
-DATABASE_URL = "sqlite:///database/app.db"
+import config
 
 engine = create_engine(
-    DATABASE_URL,
+    config.DATABASE_URL,
     future=True,
 )
 
