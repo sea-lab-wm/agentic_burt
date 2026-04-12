@@ -319,6 +319,8 @@ graph = burt_workflow.compile(checkpointer=checkpointer)
 
 def main() -> None:
     """Run one complete BURT CLI session from input load through log write."""
+
+    #load graph data for specific description
     args = parse_args()
     initial_message = load_initial_message(
         current_bug=args.bug_id,
@@ -329,6 +331,7 @@ def main() -> None:
         description_level=args.description_level,
     )
 
+    #configure initial state of graph
     config = {"configurable": {"app_graph": app_graph, "app_name": app_name, "screen_descriptions": screen_descriptions, "thread_id": "1"}}
     initial_state_update = ingest_user_description(initial_message)
     state = BugAgentState(messages=[initial_state_update["messages"]])
@@ -337,6 +340,8 @@ def main() -> None:
     result = graph.invoke(state, config=config)
 
     while True:
+        #The graph interrupts its execution flow to ask user questions
+        #Here if an interupt tag is detected in the output of the graph, we display the most recent generate question for the user to answer through command line
         if "__interrupt__" not in result:
             break
 
