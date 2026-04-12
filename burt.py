@@ -27,7 +27,7 @@ from pathlib import Path
 load_dotenv()
 
 #Set up conversation logger
-logger = ConversationLogger(filepath="logs/V2/session.log", conversation_id=0)
+logger = ConversationLogger(filepath="logs/placeholder,log", conversation_id=0)
 
 #Model instantiation with callback for token usage
 usage_callback = ObservabilityTokenCallback(logger=logger)

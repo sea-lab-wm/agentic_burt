@@ -14,7 +14,8 @@ services:
       - ./logs:/app/logs
       - ./Results:/app/Results
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
   redis:
     image: redis:latest
@@ -22,6 +23,12 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   redis_data:
