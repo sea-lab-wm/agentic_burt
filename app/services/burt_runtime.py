@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import config
 from app.schemas.sessions import ConversationTurnResponse
-from app.services.session_store import create_session_record
+from app.services.session_store import create_session_record, get_session
 from burt import (
     BugAgentState,
     build_burt_graph,
@@ -11,6 +11,20 @@ from burt import (
     initialize_runtime,
     load_initial_message,
 )
+from langgraph.types import Command
+from langgraph.checkpoint.redis import RedisSaver
+
+
+class SessionNotFoundError(ValueError):
+    """Raised when a requested conversation session cannot be found."""
+
+
+class InvalidSessionError(ValueError):
+    """Raised when persisted session metadata is incomplete or malformed."""
+
+
+class SessionCompletedError(ValueError):
+    """Raised when attempting to resume an already-completed session."""
 
 
 def _extract_follow_up_question(interrupt_payload) -> str | None:
@@ -25,8 +39,59 @@ def _extract_follow_up_question(interrupt_payload) -> str | None:
     return None
 
 
+def _build_runnable_config(
+    session_id: str,
+    app_graph: str,
+    app_name: str,
+    screen_descriptions: str,
+) -> dict:
+    return {
+        "configurable": {
+            "app_graph": app_graph,
+            "app_name": app_name,
+            "screen_descriptions": screen_descriptions,
+            "thread_id": session_id,
+        }
+    }
+
+
+def _persist_and_build_response(
+    *,
+    session_id: str,
+    bug_id: int,
+    description_level: str,
+    result: dict,
+    app_graph: str,
+    app_name: str,
+) -> ConversationTurnResponse:
+    if "__interrupt__" in result:
+        response = ConversationTurnResponse(
+            session_id=session_id,
+            status="awaiting_user",
+            question=_extract_follow_up_question(result["__interrupt__"]),
+            final_report=None,
+        )
+    else:
+        final_report = gen_report(result["BugInfo"], app_graph=app_graph, app_name=app_name)
+        response = ConversationTurnResponse(
+            session_id=session_id,
+            status="completed",
+            question=None,
+            final_report=final_report,
+        )
+
+    create_session_record(
+        {
+            "session_id": session_id,
+            "bug_id": bug_id,
+            "description_level": description_level,
+            **response.model_dump(mode="json"),
+        }
+    )
+    return response
+
+
 def start_conversation(bug_id: int, description_level: str) -> ConversationTurnResponse:
-    from langgraph.checkpoint.redis import RedisSaver
 
     session_id = str(uuid4())
     initial_message = load_initial_message(
@@ -38,52 +103,73 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
         description_level=description_level,
     )
 
-    runnable_config = {
-        "configurable": {
-            "app_graph": app_graph,
-            "app_name": app_name,
-            "screen_descriptions": screen_descriptions,
-            "thread_id": session_id,
-        }
-    }
+    runnable_config = _build_runnable_config(
+        session_id=session_id,
+        app_graph=app_graph,
+        app_name=app_name,
+        screen_descriptions=screen_descriptions,
+    )
     initial_state_update = ingest_user_description(initial_message)
     state = BugAgentState(messages=[initial_state_update["messages"]])
-
+    
+    #setup redis checkpointer, build graph, invoke it, redis checkpointer automatically saves state and graph checkpoint at end of block
     with RedisSaver.from_conn_string(config.REDIS_URL) as checkpointer:
         checkpointer.setup()
         graph = build_burt_graph(checkpointer)
         result = graph.invoke(state, config=runnable_config)
 
-    if "__interrupt__" in result:
-        response = ConversationTurnResponse(
-            session_id=session_id,
-            status="awaiting_user",
-            question=_extract_follow_up_question(result["__interrupt__"]),
-            final_report=None,
-        )
-        create_session_record(
-            {
-                "session_id": session_id,
-                "bug_id": bug_id,
-                "description_level": description_level,
-                **response.model_dump(mode="json"),
-            }
-        )
-        return response
-
-    final_report = gen_report(result["BugInfo"], app_graph=app_graph, app_name=app_name)
-    response = ConversationTurnResponse(
+    return _persist_and_build_response(
         session_id=session_id,
-        status="completed",
-        question=None,
-        final_report=final_report,
+        bug_id=bug_id,
+        description_level=description_level,
+        result=result,
+        app_graph=app_graph,
+        app_name=app_name,
     )
-    create_session_record(
-        {
-            "session_id": session_id,
-            "bug_id": bug_id,
-            "description_level": description_level,
-            **response.model_dump(mode="json"),
-        }
+
+
+def resume_conversation(user_description: str, session_id: str) -> ConversationTurnResponse:
+
+    session_record = get_session(session_id)
+
+    #check for missing session for curr session id
+    if session_record is None:
+        raise SessionNotFoundError(f"Session {session_id} was not found.")
+
+    #check for already terminated session
+    if session_record.get("status") == "completed":
+        raise SessionCompletedError(f"Session {session_id} is already completed.")
+
+    bug_id = session_record.get("bug_id")
+    description_level = session_record.get("description_level")
+    #check for malformed session
+    if not isinstance(bug_id, int) or not isinstance(description_level, str):
+        raise InvalidSessionError(
+            f"Session {session_id} is missing required resume metadata."
+        )
+
+    app_graph, app_name, screen_descriptions = initialize_runtime(
+        current_bug=bug_id,
+        description_level=description_level,
     )
-    return response
+    runnable_config = _build_runnable_config(
+        session_id=session_id,
+        app_graph=app_graph,
+        app_name=app_name,
+        screen_descriptions=screen_descriptions,
+    )
+
+    #setup redis checkpointer, build graph, use redis checkpointer to init graph to state at checkpoint and resume invokation from there, redis checkpointer automatically saves state and graph checkpoint at end of block
+    with RedisSaver.from_conn_string(config.REDIS_URL) as checkpointer:
+        checkpointer.setup()
+        graph = build_burt_graph(checkpointer)
+        result = graph.invoke(Command(resume=user_description), config=runnable_config)
+
+    return _persist_and_build_response(
+        session_id=session_id,
+        bug_id=bug_id,
+        description_level=description_level,
+        result=result,
+        app_graph=app_graph,
+        app_name=app_name,
+    )

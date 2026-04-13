@@ -1,8 +1,18 @@
 from fastapi import APIRouter, HTTPException
 from redis.exceptions import RedisError
 
-from app.schemas.sessions import ConversationTurnResponse, CreateSessionRequest
-from app.services.burt_runtime import start_conversation
+from app.schemas.sessions import (
+    ConversationTurnResponse,
+    CreateSessionRequest,
+    ResumeConversationRequest,
+)
+from app.services.burt_runtime import (
+    InvalidSessionError,
+    SessionCompletedError,
+    SessionNotFoundError,
+    resume_conversation,
+    start_conversation,
+)
 from app.services.session_store import get_session, ping
 
 sessions_router = APIRouter()
@@ -35,3 +45,21 @@ def recover_session(session_id: str) -> ConversationTurnResponse:
     if session_record is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return ConversationTurnResponse(**session_record)
+
+#session id here is a path parameter that identifies what existing session the resume request is acting upon
+@sessions_router.post("/sessions/{session_id}/messages", response_model=ConversationTurnResponse)
+def resume_session(
+    session_id: str,
+    resume_request: ResumeConversationRequest,
+) -> ConversationTurnResponse:
+    try:
+        return resume_conversation(
+            user_description=resume_request.user_description,
+            session_id=session_id,
+        )
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SessionCompletedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except InvalidSessionError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
