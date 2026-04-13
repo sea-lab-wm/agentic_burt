@@ -27,7 +27,7 @@ from pathlib import Path
 load_dotenv()
 
 #Set up conversation logger
-logger = ConversationLogger(filepath="logs/placeholder,log", conversation_id=0)
+logger = ConversationLogger(filepath="logs/placeholder.log", conversation_id=0)
 
 #Model instantiation with callback for token usage
 usage_callback = ObservabilityTokenCallback(logger=logger)
@@ -282,40 +282,41 @@ def gen_report(bug_info, app_graph, app_name) -> dict:
         )
     return generate_report(bug_info, app_graph, MODEL, app_name)
 
-burt_workflow = StateGraph(BugAgentState)
-burt_workflow.add_node("information_element_extraction", information_element_extraction)
-burt_workflow.add_node("clarity_check", clarity_check)
-burt_workflow.add_node("clarity_follow_up", clarity_follow_up)
-burt_workflow.add_node("map_to_graph", map_to_graph)
-burt_workflow.add_node("evaluate_state", evaluate_state)
-burt_workflow.add_node("more_info_follow_up", more_info_follow_up)
-burt_workflow.add_node("interrupt_and_present", interrupt_and_present)
+def build_burt_graph(checkpointer):
+    """Build and compile the BURT workflow against the provided checkpointer."""
+    burt_workflow = StateGraph(BugAgentState)
+    burt_workflow.add_node("information_element_extraction", information_element_extraction)
+    burt_workflow.add_node("clarity_check", clarity_check)
+    burt_workflow.add_node("clarity_follow_up", clarity_follow_up)
+    burt_workflow.add_node("map_to_graph", map_to_graph)
+    burt_workflow.add_node("evaluate_state", evaluate_state)
+    burt_workflow.add_node("more_info_follow_up", more_info_follow_up)
+    burt_workflow.add_node("interrupt_and_present", interrupt_and_present)
 
-burt_workflow.set_entry_point("information_element_extraction")
-burt_workflow.add_edge("information_element_extraction", "clarity_check")
-burt_workflow.add_conditional_edges(
-    "clarity_check",
-    should_route_clarity,
-    {
-        "continue": "map_to_graph",
-        "needs_clarification": "clarity_follow_up",
-    }
-)
-burt_workflow.add_edge("clarity_follow_up", "interrupt_and_present")
-burt_workflow.add_edge("map_to_graph", "evaluate_state")
-burt_workflow.add_conditional_edges(
-    "evaluate_state", 
-    should_continue, 
-    {
-        "continue" : "more_info_follow_up",
-        "end": END
-    } 
-)
-burt_workflow.add_edge("more_info_follow_up","interrupt_and_present")
-burt_workflow.add_edge("interrupt_and_present","information_element_extraction")
+    burt_workflow.set_entry_point("information_element_extraction")
+    burt_workflow.add_edge("information_element_extraction", "clarity_check")
+    burt_workflow.add_conditional_edges(
+        "clarity_check",
+        should_route_clarity,
+        {
+            "continue": "map_to_graph",
+            "needs_clarification": "clarity_follow_up",
+        }
+    )
+    burt_workflow.add_edge("clarity_follow_up", "interrupt_and_present")
+    burt_workflow.add_edge("map_to_graph", "evaluate_state")
+    burt_workflow.add_conditional_edges(
+        "evaluate_state",
+        should_continue,
+        {
+            "continue": "more_info_follow_up",
+            "end": END
+        }
+    )
+    burt_workflow.add_edge("more_info_follow_up", "interrupt_and_present")
+    burt_workflow.add_edge("interrupt_and_present", "information_element_extraction")
 
-checkpointer = MemorySaver()
-graph = burt_workflow.compile(checkpointer=checkpointer)
+    return burt_workflow.compile(checkpointer=checkpointer)
 
 def main() -> None:
     """Run one complete BURT CLI session from input load through log write."""
@@ -332,6 +333,7 @@ def main() -> None:
     )
 
     #configure initial state of graph
+    graph = build_burt_graph(MemorySaver())
     config = {"configurable": {"app_graph": app_graph, "app_name": app_name, "screen_descriptions": screen_descriptions, "thread_id": "1"}}
     initial_state_update = ingest_user_description(initial_message)
     state = BugAgentState(messages=[initial_state_update["messages"]])

@@ -1,16 +1,16 @@
-from datetime import datetime
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
-#The create_session endpoint recieves a request of this shape
+#defines initial conversation/session start request payload
 class CreateSessionRequest(BaseModel):
     bug_id: int
     description_level: str
 
-#The create_session endpoint responds to request sender with this shape
-class SessionResponse(BaseModel):
+#defines agent response to user input payload
+#Contians either a follow up quesstion or generated report
+class ConversationTurnResponse(BaseModel):
     session_id: str
-    bug_id: int
-    description_level: str
-    status: str
-    created_at: datetime
+    status: Literal["awaiting_user", "completed"]
+    question: str | None = None
+    final_report: dict[str, Any] | None = None
