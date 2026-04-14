@@ -9,6 +9,7 @@ from app.schemas.sessions import (
 from app.services.burt_runtime import (
     InvalidSessionError,
     SessionCompletedError,
+    SessionLockedError,
     SessionNotFoundError,
     resume_conversation,
     start_conversation,
@@ -64,10 +65,12 @@ def resume_session(
             user_description=resume_request.user_description,
             session_id=session_id,
         )
-    #The custom errors found below are defined within burt_runtime.py
+    #You can find descriptions of the custom errors below in burt_runtime.py
     except SessionNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SessionCompletedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except SessionLockedError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except InvalidSessionError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
