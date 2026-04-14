@@ -20,6 +20,7 @@ sessions_router = APIRouter()
 
 @sessions_router.get("/healthz")
 def healthz() -> dict[str, str | bool]:
+    """Report API health and whether Redis client is currently reachable."""
     try:
         redis_ok = ping()
     except RedisError:
@@ -33,6 +34,7 @@ def healthz() -> dict[str, str | bool]:
 
 @sessions_router.post("/sessions", response_model=ConversationTurnResponse)
 def create_session(create_session_request: CreateSessionRequest) -> ConversationTurnResponse:
+    """Start a new agent conversation (session) for the requested bug and detail level."""
     return start_conversation(
         bug_id=create_session_request.bug_id,
         description_level=create_session_request.description_level,
@@ -41,22 +43,28 @@ def create_session(create_session_request: CreateSessionRequest) -> Conversation
 
 @sessions_router.get("/sessions/{session_id}", response_model=ConversationTurnResponse)
 def recover_session(session_id: str) -> ConversationTurnResponse:
+    """Fetch the latest persisted user facing state for an existing agent conversation by session id.
+    The session id is available as a path parameter, it identifies what existing session the recover request is acting upon.
+    """
     session_record = get_session(session_id)
     if session_record is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return ConversationTurnResponse(**session_record)
 
-#session id here is a path parameter that identifies what existing session the resume request is acting upon
 @sessions_router.post("/sessions/{session_id}/messages", response_model=ConversationTurnResponse)
 def resume_session(
     session_id: str,
     resume_request: ResumeConversationRequest,
 ) -> ConversationTurnResponse:
+    """Resume a paused conversation by submitting the user's next description.
+    The session id is available as a path parameter, it identifies what existing session the resume request is acting upon.
+    """
     try:
         return resume_conversation(
             user_description=resume_request.user_description,
             session_id=session_id,
         )
+    #The custom errors found below are defined within burt_runtime.py
     except SessionNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SessionCompletedError as exc:
