@@ -349,11 +349,36 @@ class ObservabilityTokenCallback(BaseCallbackHandler):
             )
         )
 
-def log_action(logger : ConversationLogger, entity : Entity, action_name : ActionName):
+def _get_runtime_context(*args: Any, **kwargs: Any) -> Any:
+    """Resolve the request-local runtime context from function args or kwargs."""
+    runtime_context = kwargs.get("runtime_context")
+    if runtime_context is not None:
+        return runtime_context
+
+    config = kwargs.get("config")
+    if isinstance(config, dict):
+        runtime_context = (config.get("configurable") or {}).get("runtime_context")
+        if runtime_context is not None:
+            return runtime_context
+
+    for arg in args:
+        if hasattr(arg, "logger") and hasattr(arg, "model"):
+            return arg
+        if isinstance(arg, dict):
+            runtime_context = (arg.get("configurable") or {}).get("runtime_context")
+            if runtime_context is not None:
+                return runtime_context
+
+    raise ValueError("runtime_context with a logger is required for observability logging.")
+
+
+def log_action(entity : Entity, action_name : ActionName):
     """Build a decorator that logs one runtime action and its metadata."""
     def decorator(node_func):
         @wraps(node_func)
         def wrapper(*args, **kwargs):
+            runtime_context = _get_runtime_context(*args, **kwargs)
+            logger = runtime_context.logger
             logger.start_action(action_name)
 
             #mark timestamp directly before app action performed

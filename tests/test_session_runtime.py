@@ -6,6 +6,7 @@ from app.services import burt_runtime
 
 class StartConversationTests(unittest.TestCase):
     @patch("app.services.burt_runtime.create_session_record")
+    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.BugAgentState", return_value=sentinel.initial_state)
@@ -14,7 +15,7 @@ class StartConversationTests(unittest.TestCase):
         return_value={"messages": sentinel.initial_message_update},
     )
     @patch(
-        "app.services.burt_runtime.initialize_runtime",
+        "app.services.burt_runtime.load_bug_graph_context",
         return_value=("app graph", "Test App", "screen descriptions"),
     )
     @patch(
@@ -26,11 +27,12 @@ class StartConversationTests(unittest.TestCase):
         self,
         mock_uuid4,
         mock_load_initial_message,
-        mock_initialize_runtime,
+        mock_load_bug_graph_context,
         mock_ingest_user_description,
         mock_bug_agent_state,
         mock_from_conn_string,
         mock_build_burt_graph,
+        mock_create_runtime_context,
         mock_create_session_record,
     ):
         # Simulate the RedisSaver context manager yielding a checkpointer instance.
@@ -58,11 +60,19 @@ class StartConversationTests(unittest.TestCase):
             current_bug=42,
             description_level="LC_LP",
         )
-        mock_initialize_runtime.assert_called_once_with(
+        mock_load_bug_graph_context.assert_called_once_with(
             current_bug=42,
             description_level="LC_LP",
         )
-        mock_ingest_user_description.assert_called_once_with("initial bug description")
+        mock_create_runtime_context.assert_called_once_with(
+            session_id="session-123",
+            bug_id=42,
+            description_level="LC_LP",
+        )
+        mock_ingest_user_description.assert_called_once_with(
+            "initial bug description",
+            runtime_context=sentinel.runtime_context,
+        )
         mock_bug_agent_state.assert_called_once_with(
             messages=[sentinel.initial_message_update]
         )
@@ -76,6 +86,7 @@ class StartConversationTests(unittest.TestCase):
                     "app_name": "Test App",
                     "screen_descriptions": "screen descriptions",
                     "thread_id": "session-123",
+                    "runtime_context": sentinel.runtime_context,
                 }
             },
         )
@@ -92,6 +103,7 @@ class StartConversationTests(unittest.TestCase):
         mock_uuid4.assert_called_once_with()
 
     @patch("app.services.burt_runtime.create_session_record")
+    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
     @patch(
         "app.services.burt_runtime.gen_report",
         return_value={"title": "Final report"},
@@ -104,7 +116,7 @@ class StartConversationTests(unittest.TestCase):
         return_value={"messages": sentinel.initial_message_update},
     )
     @patch(
-        "app.services.burt_runtime.initialize_runtime",
+        "app.services.burt_runtime.load_bug_graph_context",
         return_value=("app graph", "Test App", "screen descriptions"),
     )
     @patch(
@@ -116,12 +128,13 @@ class StartConversationTests(unittest.TestCase):
         self,
         _mock_uuid4,
         _mock_load_initial_message,
-        _mock_initialize_runtime,
+        _mock_load_bug_graph_context,
         _mock_ingest_user_description,
         _mock_bug_agent_state,
         mock_from_conn_string,
         mock_build_burt_graph,
         mock_gen_report,
+        mock_create_runtime_context,
         mock_create_session_record,
     ):
         # Simulate the RedisSaver context manager yielding a checkpointer instance.
@@ -143,10 +156,16 @@ class StartConversationTests(unittest.TestCase):
         self.assertEqual(response.status, "completed")
         self.assertIsNone(response.question)
         self.assertEqual(response.final_report, {"title": "Final report"})
+        mock_create_runtime_context.assert_called_once_with(
+            session_id="session-123",
+            bug_id=42,
+            description_level="LC_LP",
+        )
         mock_gen_report.assert_called_once_with(
             {"id": 42},
             app_graph="app graph",
             app_name="Test App",
+            runtime_context=sentinel.runtime_context,
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -174,11 +193,12 @@ class ResumeConversationTests(unittest.TestCase):
             "final_report": None,
         },
     )
+    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.Command", return_value=sentinel.resume_command)
     @patch(
-        "app.services.burt_runtime.initialize_runtime",
+        "app.services.burt_runtime.load_bug_graph_context",
         return_value=("app graph", "Test App", "screen descriptions"),
     )
     @patch(
@@ -188,10 +208,11 @@ class ResumeConversationTests(unittest.TestCase):
     def test_resume_conversation_uses_persisted_metadata_and_resume_command(
         self,
         mock_acquire_session_lock,
-        mock_initialize_runtime,
+        mock_load_bug_graph_context,
         mock_command,
         mock_from_conn_string,
         mock_build_burt_graph,
+        mock_create_runtime_context,
         mock_get_session,
         mock_create_session_record,
         mock_release_session_lock,
@@ -222,8 +243,13 @@ class ResumeConversationTests(unittest.TestCase):
         self.assertIsNone(response.final_report)
         mock_acquire_session_lock.assert_called_once_with("session-123")
         mock_get_session.assert_called_once_with("session-123")
-        mock_initialize_runtime.assert_called_once_with(
+        mock_load_bug_graph_context.assert_called_once_with(
             current_bug=42,
+            description_level="LC_LP",
+        )
+        mock_create_runtime_context.assert_called_once_with(
+            session_id="session-123",
+            bug_id=42,
             description_level="LC_LP",
         )
         checkpointer.setup.assert_called_once_with()
@@ -237,6 +263,7 @@ class ResumeConversationTests(unittest.TestCase):
                     "app_name": "Test App",
                     "screen_descriptions": "screen descriptions",
                     "thread_id": "session-123",
+                    "runtime_context": sentinel.runtime_context,
                 }
             },
         )
@@ -272,11 +299,12 @@ class ResumeConversationTests(unittest.TestCase):
             "final_report": None,
         },
     )
+    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.Command", return_value=sentinel.resume_command)
     @patch(
-        "app.services.burt_runtime.initialize_runtime",
+        "app.services.burt_runtime.load_bug_graph_context",
         return_value=("app graph", "Test App", "screen descriptions"),
     )
     @patch(
@@ -286,10 +314,11 @@ class ResumeConversationTests(unittest.TestCase):
     def test_resume_conversation_persists_completed_response(
         self,
         _mock_acquire_session_lock,
-        _mock_initialize_runtime,
+        _mock_load_bug_graph_context,
         _mock_command,
         mock_from_conn_string,
         mock_build_burt_graph,
+        mock_create_runtime_context,
         _mock_get_session,
         mock_gen_report,
         mock_create_session_record,
@@ -317,10 +346,16 @@ class ResumeConversationTests(unittest.TestCase):
         self.assertEqual(response.status, "completed")
         self.assertIsNone(response.question)
         self.assertEqual(response.final_report, {"title": "Final report"})
+        mock_create_runtime_context.assert_called_once_with(
+            session_id="session-123",
+            bug_id=42,
+            description_level="LC_LP",
+        )
         mock_gen_report.assert_called_once_with(
             {"id": 42},
             app_graph="app graph",
             app_name="Test App",
+            runtime_context=sentinel.runtime_context,
         )
         mock_create_session_record.assert_called_once_with(
             {

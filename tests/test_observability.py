@@ -3,6 +3,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from langchain_core.messages import HumanMessage
 
@@ -37,12 +38,12 @@ class ObservabilityTests(unittest.TestCase):
     @staticmethod
     def _log_user_description(logger: ConversationLogger, text: str):
         @log_action(
-            logger=logger, entity=Entity.user, action_name=ActionName.user_description
+            entity=Entity.user, action_name=ActionName.user_description
         )
-        def user_node():
+        def user_node(runtime_context):
             return {"messages": HumanMessage(content=text)}
 
-        return user_node()
+        return user_node(runtime_context=SimpleNamespace(logger=logger, model=object()))
 
     @staticmethod
     def _parse_json_stream(text: str):
@@ -67,10 +68,11 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-1"
             )
+            runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
-            @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.follow_up)
-            def node():
+            @log_action(entity=Entity.bot, action_name=ActionName.follow_up)
+            def node(runtime_context):
                 logger.record_llm_usage(
                     LLMUsageEvent(
                         input_tokens=10,
@@ -81,7 +83,7 @@ class ObservabilityTests(unittest.TestCase):
                 )
                 return {"ok": True}
 
-            node()
+            node(runtime_context=runtime_context)
             action = logger.conversation[0].actions[1]
             self.assertIsNotNone(action.meta_data.node_token_consumption)
             self.assertEqual(action.meta_data.node_token_consumption.input_tokens, 10)
@@ -94,12 +96,13 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-2"
             )
+            runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
             @log_action(
-                logger=logger, entity=Entity.bot, action_name=ActionName.extract_and_update
+                entity=Entity.bot, action_name=ActionName.extract_and_update
             )
-            def node():
+            def node(runtime_context):
                 logger.record_llm_usage(
                     LLMUsageEvent(
                         input_tokens=5,
@@ -118,7 +121,7 @@ class ObservabilityTests(unittest.TestCase):
                 )
                 return {"ok": True}
 
-            node()
+            node(runtime_context=runtime_context)
             summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
             self.assertEqual(summary.input_tokens, 8)
             self.assertEqual(summary.output_tokens, 9)
@@ -132,14 +135,14 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-3"
             )
+            runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
             @log_action(
-                logger=logger,
                 entity=Entity.bot,
                 action_name=ActionName.information_element_extraction,
             )
-            def node():
+            def node(runtime_context):
                 logger.record_llm_usage(
                     LLMUsageEvent(
                         input_tokens=None,
@@ -150,7 +153,7 @@ class ObservabilityTests(unittest.TestCase):
                 )
                 return {"ok": True}
 
-            node()
+            node(runtime_context=runtime_context)
             summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
             self.assertIsNone(summary.input_tokens)
             self.assertIsNone(summary.output_tokens)
@@ -164,13 +167,14 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-4"
             )
+            runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
-            @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.evaluate)
-            def node():
+            @log_action(entity=Entity.bot, action_name=ActionName.evaluate)
+            def node(runtime_context):
                 return {"ok": True}
 
-            node()
+            node(runtime_context=runtime_context)
             summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
             self.assertIsNone(summary)
 
@@ -179,15 +183,16 @@ class ObservabilityTests(unittest.TestCase):
             logger = ConversationLogger(
                 filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-pre-user"
             )
+            runtime_context = SimpleNamespace(logger=logger, model=object())
 
-            @log_action(logger=logger, entity=Entity.bot, action_name=ActionName.evaluate)
-            def node():
+            @log_action(entity=Entity.bot, action_name=ActionName.evaluate)
+            def node(runtime_context):
                 return {"ok": True}
 
             with self.assertRaisesRegex(
                 ValueError, "Cannot log non-user action before the first user_description"
             ):
-                node()
+                node(runtime_context=runtime_context)
 
     def test_user_turns_are_one_indexed_and_increment_per_description(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -226,14 +231,15 @@ class ObservabilityTests(unittest.TestCase):
             log_path = Path(tmpdir) / "test.log"
             logger = ConversationLogger(filepath=str(log_path), conversation_id="conv-5")
             callback = ObservabilityTokenCallback(logger=logger)
+            runtime_context = SimpleNamespace(logger=logger, model=object())
 
             logger.start_conversation()
             self._log_user_description(logger, "initial bug description")
 
             @log_action(
-                logger=logger, entity=Entity.bot, action_name=ActionName.clarity_check
+                entity=Entity.bot, action_name=ActionName.clarity_check
             )
-            def node():
+            def node(runtime_context):
                 fake_response = FakeResponse(
                     llm_output={
                         "token_usage": {
@@ -247,7 +253,7 @@ class ObservabilityTests(unittest.TestCase):
                 callback.on_llm_end(fake_response)
                 return {"ok": True}
 
-            node()
+            node(runtime_context=runtime_context)
             time.sleep(0.01)
             logger.finish_conversation()
             logger.write_log()
@@ -266,19 +272,19 @@ class ObservabilityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = Path(tmpdir) / "test.log"
             logger = ConversationLogger(filepath=str(log_path), conversation_id="conv-log")
+            runtime_context = SimpleNamespace(logger=logger, model=object())
 
             logger.start_conversation()
             initial_update = self._log_user_description(logger, "initial bug description")
 
             @log_action(
-                logger=logger,
                 entity=Entity.bot,
                 action_name=ActionName.information_element_extraction,
             )
-            def node():
+            def node(runtime_context):
                 return {"messages_seen": [initial_update["messages"].content]}
 
-            node()
+            node(runtime_context=runtime_context)
             logger.finish_conversation()
             logger.write_log()
 

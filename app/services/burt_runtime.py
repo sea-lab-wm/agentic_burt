@@ -11,9 +11,10 @@ from app.services.session_store import (
 from burt import (
     BugAgentState,
     build_burt_graph,
+    create_runtime_context,
     gen_report,
     ingest_user_description,
-    initialize_runtime,
+    load_bug_graph_context,
     load_initial_message,
 )
 from langgraph.types import Command
@@ -53,6 +54,7 @@ def _build_runnable_config(
     app_graph: str,
     app_name: str,
     screen_descriptions: str,
+    runtime_context,
 ) -> dict:
     """Build the LangGraph runtime config used for both new and resumed sessions."""
     return {
@@ -61,6 +63,7 @@ def _build_runnable_config(
             "app_name": app_name,
             "screen_descriptions": screen_descriptions,
             "thread_id": session_id,
+            "runtime_context": runtime_context,
         }
     }
 
@@ -73,6 +76,7 @@ def _persist_and_build_response(
     result: dict,
     app_graph: str,
     app_name: str,
+    runtime_context,
 ) -> ConversationTurnResponse:
     """Convert a graph result into an API response and persist the updated agent conversation session state."""
 
@@ -85,7 +89,12 @@ def _persist_and_build_response(
             final_report=None,
         )
     else:
-        final_report = gen_report(result["BugInfo"], app_graph=app_graph, app_name=app_name)
+        final_report = gen_report(
+            result["BugInfo"],
+            app_graph=app_graph,
+            app_name=app_name,
+            runtime_context=runtime_context,
+        )
         response = ConversationTurnResponse(
             session_id=session_id,
             status="completed",
@@ -118,8 +127,12 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
     )
 
     #fetch graph data and initialize logger (logger currently offline!) 
-    app_graph, app_name, screen_descriptions = initialize_runtime(
-        current_bug=bug_id,
+    app_graph, app_name, screen_descriptions = load_bug_graph_context(
+        current_bug=bug_id
+    )
+    runtime_context = create_runtime_context(
+        session_id=session_id,
+        bug_id=bug_id,
         description_level=description_level,
     )
 
@@ -129,10 +142,14 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
         app_graph=app_graph,
         app_name=app_name,
         screen_descriptions=screen_descriptions,
+        runtime_context=runtime_context,
     )
 
     #log first submitted description and use it to load initial LangGraph state
-    initial_state_update = ingest_user_description(initial_message)
+    initial_state_update = ingest_user_description(
+        initial_message,
+        runtime_context=runtime_context,
+    )
     state = BugAgentState(messages=[initial_state_update["messages"]])
     
     #setup redis checkpointer, build graph, invoke it, redis checkpointer automatically saves state and graph checkpoint at end of block
@@ -149,6 +166,7 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
         result=result,
         app_graph=app_graph,
         app_name=app_name,
+        runtime_context=runtime_context,
     )
 
 
@@ -184,8 +202,12 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             )
 
         #load initial bug desc from dev set based on bug id and description level
-        app_graph, app_name, screen_descriptions = initialize_runtime(
-            current_bug=bug_id,
+        app_graph, app_name, screen_descriptions = load_bug_graph_context(
+            current_bug=bug_id
+        )
+        runtime_context = create_runtime_context(
+            session_id=session_id,
+            bug_id=bug_id,
             description_level=description_level,
         )
 
@@ -195,6 +217,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             app_graph=app_graph,
             app_name=app_name,
             screen_descriptions=screen_descriptions,
+            runtime_context=runtime_context,
         )
 
         #setup redis checkpointer, build graph, use redis checkpointer to init graph state at latest checkpoint, so invokation resumes from there, redis checkpointer automatically saves state and graph checkpoint at end of block
@@ -211,6 +234,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             result=result,
             app_graph=app_graph,
             app_name=app_name,
+            runtime_context=runtime_context,
         )
     finally:
         #release the session lock on error or on sucessful completion of resume_converation critical section
