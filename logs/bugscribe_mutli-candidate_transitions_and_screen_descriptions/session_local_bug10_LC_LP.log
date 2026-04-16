@@ -1,0 +1,563 @@
+{
+  "session_id": "local",
+  "turn": 1,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "It restarts on its own.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "bded7701-5b01-412c-8a2f-bb453153bc04"
+        }
+      },
+      "meta_data": {
+        "latency": "2.1083000319777057e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": {
+            "value": "It restarts on its own.",
+            "evidence": [
+              "It restarts on its own."
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.7558096249995288 s",
+        "node_token_consumption": {
+          "input_tokens": 884,
+          "output_tokens": 61,
+          "total_tokens": 945,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Buggy Behavior is unclear: 'It' is not referentially resolved."
+        ]
+      },
+      "meta_data": {
+        "latency": "1.2159831669996493 s",
+        "node_token_consumption": {
+          "input_tokens": 420,
+          "output_tokens": 41,
+          "total_tokens": 461,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "clarity",
+          "question": "When you say “it restarts on its own,” what exactly is restarting: the Material Files app, your phone, or something else?",
+          "target_info_elements": []
+        },
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.403217583998412 s",
+        "node_token_consumption": {
+          "input_tokens": 270,
+          "output_tokens": 44,
+          "total_tokens": 314,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "local",
+  "turn": 2,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The FTP server restarts on its own.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "303b8679-60ff-4ca8-a4d7-472452ded591"
+        }
+      },
+      "meta_data": {
+        "latency": "7.750000804662704e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": {
+            "value": "The FTP server restarts on its own.",
+            "evidence": [
+              "It restarts on its own.",
+              "The FTP server restarts on its own."
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.6134271249993617 s",
+        "node_token_consumption": {
+          "input_tokens": 928,
+          "output_tokens": 72,
+          "total_tokens": 1000,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.0673730420003267 s",
+        "node_token_consumption": {
+          "input_tokens": 433,
+          "output_tokens": 21,
+          "total_tokens": 454,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013",
+                "evidence": "The reported bug is specifically about 'The FTP server restarts on its own,' which most plausibly occurs on the FTP server settings screen where server status and controls are shown."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The FTP server restarts on its own.",
+                "evidence": "User report: 'It restarts on its own.' / 'The FTP server restarts on its own.'"
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The FTP server should remain in its current state and not restart unless the user explicitly changes its settings or toggles it.",
+                "evidence": "Inferred from the buggy behavior 'The FTP server restarts on its own.' The expected opposite is that it should not restart autonomously."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2",
+                  "evidence": "All reproduction paths must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d",
+                  "evidence": "Most plausible initial path into the main file browser after app launch is allowing storage access."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49",
+                  "evidence": "From the main file list, opening the navigation drawer is the graph-supported route to access FTP server."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec",
+                  "evidence": "Selecting 'FTP server' from the open navigation drawer leads to the FTP server settings screen, which is the most plausible triggering screen for this bug."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "8.805653874998825 s",
+        "node_token_consumption": {
+          "input_tokens": 47725,
+          "output_tokens": 543,
+          "total_tokens": 48268,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "0.00011041699872293975 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "When you were on the FTP server screen, what exactly were you doing right before it restarted by itself? For example, had you just turned the FTP server ON or OFF, changed a setting like port/root folder/allow writing/anonymous login, tapped the status area, or were you not touching anything and it restarted while the screen was just open?",
+          "target_info_elements": [
+            "triggering_GUI_interactions"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "3.485065167000357 s",
+        "node_token_consumption": {
+          "input_tokens": 47591,
+          "output_tokens": 99,
+          "total_tokens": 47690,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "local",
+  "turn": 3,
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I had just toggled the FTP server from ON to OFF and then closed out of the app by dismissing it from recents on my phone.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "f00b2061-6781-4661-9682-455e2ca7a957"
+        }
+      },
+      "meta_data": {
+        "latency": "1.3374999980442226e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Toggled the FTP server from ON to OFF and then closed the app by dismissing it from recents on the phone.",
+            "evidence": [
+              "\"toggled the FTP server from ON to OFF\"",
+              "\"closed out of the app by dismissing it from recents on my phone\""
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.149285958999826 s",
+        "node_token_consumption": {
+          "input_tokens": 994,
+          "output_tokens": 101,
+          "total_tokens": 1095,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.1141202079998038 s",
+        "node_token_consumption": {
+          "input_tokens": 463,
+          "output_tokens": 21,
+          "total_tokens": 484,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013",
+                "evidence": "The reported bug concerns the FTP server restarting on its own, and the new evidence says the user 'toggled the FTP server from ON to OFF', which maps to the FTP server settings screen where that ON/OFF switch exists."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+                  "evidence": "User evidence: 'toggled the FTP server from ON to OFF'. On the FTP server screen, transition 5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b is a click on the switch with text 'OFF', matching turning the server off from an ON state."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+                  "evidence": "User evidence: 'closed out of the app by dismissing it from recents on my phone'. From the FTP server screen, transition 944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c goes to the Android recents screen."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c",
+                  "evidence": "User evidence: 'closed out of the app by dismissing it from recents on my phone'. On the recents screen, transition b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c clicks 'Dismiss Files.', matching dismissing the app from recents."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The FTP server restarts on its own.",
+                "evidence": "User report: 'It restarts on its own.' / 'The FTP server restarts on its own.'"
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "After the user turns the FTP server OFF and dismisses the app from recents, the FTP server should stay OFF and not restart on its own.",
+                "evidence": "Inferred from the confirmed bug behavior 'The FTP server restarts on its own.' plus the new triggering details: 'toggled the FTP server from ON to OFF' and 'closed out of the app by dismissing it from recents on my phone'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2",
+                  "evidence": "All reproduction paths must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d",
+                  "evidence": "Graph-supported path from app launch to the main file list is allowing storage permission."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49",
+                  "evidence": "From the main file list, opening the navigation drawer is the graph-supported route to access FTP server."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec",
+                  "evidence": "Selecting 'FTP server' from the navigation drawer leads to the FTP server screen referenced by the bug."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+                  "evidence": "User evidence: 'toggled the FTP server from ON to OFF'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+                  "evidence": "User evidence: 'closed out of the app by dismissing it from recents on my phone' requires first reaching recents from the FTP server screen."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c",
+                  "evidence": "User evidence: 'dismissing it from recents on my phone' maps to dismissing the Files task from recents."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "clarification_window_start_idx": 3
+      },
+      "meta_data": {
+        "latency": "15.666636583999207 s",
+        "node_token_consumption": {
+          "input_tokens": 48287,
+          "output_tokens": 1178,
+          "total_tokens": 49465,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.5374998585903086e-05 s",
+        "node_token_consumption": null
+      }
+    }
+  ]
+}
+{
+  "record_type": "full_report",
+  "session_id": "local",
+  "full_report": {
+    "title": "FTP server restarts after being turned off and the app is dismissed from recents",
+    "observed_behavior": "On the FTP server screen, if the user toggles the FTP server from ON to OFF and then closes the app by dismissing it from recents, the FTP server restarts on its own.",
+    "expected_behavior": "After the user turns the FTP server OFF and dismisses the app from recents, the FTP server should stay OFF and not restart on its own.",
+    "steps_to_reproduce": "1. Open the app. <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>\n2. On the storage permission prompt, tap \"Allow\". <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>\n3. From the main file list screen, open the navigation drawer. <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>\n4. In the navigation drawer, tap \"FTP server\". <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>\n5. On the FTP server screen, toggle the FTP server from ON to OFF. <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>\n6. Open the Android recents screen from the FTP server screen. <944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c>\n7. Dismiss the Files app from recents. <b05234dc13810ef197b494fe9ce3b3d6e6927d53c722ad904f3dc53e425da84c>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "local",
+  "started_at": "2026-04-16T01:20:50.405329+00:00",
+  "ended_at": "2026-04-16T01:22:50.084362+00:00",
+  "total_latency_seconds": 119.67878958299843,
+  "total_conversation_turns": 3,
+  "token_consumption": {
+    "input_tokens": 188021,
+    "output_tokens": 2655,
+    "total_tokens": 190676,
+    "llm_calls": 11,
+    "llm_calls_with_usage": 11,
+    "llm_calls_missing_usage": 0
+  }
+}

@@ -9,12 +9,14 @@ from langchain_core.messages import HumanMessage
 
 from observability import (
     ActionName,
-    ConversationLogger,
+    ConversationSummaryRecord,
     Entity,
+    FullReportRecord,
     LLMUsageEvent,
     LocalFileSink,
     MetaData,
     ObservabilityTokenCallback,
+    TurnLogger,
     log_action,
 )
 
@@ -38,10 +40,8 @@ class FakeResponse:
 
 class ObservabilityTests(unittest.TestCase):
     @staticmethod
-    def _log_user_description(logger: ConversationLogger, text: str):
-        @log_action(
-            entity=Entity.user, action_name=ActionName.user_description
-        )
+    def _log_user_description(logger: TurnLogger, text: str):
+        @log_action(entity=Entity.user, action_name=ActionName.user_description)
         def user_node(runtime_context):
             return {"messages": HumanMessage(content=text)}
 
@@ -67,9 +67,7 @@ class ObservabilityTests(unittest.TestCase):
 
     def test_single_node_token_consumption(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-1"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-1")
             runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
@@ -86,7 +84,7 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node(runtime_context=runtime_context)
-            action = logger.conversation[0].actions[1]
+            action = logger.current_turn.actions[1]
             self.assertIsNotNone(action.meta_data.node_token_consumption)
             self.assertEqual(action.meta_data.node_token_consumption.input_tokens, 10)
             self.assertEqual(action.meta_data.node_token_consumption.output_tokens, 4)
@@ -95,15 +93,11 @@ class ObservabilityTests(unittest.TestCase):
 
     def test_multiple_llm_calls_sum_within_node(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-2"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-2")
             runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
-            @log_action(
-                entity=Entity.bot, action_name=ActionName.extract_and_update
-            )
+            @log_action(entity=Entity.bot, action_name=ActionName.extract_and_update)
             def node(runtime_context):
                 logger.record_llm_usage(
                     LLMUsageEvent(
@@ -124,7 +118,7 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node(runtime_context=runtime_context)
-            summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
+            summary = logger.current_turn.actions[1].meta_data.node_token_consumption
             self.assertEqual(summary.input_tokens, 8)
             self.assertEqual(summary.output_tokens, 9)
             self.assertEqual(summary.total_tokens, 17)
@@ -134,9 +128,7 @@ class ObservabilityTests(unittest.TestCase):
 
     def test_missing_usage_nulls_token_totals(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-3"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-3")
             runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
@@ -156,7 +148,7 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node(runtime_context=runtime_context)
-            summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
+            summary = logger.current_turn.actions[1].meta_data.node_token_consumption
             self.assertIsNone(summary.input_tokens)
             self.assertIsNone(summary.output_tokens)
             self.assertIsNone(summary.total_tokens)
@@ -166,9 +158,7 @@ class ObservabilityTests(unittest.TestCase):
 
     def test_non_llm_node_has_no_node_token_consumption(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-4"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-4")
             runtime_context = SimpleNamespace(logger=logger, model=object())
             self._log_user_description(logger, "initial bug description")
 
@@ -177,14 +167,12 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node(runtime_context=runtime_context)
-            summary = logger.conversation[0].actions[1].meta_data.node_token_consumption
+            summary = logger.current_turn.actions[1].meta_data.node_token_consumption
             self.assertIsNone(summary)
 
     def test_non_user_action_requires_existing_turn(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-pre-user"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-pre-user")
             runtime_context = SimpleNamespace(logger=logger, model=object())
 
             @log_action(entity=Entity.bot, action_name=ActionName.evaluate)
@@ -196,51 +184,60 @@ class ObservabilityTests(unittest.TestCase):
             ):
                 node(runtime_context=runtime_context)
 
-    def test_user_turns_are_one_indexed_and_increment_per_description(self):
+    def test_user_turns_are_one_indexed_and_increment_per_description_after_reset(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-turns"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-turns")
 
             first = self._log_user_description(logger, "initial description")
             self.assertEqual(first["messages"].content, "initial description")
             self.assertEqual(logger.num_turns, 1)
-            self.assertEqual(len(logger.conversation), 1)
-            self.assertEqual(logger.conversation[0].turn, 1)
+            self.assertIsNotNone(logger.current_turn)
+            self.assertEqual(logger.current_turn.session_id, "sess-turns")
+            self.assertEqual(logger.current_turn.turn, 1)
             self.assertEqual(
-                logger.conversation[0].actions[0].action_name, ActionName.user_description
+                logger.current_turn.actions[0].action_name, ActionName.user_description
             )
 
+            logger.reset_turn()
             self._log_user_description(logger, "follow-up description")
             self.assertEqual(logger.num_turns, 2)
-            self.assertEqual(len(logger.conversation), 2)
-            self.assertEqual(logger.conversation[1].turn, 2)
+            self.assertIsNotNone(logger.current_turn)
+            self.assertEqual(logger.current_turn.turn, 2)
 
     def test_user_description_helper_returns_human_message_payload(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = ConversationLogger(
-                filepath=str(Path(tmpdir) / "test.log"), conversation_id="conv-helper"
-            )
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-helper")
 
             update = self._log_user_description(logger, "describe the bug")
             self.assertIn("messages", update)
             self.assertIsInstance(update["messages"], HumanMessage)
             self.assertEqual(update["messages"].content, "describe the bug")
-            self.assertEqual(logger.conversation[0].actions[0].entity, Entity.user)
+            self.assertEqual(logger.current_turn.actions[0].entity, Entity.user)
 
-    def test_summary_record_appended_and_totals_match(self):
+    def test_build_turn_record_returns_copy_and_reset_clears_turn_only(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_path = Path(tmpdir) / "test.log"
-            logger = ConversationLogger(filepath=str(log_path), conversation_id="conv-5")
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-turn-copy")
+            self._log_user_description(logger, "describe the bug")
+            turn_record = logger.build_turn_record()
+
+            self.assertEqual(turn_record.session_id, "sess-turn-copy")
+            self.assertEqual(turn_record.turn, 1)
+            self.assertEqual(turn_record.actions[0].action_name, ActionName.user_description)
+
+            logger.reset_turn()
+            self.assertIsNone(logger.current_turn)
+            self.assertEqual(logger.num_turns, 1)
+
+    def test_finish_session_builds_conversation_summary_with_aggregated_tokens(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-5")
             callback = ObservabilityTokenCallback(logger=logger)
             runtime_context = SimpleNamespace(logger=logger, model=object())
 
-            logger.start_conversation()
+            logger.start_session()
             self._log_user_description(logger, "initial bug description")
 
-            @log_action(
-                entity=Entity.bot, action_name=ActionName.clarity_check
-            )
+            @log_action(entity=Entity.bot, action_name=ActionName.clarity_check)
             def node(runtime_context):
                 fake_response = FakeResponse(
                     llm_output={
@@ -257,76 +254,57 @@ class ObservabilityTests(unittest.TestCase):
 
             node(runtime_context=runtime_context)
             time.sleep(0.01)
-            logger.finish_conversation()
-            logger.write_log()
+            summary = logger.finish_session()
 
-            lines = self._parse_json_stream(log_path.read_text())
-            self.assertGreaterEqual(len(lines), 2)
-            summary = lines[-1]
-            self.assertEqual(summary["record_type"], "conversation_summary")
-            self.assertGreater(summary["total_latency_seconds"], 0)
-            self.assertEqual(summary["total_conversation_turns"], 1)
-            self.assertEqual(summary["token_consumption"]["input_tokens"], 6)
-            self.assertEqual(summary["token_consumption"]["output_tokens"], 4)
-            self.assertEqual(summary["token_consumption"]["total_tokens"], 10)
+            self.assertEqual(summary.record_type, "conversation_summary")
+            self.assertEqual(summary.session_id, "sess-5")
+            self.assertGreater(summary.total_latency_seconds, 0)
+            self.assertEqual(summary.total_conversation_turns, 1)
+            self.assertEqual(summary.token_consumption.input_tokens, 6)
+            self.assertEqual(summary.token_consumption.output_tokens, 4)
+            self.assertEqual(summary.token_consumption.total_tokens, 10)
 
-    def test_local_file_sink_writes_turns_then_summary(self):
+    def test_local_file_sink_appends_turn_then_full_report_then_summary(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = Path(tmpdir) / "test.log"
             sink = LocalFileSink()
-            logger = ConversationLogger(
-                filepath=str(log_path),
-                conversation_id="conv-sink",
-                sink=sink,
-            )
+            logger = TurnLogger(filepath=str(log_path), session_id="sess-sink", sink=sink)
 
             self._log_user_description(logger, "initial bug description")
-            logger.add_action_to_conversation(
+            logger.add_action_to_turn(
                 entity=Entity.bot,
                 action_name=ActionName.evaluate,
                 output={"ok": True},
                 meta_data=MetaData(latency="0.1 s", node_token_consumption=None),
             )
-            logger.finish_conversation()
-            logger.write_log()
+
+            sink.append_turn(logger.build_turn_record(), logger.filepath)
+            logger.reset_turn()
+            sink.append_full_report(
+                FullReportRecord(
+                    session_id="sess-sink",
+                    full_report={"title": "Bug title"},
+                ),
+                logger.filepath,
+            )
+            sink.append_conversation_summary(
+                ConversationSummaryRecord(
+                    session_id="sess-sink",
+                    total_conversation_turns=1,
+                    token_consumption={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+                ),
+                logger.filepath,
+            )
 
             records = self._parse_json_stream(log_path.read_text())
+            self.assertEqual(records[0]["session_id"], "sess-sink")
             self.assertEqual(records[0]["turn"], 1)
             self.assertEqual(records[0]["actions"][0]["action_name"], "user_description")
             self.assertEqual(records[0]["actions"][1]["action_name"], "evaluate")
-            self.assertEqual(records[-1]["record_type"], "conversation_summary")
-
-    def test_written_log_starts_with_initial_user_description_in_turn_one(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            log_path = Path(tmpdir) / "test.log"
-            logger = ConversationLogger(filepath=str(log_path), conversation_id="conv-log")
-            runtime_context = SimpleNamespace(logger=logger, model=object())
-
-            logger.start_conversation()
-            initial_update = self._log_user_description(logger, "initial bug description")
-
-            @log_action(
-                entity=Entity.bot,
-                action_name=ActionName.information_element_extraction,
-            )
-            def node(runtime_context):
-                return {"messages_seen": [initial_update["messages"].content]}
-
-            node(runtime_context=runtime_context)
-            logger.finish_conversation()
-            logger.write_log()
-
-            records = self._parse_json_stream(log_path.read_text())
-            self.assertEqual(records[0]["turn"], 1)
-            self.assertEqual(records[0]["actions"][0]["action_name"], "user_description")
-            self.assertEqual(
-                records[0]["actions"][0]["output"]["messages"]["content"],
-                "initial bug description",
-            )
-            self.assertEqual(
-                records[0]["actions"][1]["action_name"], "information_element_extraction"
-            )
-            self.assertEqual(records[-1]["total_conversation_turns"], 1)
+            self.assertEqual(records[1]["record_type"], "full_report")
+            self.assertEqual(records[1]["full_report"]["title"], "Bug title")
+            self.assertEqual(records[2]["record_type"], "conversation_summary")
+            self.assertEqual(records[2]["session_id"], "sess-sink")
 
 
 if __name__ == "__main__":

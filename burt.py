@@ -9,10 +9,11 @@ from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, l
 import config
 from observability import (
     ActionName,
-    ConversationLogger,
     Entity,
+    FullReportRecord,
     LocalFileSink,
     ObservabilityTokenCallback,
+    TurnLogger,
     log_action,
 )
 from langchain_core.messages import HumanMessage
@@ -36,7 +37,7 @@ class BurtRuntimeContext:
     """Request-local runtime dependencies for one BURT conversation execution."""
 
     session_id: str
-    logger: ConversationLogger
+    logger: TurnLogger
     sink: LocalFileSink
     usage_callback: ObservabilityTokenCallback
     model: ChatOpenAI
@@ -51,9 +52,9 @@ def create_runtime_context(
     version = str(config.PROMPT_VERSION)
     log_path = Path("logs") / version / f"session_{session_id}_bug{bug_id}_{description_level}.log"
     sink = LocalFileSink()
-    logger = ConversationLogger(
+    logger = TurnLogger(
         filepath=str(log_path),
-        conversation_id=session_id,
+        session_id=session_id,
         sink=sink,
     )
     usage_callback = ObservabilityTokenCallback(logger=logger)
@@ -321,7 +322,6 @@ def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dic
         runtime_context=_get_runtime_context(config),
     )
 
-@log_action(entity=Entity.user, action_name=ActionName.generate_report)
 def gen_report(
     bug_info,
     app_graph,
@@ -334,8 +334,17 @@ def gen_report(
     if unresolved:
         raise ValueError(
             f"Cannot generate report with unresolved bug info: {sorted(unresolved)}"
-        )
+    )
     return generate_report(bug_info, app_graph, runtime_context.model, app_name)
+
+
+def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:
+    """Persist the active turn, if one exists, and clear turn-local state."""
+    turn_record = runtime_context.logger.build_turn_record()
+    if turn_record is None:
+        return
+    runtime_context.sink.append_turn(turn_record, runtime_context.logger.filepath)
+    runtime_context.logger.reset_turn()
 
 def build_burt_graph(checkpointer):
     """Build and compile the BURT workflow against the provided checkpointer."""
@@ -393,6 +402,9 @@ def main() -> None:
         description_level=args.description_level,
     )
 
+    #this guarantees that every CLI run writes a new log, instead of appending onto old logs of the same name
+    runtime_context.logger.filepath.unlink(missing_ok=True)
+
     #configure initial state of graph
     graph = build_burt_graph(MemorySaver())
     config = {
@@ -410,8 +422,9 @@ def main() -> None:
     )
     state = BugAgentState(messages=[initial_state_update["messages"]])
 
-    runtime_context.logger.start_conversation()
+    runtime_context.logger.start_session()
     result = graph.invoke(state, config=config)
+    _flush_active_turn(runtime_context)
 
     while True:
         #The graph interrupts its execution flow to ask user questions
@@ -429,6 +442,7 @@ def main() -> None:
         user_response = input("> ")
 
         result = graph.invoke(Command(resume=user_response), config=config)
+        _flush_active_turn(runtime_context)
 
     print("FINAL BUG REPORT:\n\n")
     final_report = gen_report(
@@ -438,8 +452,18 @@ def main() -> None:
         runtime_context=runtime_context,
     )
     print(final_report["full_report"])
-    runtime_context.logger.finish_conversation()
-    runtime_context.logger.write_log()
+    runtime_context.sink.append_full_report(
+        FullReportRecord(
+            session_id=runtime_context.session_id,
+            full_report=final_report["full_report"],
+        ),
+        runtime_context.logger.filepath,
+    )
+    summary_record = runtime_context.logger.finish_session()
+    runtime_context.sink.append_conversation_summary(
+        summary_record,
+        runtime_context.logger.filepath,
+    )
 
 
 if __name__ == "__main__":

@@ -94,6 +94,14 @@ def extract_log_metadata(log_path: Path) -> dict[str, Any]:
     }
 
 
+def find_full_report_record(records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Find the dedicated full_report record, if present."""
+    for record in reversed(records):
+        if record.get("record_type") == "full_report":
+            return record
+    return None
+
+
 def find_generate_report_action(records: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Find the final action that contains the generated bug report payload."""
     for record in records:
@@ -124,6 +132,7 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
     """
     metadata = extract_log_metadata(log_path)
     records = parse_json_records(log_path)
+    full_report_record = find_full_report_record(records)
     generate_report_action = find_generate_report_action(records)
     summary_record = find_conversation_summary_record(records)
     token_consumption = (
@@ -157,22 +166,25 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         ),
     }
 
-    if generate_report_action is None:
-        context["parse_status"] = "missing_generate_report"
-        context["parse_error"] = "No generate_report action found in log."
+    if isinstance(full_report_record, dict):
+        full_report = full_report_record.get("full_report")
+    elif generate_report_action is not None:
+        output = generate_report_action.get("output") or {}
+        full_report = output.get("full_report")
+        context["logged_extracted_information_elements"] = output.get(
+            "extracted_information_elements"
+        )
+    else:
+        context["parse_status"] = "missing_full_report"
+        context["parse_error"] = "No full_report record found in log."
         return context
 
-    output = generate_report_action.get("output") or {}
-    full_report = output.get("full_report")
     if not isinstance(full_report, dict):
         context["parse_status"] = "missing_full_report"
-        context["parse_error"] = "generate_report action did not include a valid full_report object."
+        context["parse_error"] = "full_report record did not include a valid full_report object."
         return context
 
     context["full_report"] = full_report
-    # Keep the logged extraction in the parser context for debugging and
-    # future comparisons even though it is not written into the evaluation JSON.
-    context["logged_extracted_information_elements"] = output.get("extracted_information_elements")
 
     bug_id = context.get("bug_id")
     if bug_id is not None:

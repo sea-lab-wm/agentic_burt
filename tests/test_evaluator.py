@@ -21,34 +21,23 @@ class EvaluatorTests(unittest.TestCase):
         return log_path
 
     @staticmethod
-    def _generate_report_record() -> dict:
+    def _full_report_record() -> dict:
         return {
-            "turn": 1,
-            "actions": [
-                {
-                    "entity": "bot",
-                    "action_name": "generate_report",
-                    "output": {
-                        "full_report": {
-                            "title": "Bug title",
-                            "observed_behavior": "Observed behavior",
-                            "expected_behavior": "Expected behavior",
-                            "steps_to_reproduce": "1. Do thing",
-                        },
-                        "extracted_information_elements": {
-                            "buggy_behavior": "Observed behavior"
-                        },
-                    },
-                    "meta_data": {"latency": "0.1 s", "node_token_consumption": None},
-                }
-            ],
+            "record_type": "full_report",
+            "session_id": "10",
+            "full_report": {
+                "title": "Bug title",
+                "observed_behavior": "Observed behavior",
+                "expected_behavior": "Expected behavior",
+                "steps_to_reproduce": "1. Do thing",
+            },
         }
 
     @staticmethod
     def _summary_record(**overrides) -> dict:
         summary = {
             "record_type": "conversation_summary",
-            "conversation_id": "10",
+            "session_id": "10",
             "started_at": "2026-04-07T00:00:00+00:00",
             "ended_at": "2026-04-07T00:00:05+00:00",
             "total_latency_seconds": 5.0,
@@ -75,7 +64,7 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_build_log_context_extracts_summary_metrics(self):
         log_path = self._write_log(
-            [self._generate_report_record(), self._summary_record()]
+            [self._full_report_record(), self._summary_record()]
         )
 
         context = build_log_context(log_path, self._ground_truth_rows())
@@ -87,7 +76,7 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["total_conversation_turns"], 2)
 
     def test_build_log_context_defaults_summary_metrics_to_null_when_missing(self):
-        log_path = self._write_log([self._generate_report_record()])
+        log_path = self._write_log([self._full_report_record()])
 
         context = build_log_context(log_path, self._ground_truth_rows())
 
@@ -103,7 +92,7 @@ class EvaluatorTests(unittest.TestCase):
             total_conversation_turns=None,
             token_consumption={"input_tokens": 7},
         )
-        log_path = self._write_log([self._generate_report_record(), partial_summary])
+        log_path = self._write_log([self._full_report_record(), partial_summary])
 
         context = build_log_context(log_path, self._ground_truth_rows())
 
@@ -115,7 +104,7 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_evaluate_log_includes_summary_metrics(self):
         log_path = self._write_log(
-            [self._generate_report_record(), self._summary_record()]
+            [self._full_report_record(), self._summary_record()]
         )
         model = object()
 
@@ -148,7 +137,7 @@ class EvaluatorTests(unittest.TestCase):
         result = evaluate_log(log_path, model, self._ground_truth_rows())
 
         self.assertEqual(result["status"], "parse_error")
-        self.assertEqual(result["parse_status"], "missing_generate_report")
+        self.assertEqual(result["parse_status"], "missing_full_report")
         self.assertEqual(result["total_input_tokens_consumed"], 10)
         self.assertEqual(result["total_output_tokens_consumed"], 4)
         self.assertEqual(result["total_tokens_consumed"], 14)
