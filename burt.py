@@ -11,6 +11,7 @@ from observability import (
     ActionName,
     ConversationLogger,
     Entity,
+    LocalFileSink,
     ObservabilityTokenCallback,
     log_action,
 )
@@ -36,6 +37,7 @@ class BurtRuntimeContext:
 
     session_id: str
     logger: ConversationLogger
+    sink: LocalFileSink
     usage_callback: ObservabilityTokenCallback
     model: ChatOpenAI
 
@@ -48,12 +50,18 @@ def create_runtime_context(
     """Create the logger, callback, and model instances for one conversation request."""
     version = str(config.PROMPT_VERSION)
     log_path = Path("logs") / version / f"session_{session_id}_bug{bug_id}_{description_level}.log"
-    logger = ConversationLogger(filepath=str(log_path), conversation_id=session_id)
+    sink = LocalFileSink()
+    logger = ConversationLogger(
+        filepath=str(log_path),
+        conversation_id=session_id,
+        sink=sink,
+    )
     usage_callback = ObservabilityTokenCallback(logger=logger)
     model = ChatOpenAI(model=config.MODEL_NAME, callbacks=[usage_callback])
     return BurtRuntimeContext(
         session_id=session_id,
         logger=logger,
+        sink=sink,
         usage_callback=usage_callback,
         model=model,
     )

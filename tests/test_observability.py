@@ -12,6 +12,8 @@ from observability import (
     ConversationLogger,
     Entity,
     LLMUsageEvent,
+    LocalFileSink,
+    MetaData,
     ObservabilityTokenCallback,
     log_action,
 )
@@ -267,6 +269,32 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(summary["token_consumption"]["input_tokens"], 6)
             self.assertEqual(summary["token_consumption"]["output_tokens"], 4)
             self.assertEqual(summary["token_consumption"]["total_tokens"], 10)
+
+    def test_local_file_sink_writes_turns_then_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "test.log"
+            sink = LocalFileSink()
+            logger = ConversationLogger(
+                filepath=str(log_path),
+                conversation_id="conv-sink",
+                sink=sink,
+            )
+
+            self._log_user_description(logger, "initial bug description")
+            logger.add_action_to_conversation(
+                entity=Entity.bot,
+                action_name=ActionName.evaluate,
+                output={"ok": True},
+                meta_data=MetaData(latency="0.1 s", node_token_consumption=None),
+            )
+            logger.finish_conversation()
+            logger.write_log()
+
+            records = self._parse_json_stream(log_path.read_text())
+            self.assertEqual(records[0]["turn"], 1)
+            self.assertEqual(records[0]["actions"][0]["action_name"], "user_description")
+            self.assertEqual(records[0]["actions"][1]["action_name"], "evaluate")
+            self.assertEqual(records[-1]["record_type"], "conversation_summary")
 
     def test_written_log_starts_with_initial_user_description_in_turn_one(self):
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -1,5 +1,6 @@
 """Observability models and helpers for runtime logging and token tracking."""
 
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps
@@ -126,12 +127,51 @@ class ConversationSummaryRecord(BaseModel):
     token_consumption: TokenConsumptionSummary
 
 
+class ObservabilitySink(ABC):
+    """Persistence backend for serialized conversation observability records."""
+
+    @abstractmethod
+    def write_conversation(
+        self,
+        conversation: List[ConversationTurn],
+        summary_record: Optional[ConversationSummaryRecord],
+        filepath: Path,
+    ) -> None:
+        """Persist the full serialized conversation to the configured destination."""
+
+
+class LocalFileSink(ObservabilitySink):
+    """Write conversation observability records to a local file."""
+
+    def write_conversation(
+        self,
+        conversation: List[ConversationTurn],
+        summary_record: Optional[ConversationSummaryRecord],
+        filepath: Path,
+    ) -> None:
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        with filepath.open("w", encoding="utf-8") as file_handle:
+            for turn in conversation:
+                file_handle.write(turn.model_dump_json(indent=2))
+                file_handle.write("\n")
+
+            if summary_record is not None:
+                file_handle.write(summary_record.model_dump_json(indent=2))
+                file_handle.write("\n")
+
+
 class ConversationLogger:
     """Collect and serialize turn-by-turn runtime observability records."""
 
-    def __init__(self, filepath: str, conversation_id: str):
+    def __init__(
+        self,
+        filepath: str,
+        conversation_id: str,
+        sink: Optional[ObservabilitySink] = None,
+    ):
         self.filepath = Path(filepath)
         self.conversation_id = str(conversation_id)
+        self.sink = sink or LocalFileSink()
         self.num_turns : int = 0
         self.conversation : List[ConversationTurn] = []
         self._current_action_name: Optional[ActionName] = None
@@ -221,16 +261,11 @@ class ConversationLogger:
 
     def write_log(self):
         """Write conversation turns and the final summary record to disk."""
-        self.filepath.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.filepath, "w") as f:
-            for action in self.conversation:
-                json_str = action.model_dump_json(indent=2)
-                f.write(json_str)
-                f.write("\n")
-
-            if self._summary_record is not None:
-                f.write(self._summary_record.model_dump_json(indent=2))
-                f.write("\n")
+        self.sink.write_conversation(
+            conversation=self.conversation,
+            summary_record=self._summary_record,
+            filepath=self.filepath,
+        )
 
 
 def _coerce_optional_int(value: Any) -> Optional[int]:

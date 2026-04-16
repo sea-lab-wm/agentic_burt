@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import burt
+from observability import LocalFileSink
 from state import BugAgentState
 
 
@@ -33,6 +34,11 @@ class BurtRuntimeContextTests(unittest.TestCase):
         self.assertEqual(context_a.logger.conversation_id, "session-a")
         self.assertEqual(context_b.logger.conversation_id, "session-b")
         self.assertIsNot(context_a.logger, context_b.logger)
+        self.assertIsInstance(context_a.sink, LocalFileSink)
+        self.assertIsInstance(context_b.sink, LocalFileSink)
+        self.assertIs(context_a.logger.sink, context_a.sink)
+        self.assertIs(context_b.logger.sink, context_b.sink)
+        self.assertIsNot(context_a.sink, context_b.sink)
         self.assertIsNot(context_a.usage_callback, context_b.usage_callback)
         self.assertIs(context_a.model, model_a)
         self.assertIs(context_b.model, model_b)
