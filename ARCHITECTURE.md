@@ -1,5 +1,7 @@
 # Architecture
 
+This document is currently scoped to the local quick-development runtime. It does not yet describe the containerized deployment path.
+
 ## 1. System Design
 
 ```mermaid
@@ -13,24 +15,29 @@ flowchart LR
 
     subgraph OBS[Observability]
       L1[log_action decorator]
-      L2[ConversationLogger]
+      L2[TurnLogger]
       L3[ObservabilityTokenCallback]
+      L4[ObservabilitySink / LocalFileSink]
       L1 --> L2
       L3 --> L2
+      L2 --> L4
     end
 
     A -->|node outputs + latency| L1
     A -->|LLM token usage| L3
+    A -->|flush completed turns + finalize session| L4
 
     LOGS --> E[Evaluator]
     E --> R[(Results/<agent_version>/...)]
 ```
 
 ### Deeper on Logging
-- Per-action logging is handled by `@log_action` in `observability.py`, which wraps instrumented runtime functions, measures latency, and records their outputs.
+- Per-action logging is handled by `@log_action` in `observability/logging_runtime.py`, which wraps instrumented runtime functions, measures latency, and records their outputs.
 - `ObservabilityTokenCallback` attaches to the active `ChatOpenAI` model and captures provider token usage for both action-level and conversation-level summaries.
-- `ConversationLogger.start_conversation()` and `ConversationLogger.finish_conversation()` record conversation-wide timing and build the final `conversation_summary` record.
-- Logs are written as back-to-back JSON records: one record per conversation turn, followed by a final `conversation_summary` record.
+- `TurnLogger` owns the in-memory turn lifecycle, while `ObservabilitySink` owns persistence.
+- The current local backend is `LocalFileSink`, which appends back-to-back JSON records to `logs/<PROMPT_VERSION>/...`.
+- CLI runs flush each completed turn to disk, then call `sink.finalize_session(...)` after the graph finishes.
+- Finalization reloads the persisted turn records, aggregates token/timing totals, and appends `final_report` plus `conversation_summary` terminal records.
 - Each turn contains an `actions` list with entries such as `user_description`, `information_element_extraction`, `clarity_check`, `extract_and_update`, `follow_up`, and `generate_report`.
 - Log paths are versioned by `config.PROMPT_VERSION`, so runtime logs and evaluation outputs can be grouped by active prompt version.
 
@@ -66,17 +73,21 @@ flowchart TD
 - `clarity_check` can request one clarification round before the graph continues to mapping.
 - `map_to_graph` grounds extracted natural-language information elements into the structured `BugInfo` mapping using the application graph and screen descriptions.
 - `evaluate_state` checks for unresolved slots. If any remain, `more_info_follow_up` generates the next user-facing question and the graph interrupts.
-- `generate_report` is the terminal LangGraph node. Its action log entry is the canonical source for report-generation token accounting, while the sink still appends a compatibility `final_report` record at session finalization.
+- `generate_report` is the terminal LangGraph node and returns the final `full_report` payload.
+- The `generate_report` action entry is the canonical report-generation action record, including per-node token accounting.
+- The sink still appends a compatibility `final_report` record at session finalization so downstream consumers can read a stable terminal snapshot.
 
 ## 3. File Responsibilities
 
-- `burt.py`: Main runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, and writes the observability log and final report records.
+- `burt.py`: Main local runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, flushes turn records through the sink, and finalizes the observability log.
 - `graph_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
 - `prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
 - `prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.
 - `state.py`: Pydantic models for `BugAgentState`, follow-up tracking, extracted information elements, and the structured `BugInfo` slot mapping.
 - `llm_schema.py`: Structured-output schemas used by runtime LLM calls for extraction, follow-up generation, clarity decisions, mapping updates, and report generation.
-- `observability.py`: Logging models, action instrumentation, token-usage callback capture, conversation summary generation, and log-file serialization.
+- `observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
+- `observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
+- `observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
 - `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATABASE_URL`, and the description CSV path.
 - `database/db.py`: SQLAlchemy engine/session setup wired to `config.DATABASE_URL`.
 - `database/models.py`: SQLAlchemy ORM schema. The active runtime model is the `bug` table with `bug_id`, `application_name`, `gui_graph`, and `screen_descriptions`.

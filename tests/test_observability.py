@@ -7,16 +7,18 @@ from types import SimpleNamespace
 
 from langchain_core.messages import HumanMessage
 
-from observability import (
-    ActionName,
-    Entity,
-    LLMUsageEvent,
-    LocalFileSink,
-    MetaData,
+from observability.logging_runtime import (
     ObservabilityTokenCallback,
     TurnLogger,
     log_action,
 )
+from observability.observability_models import (
+    ActionName,
+    Entity,
+    LLMUsageEvent,
+    MetaData,
+)
+from observability.observability_sinks import LocalFileSink
 
 
 class FakeMessage:

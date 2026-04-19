@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import burt
-from observability import LocalFileSink
+from observability.observability_sinks import LocalFileSink
 from state import BugAgentState
 
 

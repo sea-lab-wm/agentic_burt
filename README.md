@@ -2,6 +2,8 @@
 
 This repository contains the BURT++ bug-reporting agent, its observability logging system, and the evaluation pipeline used to score generated bug reports against the development-set ground truth.
 
+NOTE: This README is intentionally scoped to the current local quick-development workflow. It does not yet document the containerized/API deployment path.
+
 The current workflow is:
 
 1. Run the agent for one bug/description pair or for a full or diminished development set.
@@ -54,7 +56,7 @@ Notes:
 - BURT++ pulls the initial user description from the matching `<description level> Desc` column in the dev CSV.
 - BURT++ loads the app graph and screen descriptions from the database for the requested `bug_id`.
 - If the agent needs clarification, it will interrupt in the terminal and ask follow-up questions.
-- When the run completes, BURT++ prints the final bug report and writes an observability log.
+- When the run completes, BURT++ prints the final bug report and writes an observability log through the default local file sink.
 
 ## Run The Full Experiment
 
@@ -80,19 +82,24 @@ Behavior:
 
 BURT++ writes one observability log per run. These logs are the input to the evaluator.
 
-Log location:
+Local CLI log location:
 
 ```text
-logs/<PROMPT_VERSION>/bug<bug_id>_<description_level>.log
+logs/<PROMPT_VERSION>/session_local_bug<bug_id>_<description_level>.log
 ```
+
+Current logging behavior:
+
+- `TurnLogger` builds turn records in memory and hands persistence off to an `ObservabilitySink`.
+- The default sink is `LocalFileSink`, which appends back-to-back JSON records to the local log file.
+- At the end of the run, the sink reconstructs conversation totals from the persisted turn records and appends terminal records.
 
 What each log includes:
 
 - one JSON record per conversation turn
 - within each turn, an `actions` list covering the user description and each logged agent step
 - for each action: the acting entity, action name, output payload, latency, and any available token-usage summary
-- the final `generate_report` action output, including the generated bug report used by the evaluator
-- a terminal `final_report` JSON record that preserves the generated report as a compatibility snapshot
+- a terminal `final_report` JSON record appended by the sink as a compatibility snapshot of the generated report. NOTE: this will eventually represent the final report agreed upon by the user and BURT++.
 - a final `conversation_summary` JSON record with run-level totals such as total latency, total turns, and aggregate token consumption
 
 Logged action names currently include:
@@ -120,8 +127,8 @@ Evaluate specific log files:
 
 ```bash
 python -m evaluator.runner \
-  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug10_LC_LP.log \
-  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug135_MC_HP.log
+  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/session_local_bug10_LC_LP.log \
+  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/session_local_bug135_MC_HP.log
 ```
 
 Override the judge model:
@@ -134,7 +141,7 @@ For each log, the evaluator:
 
 1. parses the observability records
 2. extracts `bug_id`, `description_level`, and `agent_version` from the log path
-3. finds the terminal `final_report` record or falls back to the `generate_report` action
+3. finds the terminal `final_report` record or falls back to the `generate_report` action for legacy log files
 4. reads the final generated bug report
 5. joins the matching ground-truth row from the dev CSV
 6. recomputes information elements from the generated report
@@ -195,7 +202,7 @@ Single run:
 
 ```bash
 python burt.py --bug-id [bug_id] --description-level [desc_level]
-python -m evaluator.runner logs/[agent_version_of_previous_run]/bug[bug_id]_[desc_level].log
+python -m evaluator.runner logs/[agent_version_of_previous_run]/session_local_bug[bug_id]_[desc_level].log
 ```
 
 Batch run:
@@ -232,6 +239,7 @@ How the agent uses them:
 - [graph_utils.py](graph_utils.py) loads prompt templates from `prompt_versioning.json`
 - the active prompt version is selected by `PROMPT_VERSION` in [config.py](config.py)
 - that same `PROMPT_VERSION` is also used in log output paths and evaluator result grouping
+- the runtime terminal node is still named `generate_report`; prompt-version updates for report synthesis should update the `generate_report` prompt key
 
 To add a new prompt version:
 

@@ -8,14 +8,16 @@ from database.database_utils import fetch_graph_data
 from state import ActiveFollowUp, BugAgentState, FollowUpKind
 from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
 import config
-from observability import (
-    ActionName,
-    Entity,
-    LocalFileSink,
+from observability.logging_runtime import (
     ObservabilityTokenCallback,
     TurnLogger,
     log_action,
 )
+from observability.observability_models import (
+    ActionName,
+    Entity,
+)
+from observability.observability_sinks import LocalFileSink
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
