@@ -12,7 +12,6 @@ from burt import (
     BugAgentState,
     build_burt_graph,
     create_runtime_context,
-    gen_report,
     ingest_user_description,
     load_bug_graph_context,
     load_initial_message,
@@ -89,12 +88,10 @@ def _persist_and_build_response(
             final_report=None,
         )
     else:
-        final_report = gen_report(
-            result["BugInfo"],
-            app_graph=app_graph,
-            app_name=app_name,
-            runtime_context=runtime_context,
-        )
+        #fetch full report from last LangGraph execution payload to populate the full_report record at the end of the logs
+        final_report = result.get("full_report")
+        if not isinstance(final_report, dict):
+            raise ValueError("Completed graph result is missing a valid full_report payload.")
         response = ConversationTurnResponse(
             session_id=session_id,
             status="completed",

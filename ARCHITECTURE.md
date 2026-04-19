@@ -66,11 +66,11 @@ flowchart TD
 - `clarity_check` can request one clarification round before the graph continues to mapping.
 - `map_to_graph` grounds extracted natural-language information elements into the structured `BugInfo` mapping using the application graph and screen descriptions.
 - `evaluate_state` checks for unresolved slots. If any remain, `more_info_follow_up` generates the next user-facing question and the graph interrupts.
-- Final report generation happens after the graph loop ends. `gen_report()` refuses to run if unresolved bug-info slots still remain.
+- `generate_report` is the terminal LangGraph node. Its action log entry is the canonical source for report-generation token accounting, while the sink still appends a compatibility `final_report` record at session finalization.
 
 ## 3. File Responsibilities
 
-- `burt.py`: Main runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, generates the final report, and writes the observability log.
+- `burt.py`: Main runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, and writes the observability log and final report records.
 - `graph_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
 - `prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
 - `prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.

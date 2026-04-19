@@ -318,19 +318,21 @@ def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dic
         runtime_context=_get_runtime_context(config),
     )
 
-def gen_report(
-    bug_info,
-    app_graph,
-    app_name,
-    runtime_context: BurtRuntimeContext,
-) -> dict:
-    """Generate the final report after confirming all bug-info slots are resolved."""
+@log_action(entity=Entity.bot, action_name=ActionName.generate_report)
+def generate_final_report(state: BugAgentState, config: RunnableConfig) -> dict:
+    """Generate the final report as the terminal LangGraph step."""
     print("generating final bug report...\n")
+    bug_info = state.BugInfo
     unresolved = find_unknown_or_ambiguous(bug_info)
     if unresolved:
         raise ValueError(
             f"Cannot generate report with unresolved bug info: {sorted(unresolved)}"
-    )
+        )
+
+    configurable = config.get("configurable") or {}
+    app_graph = configurable.get("app_graph")
+    app_name = configurable.get("app_name")
+    runtime_context = _get_runtime_context(config)
     return generate_report(bug_info, app_graph, runtime_context.model, app_name)
 
 def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:
@@ -356,6 +358,7 @@ def build_burt_graph(checkpointer):
     burt_workflow.add_node("evaluate_state", evaluate_state)
     burt_workflow.add_node("more_info_follow_up", more_info_follow_up)
     burt_workflow.add_node("interrupt_and_present", interrupt_and_present)
+    burt_workflow.add_node("generate_report", generate_final_report)
 
     burt_workflow.set_entry_point("information_element_extraction")
     burt_workflow.add_edge("information_element_extraction", "clarity_check")
@@ -374,11 +377,12 @@ def build_burt_graph(checkpointer):
         should_continue,
         {
             "continue": "more_info_follow_up",
-            "end": END
+            "end": "generate_report",
         }
     )
     burt_workflow.add_edge("more_info_follow_up", "interrupt_and_present")
     burt_workflow.add_edge("interrupt_and_present", "information_element_extraction")
+    burt_workflow.add_edge("generate_report", END)
 
     return burt_workflow.compile(checkpointer=checkpointer)
 
@@ -444,17 +448,12 @@ def main() -> None:
         _flush_active_turn(runtime_context)
 
     print("FINAL BUG REPORT:\n\n")
-    final_report = gen_report(
-        result["BugInfo"],
-        app_graph=app_graph,
-        app_name=app_name,
-        runtime_context=runtime_context,
-    )
-    print(final_report["full_report"])
+    final_report = result["full_report"]
+    print(final_report)
     runtime_context.sink.finalize_session(
         session_id=runtime_context.session_id,
         filepath=runtime_context.logger.filepath,
-        full_report=final_report["full_report"],
+        final_report=final_report,
     )
 
 if __name__ == "__main__":

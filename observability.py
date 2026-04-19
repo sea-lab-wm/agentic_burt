@@ -126,12 +126,12 @@ class TokenConsumptionSummary(BaseModel):
         )
 
 
-class FullReportRecord(BaseModel):
+class FinalReportRecord(BaseModel):
     """Terminal record that stores the generated report payload."""
 
-    record_type: str = "full_report"
+    record_type: str = "final_report"
     session_id: str
-    full_report: dict[str, Any]
+    final_report: dict[str, Any]
 
 
 class ConversationSummaryRecord(BaseModel):
@@ -160,7 +160,7 @@ class ObservabilitySink(ABC):
         *,
         session_id: str,
         filepath: Path,
-        full_report: dict[str, Any],
+        final_report: dict[str, Any],
     ) -> None:
         """Append final report and reconstructed conversation summary records to finalize json logs."""
 
@@ -309,9 +309,9 @@ class LocalFileSink(ObservabilitySink):
         *,
         session_id: str,
         filepath: Path,
-        full_report: dict[str, Any],
+        final_report: dict[str, Any],
     ) -> None:
-        """Append terminal records (FullReportRecord and ConversationSummaryRecord) after reconstructing totals from persisted turns. """
+        """Append terminal records (FinalReportRecord and ConversationSummaryRecord) after reconstructing totals from persisted turns. """
         
         #loads existing turn records from json log file
         turn_records: list[ConversationTurn] = []
@@ -333,9 +333,9 @@ class LocalFileSink(ObservabilitySink):
             self._parse_iso_timestamp,
         )
 
-        #append full report record and summary record
+        #append final report record and summary record
         self._append_record(
-            FullReportRecord(session_id=session_id, full_report=full_report),
+            FinalReportRecord(session_id=session_id, final_report=final_report),
             filepath,
         )
         self._append_record(summary_record, filepath)

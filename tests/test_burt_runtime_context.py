@@ -83,6 +83,33 @@ class BurtRuntimeContextTests(unittest.TestCase):
         mock_llm_extract.assert_called_once()
         self.assertIs(mock_llm_extract.call_args.kwargs["model"], runtime_context.model)
 
+    @patch(
+        "burt.generate_report",
+        return_value={"full_report": {"title": "Final report"}},
+    )
+    def test_generate_final_report_uses_runtime_context_model(self, mock_generate_report):
+        runtime_context = SimpleNamespace(logger=MagicMock(), model=object())
+        state = BugAgentState()
+        state.BugInfo = MagicMock()
+        config = {
+            "configurable": {
+                "app_graph": "app graph",
+                "app_name": "Test App",
+                "runtime_context": runtime_context,
+            }
+        }
+
+        with patch("burt.find_unknown_or_ambiguous", return_value=set()):
+            result = burt.generate_final_report.__wrapped__(state, config)
+
+        self.assertEqual(result, {"full_report": {"title": "Final report"}})
+        mock_generate_report.assert_called_once_with(
+            state.BugInfo,
+            "app graph",
+            runtime_context.model,
+            "Test App",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

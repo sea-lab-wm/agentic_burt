@@ -62,7 +62,6 @@ class StartConversationTests(unittest.TestCase):
         )
         mock_load_bug_graph_context.assert_called_once_with(
             current_bug=42,
-            description_level="LC_LP",
         )
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
@@ -104,10 +103,6 @@ class StartConversationTests(unittest.TestCase):
 
     @patch("app.services.burt_runtime.create_session_record")
     @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
-    @patch(
-        "app.services.burt_runtime.gen_report",
-        return_value={"title": "Final report"},
-    )
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.BugAgentState", return_value=sentinel.initial_state)
@@ -133,7 +128,6 @@ class StartConversationTests(unittest.TestCase):
         _mock_bug_agent_state,
         mock_from_conn_string,
         mock_build_burt_graph,
-        mock_gen_report,
         mock_create_runtime_context,
         mock_create_session_record,
     ):
@@ -141,8 +135,11 @@ class StartConversationTests(unittest.TestCase):
         checkpointer = MagicMock()
         # Simulate the compiled graph returned by build_burt_graph(checkpointer).
         graph = MagicMock()
-        # Returning BugInfo without __interrupt__ means the conversation is complete and should generate a report.
-        graph.invoke.return_value = {"BugInfo": {"id": 42}}
+        # Returning full_report without __interrupt__ means the conversation is complete.
+        graph.invoke.return_value = {
+            "BugInfo": {"id": 42},
+            "full_report": {"title": "Final report"},
+        }
         mock_build_burt_graph.return_value = graph
         context_manager = MagicMock()
         context_manager.__enter__.return_value = checkpointer
@@ -160,12 +157,6 @@ class StartConversationTests(unittest.TestCase):
             session_id="session-123",
             bug_id=42,
             description_level="LC_LP",
-        )
-        mock_gen_report.assert_called_once_with(
-            {"id": 42},
-            app_graph="app graph",
-            app_name="Test App",
-            runtime_context=sentinel.runtime_context,
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -245,7 +236,6 @@ class ResumeConversationTests(unittest.TestCase):
         mock_get_session.assert_called_once_with("session-123")
         mock_load_bug_graph_context.assert_called_once_with(
             current_bug=42,
-            description_level="LC_LP",
         )
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
@@ -285,10 +275,6 @@ class ResumeConversationTests(unittest.TestCase):
     @patch("app.services.burt_runtime.release_session_lock")
     @patch("app.services.burt_runtime.create_session_record")
     @patch(
-        "app.services.burt_runtime.gen_report",
-        return_value={"title": "Final report"},
-    )
-    @patch(
         "app.services.burt_runtime.get_session",
         return_value={
             "session_id": "session-123",
@@ -320,7 +306,6 @@ class ResumeConversationTests(unittest.TestCase):
         mock_build_burt_graph,
         mock_create_runtime_context,
         _mock_get_session,
-        mock_gen_report,
         mock_create_session_record,
         mock_release_session_lock,
     ):
@@ -328,8 +313,11 @@ class ResumeConversationTests(unittest.TestCase):
         checkpointer = MagicMock()
         # Simulate the compiled graph returned by build_burt_graph(checkpointer).
         graph = MagicMock()
-        # Returning BugInfo without __interrupt__ means resume finished the workflow and should generate a report.
-        graph.invoke.return_value = {"BugInfo": {"id": 42}}
+        # Returning full_report without __interrupt__ means resume finished the workflow.
+        graph.invoke.return_value = {
+            "BugInfo": {"id": 42},
+            "full_report": {"title": "Final report"},
+        }
         mock_build_burt_graph.return_value = graph
         context_manager = MagicMock()
         context_manager.__enter__.return_value = checkpointer
@@ -350,12 +338,6 @@ class ResumeConversationTests(unittest.TestCase):
             session_id="session-123",
             bug_id=42,
             description_level="LC_LP",
-        )
-        mock_gen_report.assert_called_once_with(
-            {"id": 42},
-            app_graph="app graph",
-            app_name="Test App",
-            runtime_context=sentinel.runtime_context,
         )
         mock_create_session_record.assert_called_once_with(
             {

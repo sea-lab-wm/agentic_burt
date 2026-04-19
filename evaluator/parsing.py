@@ -94,10 +94,10 @@ def extract_log_metadata(log_path: Path) -> dict[str, Any]:
     }
 
 
-def find_full_report_record(records: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Find the dedicated full_report record, if present."""
+def find_final_report_record(records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Find the dedicated final_report record, if present."""
     for record in reversed(records):
-        if record.get("record_type") == "full_report":
+        if record.get("record_type") == "final_report":
             return record
     return None
 
@@ -132,7 +132,7 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
     """
     metadata = extract_log_metadata(log_path)
     records = parse_json_records(log_path)
-    full_report_record = find_full_report_record(records)
+    final_report_record = find_final_report_record(records)
     generate_report_action = find_generate_report_action(records)
     summary_record = find_conversation_summary_record(records)
     token_consumption = (
@@ -147,7 +147,7 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         **metadata,
         "parse_status": "ok",
         "parse_error": None,
-        "full_report": None,
+        "final_report": None,
         "logged_extracted_information_elements": None,
         "ground_truth": None,
         "app_name": None,
@@ -173,25 +173,26 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         ),
     }
 
-    if isinstance(full_report_record, dict):
-        full_report = full_report_record.get("full_report")
+    #NOTE: There is a fallback in place for legacy log formats that do not have the top leve final report. Those logs used a full report json object within an output record.
+    if isinstance(final_report_record, dict):
+        final_report = final_report_record.get("final_report")
     elif generate_report_action is not None:
         output = generate_report_action.get("output") or {}
-        full_report = output.get("full_report")
+        final_report = output.get("full_report")
         context["logged_extracted_information_elements"] = output.get(
             "extracted_information_elements"
         )
     else:
         context["parse_status"] = "missing_full_report"
-        context["parse_error"] = "No full_report record found in log."
+        context["parse_error"] = "No final_report record found in log."
         return context
 
-    if not isinstance(full_report, dict):
+    if not isinstance(final_report, dict):
         context["parse_status"] = "missing_full_report"
-        context["parse_error"] = "full_report record did not include a valid full_report object."
+        context["parse_error"] = "final_report record did not include a valid final_report object."
         return context
 
-    context["full_report"] = full_report
+    context["final_report"] = final_report
 
     bug_id = context.get("bug_id")
     if bug_id is not None:

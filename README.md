@@ -92,6 +92,7 @@ What each log includes:
 - within each turn, an `actions` list covering the user description and each logged agent step
 - for each action: the acting entity, action name, output payload, latency, and any available token-usage summary
 - the final `generate_report` action output, including the generated bug report used by the evaluator
+- a terminal `final_report` JSON record that preserves the generated report as a compatibility snapshot
 - a final `conversation_summary` JSON record with run-level totals such as total latency, total turns, and aggregate token consumption
 
 Logged action names currently include:
@@ -133,7 +134,7 @@ For each log, the evaluator:
 
 1. parses the observability records
 2. extracts `bug_id`, `description_level`, and `agent_version` from the log path
-3. finds the `generate_report` action
+3. finds the terminal `final_report` record or falls back to the `generate_report` action
 4. reads the final generated bug report
 5. joins the matching ground-truth row from the dev CSV
 6. recomputes information elements from the generated report

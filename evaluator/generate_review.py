@@ -323,11 +323,11 @@ def _lookup_description_text(gt_row: dict[str, str] | None, description_level: s
 
 def _build_full_bug_report_text(result: dict[str, Any]) -> str:
     """Compose a display-friendly bug-report text block for workbook cells."""
-    full_report = result.get("full_report") or {}
+    final_report = result.get("final_report") or {}
     parts = [
-        ("Title", full_report.get("title")),
-        ("Observed Behavior", full_report.get("observed_behavior")),
-        ("Expected Behavior", full_report.get("expected_behavior")),
+        ("Title", final_report.get("title")),
+        ("Observed Behavior", final_report.get("observed_behavior")),
+        ("Expected Behavior", final_report.get("expected_behavior")),
     ]
     return "\n\n".join(f"{label}: {value}" for label, value in parts if value)
 

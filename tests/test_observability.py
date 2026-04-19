@@ -289,17 +289,17 @@ class ObservabilityTests(unittest.TestCase):
             )
             logger.add_action_to_turn(
                 entity=Entity.bot,
-                action_name=ActionName.follow_up,
-                output={"ok": True},
+                action_name=ActionName.generate_report,
+                output={"full_report": {"title": "Bug title"}},
                 meta_data=MetaData(
                     latency="0.2 s",
                     node_token_consumption={
-                        "input_tokens": None,
+                        "input_tokens": 8,
                         "output_tokens": 3,
-                        "total_tokens": None,
+                        "total_tokens": 11,
                         "llm_calls": 1,
-                        "llm_calls_with_usage": 0,
-                        "llm_calls_missing_usage": 1,
+                        "llm_calls_with_usage": 1,
+                        "llm_calls_missing_usage": 0,
                     },
                 ),
             )
@@ -313,7 +313,7 @@ class ObservabilityTests(unittest.TestCase):
             sink.finalize_session(
                 session_id="sess-5",
                 filepath=logger.filepath,
-                full_report={"title": "Bug title"},
+                final_report={"title": "Bug title"},
             )
 
             records = self._parse_json_stream(log_path.read_text())
@@ -324,8 +324,10 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[0]["actions"][0]["action_name"], "user_description")
             self.assertEqual(records[0]["actions"][1]["action_name"], "clarity_check")
             self.assertEqual(records[1]["turn"], 2)
-            self.assertEqual(records[2]["record_type"], "full_report")
-            self.assertEqual(records[2]["full_report"]["title"], "Bug title")
+            self.assertEqual(records[1]["actions"][2]["action_name"], "generate_report")
+            self.assertEqual(records[1]["actions"][2]["output"]["full_report"]["title"], "Bug title")
+            self.assertEqual(records[2]["record_type"], "final_report")
+            self.assertEqual(records[2]["final_report"]["title"], "Bug title")
             self.assertEqual(records[3]["record_type"], "conversation_summary")
             self.assertEqual(records[3]["session_id"], "sess-5")
             self.assertEqual(records[3]["started_at"], base_time.isoformat())
@@ -333,12 +335,12 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[3]["total_wall_clock_seconds"], 11.0)
             self.assertEqual(records[3]["total_turn_processing_seconds"], 3.0)
             self.assertEqual(records[3]["total_conversation_turns"], 2)
-            self.assertEqual(records[3]["token_consumption"]["input_tokens"], 6)
+            self.assertEqual(records[3]["token_consumption"]["input_tokens"], 14)
             self.assertEqual(records[3]["token_consumption"]["output_tokens"], 7)
-            self.assertEqual(records[3]["token_consumption"]["total_tokens"], 10)
+            self.assertEqual(records[3]["token_consumption"]["total_tokens"], 21)
             self.assertEqual(records[3]["token_consumption"]["llm_calls"], 2)
-            self.assertEqual(records[3]["token_consumption"]["llm_calls_with_usage"], 1)
-            self.assertEqual(records[3]["token_consumption"]["llm_calls_missing_usage"], 1)
+            self.assertEqual(records[3]["token_consumption"]["llm_calls_with_usage"], 2)
+            self.assertEqual(records[3]["token_consumption"]["llm_calls_missing_usage"], 0)
 
 
 if __name__ == "__main__":

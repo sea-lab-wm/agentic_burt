@@ -59,7 +59,7 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
             "description_level": description_level,
             "agent_version": agent_version,
             "app_name": f"Test App {bug_id}",
-            "full_report": {
+            "final_report": {
                 "title": f"Bug {bug_id}",
                 "observed_behavior": "Observed",
                 "expected_behavior": "Expected",
