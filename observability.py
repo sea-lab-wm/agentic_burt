@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps
+import json
 from pathlib import Path
 from typing import Any, List, Optional
 import time
@@ -49,10 +50,12 @@ class Action(BaseModel):
 
 
 class ConversationTurn(BaseModel):
-    """One logged conversation turn containing one or more actions."""
+    """One logged conversation turn containing one or more actions, session_id, turn start time and turn end time."""
 
     session_id: str
     turn: int
+    started_at: Optional[str] = None
+    ended_at: Optional[str] = None
     actions: List[Action]
 
 
@@ -138,7 +141,8 @@ class ConversationSummaryRecord(BaseModel):
     session_id: str
     started_at: Optional[str] = None
     ended_at: Optional[str] = None
-    total_latency_seconds: Optional[float] = None
+    total_wall_clock_seconds: Optional[float] = None
+    total_turn_processing_seconds: Optional[float] = None
     total_conversation_turns: int
     token_consumption: TokenConsumptionSummary
 
@@ -151,43 +155,194 @@ class ObservabilitySink(ABC):
         """Persist one completed turn record."""
 
     @abstractmethod
-    def append_full_report(
-        self, full_report_record: FullReportRecord, filepath: Path
+    def finalize_session(
+        self,
+        *,
+        session_id: str,
+        filepath: Path,
+        full_report: dict[str, Any],
     ) -> None:
-        """Persist the generated full-report record."""
+        """Append final report and reconstructed conversation summary records to finalize json logs."""
 
-    @abstractmethod
-    def append_conversation_summary(
-        self, summary_record: ConversationSummaryRecord, filepath: Path
-    ) -> None:
-        """Persist the final conversation summary record."""
+    def _aggregate_action_token_summaries(
+        self,
+        turn_records: List[ConversationTurn],
+    ) -> TokenConsumptionSummary:
+        """Aggregate per-action token summaries across persisted turns."""
+        aggregate = TokenConsumptionSummary(
+            input_tokens=0,
+            output_tokens=0,
+            total_tokens=0,
+            llm_calls=0,
+            llm_calls_with_usage=0,
+            llm_calls_missing_usage=0,
+        )
+
+        input_seen = False
+        output_seen = False
+        total_seen = False
+
+        for turn_record in turn_records:
+            for action in turn_record.actions:
+                summary = action.meta_data.node_token_consumption
+                if summary is None:
+                    continue
+
+                aggregate.llm_calls += summary.llm_calls
+                aggregate.llm_calls_with_usage += summary.llm_calls_with_usage
+                aggregate.llm_calls_missing_usage += summary.llm_calls_missing_usage
+
+                if summary.input_tokens is not None:
+                    aggregate.input_tokens = (aggregate.input_tokens or 0) + summary.input_tokens
+                    input_seen = True
+                if summary.output_tokens is not None:
+                    aggregate.output_tokens = (aggregate.output_tokens or 0) + summary.output_tokens
+                    output_seen = True
+                if summary.total_tokens is not None:
+                    aggregate.total_tokens = (aggregate.total_tokens or 0) + summary.total_tokens
+                    total_seen = True
+
+        if not input_seen:
+            aggregate.input_tokens = None
+        if not output_seen:
+            aggregate.output_tokens = None
+        if not total_seen:
+            aggregate.total_tokens = None
+
+        return aggregate
+
+    def _build_conversation_summary(
+        self,
+        session_id: str,
+        turn_records: List[ConversationTurn],
+        token_summary: TokenConsumptionSummary,
+        parse_iso_timestamp: "Callable[[Optional[str]], Optional[datetime]]",
+    ) -> ConversationSummaryRecord:
+        """Build a conversation summary from persisted turn records."""
+        sorted_turns = sorted(turn_records, key=lambda turn: turn.turn)
+        first_turn = sorted_turns[0] if sorted_turns else None
+        last_turn = sorted_turns[-1] if sorted_turns else None
+
+        started_at = first_turn.started_at if first_turn else None
+        ended_at = last_turn.ended_at if last_turn else None
+
+        started_at_dt = parse_iso_timestamp(started_at)
+        ended_at_dt = parse_iso_timestamp(ended_at)
+
+        total_wall_clock_seconds = None
+        if started_at_dt is not None and ended_at_dt is not None:
+            total_wall_clock_seconds = (ended_at_dt - started_at_dt).total_seconds()
+
+        total_turn_processing_seconds = 0.0
+        processing_seen = False
+        for turn_record in sorted_turns:
+            turn_started_at = parse_iso_timestamp(turn_record.started_at)
+            turn_ended_at = parse_iso_timestamp(turn_record.ended_at)
+            if turn_started_at is None or turn_ended_at is None:
+                continue
+            total_turn_processing_seconds += (
+                turn_ended_at - turn_started_at
+            ).total_seconds()
+            processing_seen = True
+
+        return ConversationSummaryRecord(
+            session_id=session_id,
+            started_at=started_at,
+            ended_at=ended_at,
+            total_wall_clock_seconds=total_wall_clock_seconds,
+            total_turn_processing_seconds=(
+                total_turn_processing_seconds if processing_seen else None
+            ),
+            total_conversation_turns=len(sorted_turns),
+            token_consumption=token_summary,
+        )
 
 
 class LocalFileSink(ObservabilitySink):
     """Append observability records to a local file."""
 
     def _append_record(self, record: BaseModel, filepath: Path) -> None:
+        """Append one serialized observability record to the target log file."""
         filepath.parent.mkdir(parents=True, exist_ok=True)
         with filepath.open("a", encoding="utf-8") as file_handle:
             file_handle.write(record.model_dump_json(indent=2))
             file_handle.write("\n")
 
     def append_turn(self, turn_record: ConversationTurn, filepath: Path) -> None:
+        """Persist one completed turn record as the next JSON object in the log."""
         self._append_record(turn_record, filepath)
 
-    def append_full_report(
-        self, full_report_record: FullReportRecord, filepath: Path
-    ) -> None:
-        self._append_record(full_report_record, filepath)
+    def _parse_json_records(self, filepath: Path) -> list[dict[str, Any]]:
+        """Parse the log file's back-to-back JSON records."""
+        if not filepath.exists():
+            return []
 
-    def append_conversation_summary(
-        self, summary_record: ConversationSummaryRecord, filepath: Path
+        text = filepath.read_text(encoding="utf-8")
+        decoder = json.JSONDecoder()
+        idx = 0
+        records: list[dict[str, Any]] = []
+
+        while idx < len(text):
+            while idx < len(text) and text[idx].isspace():
+                idx += 1
+
+            if idx >= len(text):
+                break
+
+            record, next_idx = decoder.raw_decode(text, idx)
+            records.append(record)
+            idx = next_idx
+
+        return records
+
+    def _parse_iso_timestamp(self, value: Optional[str]) -> Optional[datetime]:
+        """Parse an ISO-8601 timestamp string into a datetime."""
+        if not value:
+            return None
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+
+    def finalize_session(
+        self,
+        *,
+        session_id: str,
+        filepath: Path,
+        full_report: dict[str, Any],
     ) -> None:
+        """Append terminal records (FullReportRecord and ConversationSummaryRecord) after reconstructing totals from persisted turns. """
+        
+        #loads existing turn records from json log file
+        turn_records: list[ConversationTurn] = []
+        for record in self._parse_json_records(filepath):
+            #NOTE: Maybe remove this, all records in the logs should contain turn at this stage of its life
+            if "turn" not in record:
+                continue
+            #validate turn record prior to append, raises on malformed turn records 
+            turn_records.append(ConversationTurn.model_validate(record))
+        
+        #derives conversation-wide timing and token usage
+        token_summary = self._aggregate_action_token_summaries(turn_records)
+
+        #build summary record
+        summary_record = self._build_conversation_summary(
+            session_id,
+            turn_records,
+            token_summary,
+            self._parse_iso_timestamp,
+        )
+
+        #append full report record and summary record
+        self._append_record(
+            FullReportRecord(session_id=session_id, full_report=full_report),
+            filepath,
+        )
         self._append_record(summary_record, filepath)
 
 
 class TurnLogger:
-    """Collect one active turn and session-wide aggregate observability state."""
+    """Collect one active turn and turn-local observability state."""
 
     def __init__(
         self,
@@ -195,6 +350,34 @@ class TurnLogger:
         session_id: str,
         sink: Optional[ObservabilitySink] = None,
     ):
+        """Initialize a turn-scoped observability logger for one session.
+
+        Args:
+            filepath: Destination path where observability records should be
+                persisted. The logger stores completed turn records and final
+                session records at this location through the configured sink.
+            session_id: Stable identifier attached to every record emitted by
+                this logger. This lets downstream consumers group turns and
+                summaries that belong to the same conversation session.
+            sink: Persistence backend used to write observability records. When
+                omitted, the logger uses ``LocalFileSink`` to append JSON records
+                to ``filepath`` on the local filesystem.
+
+        Attributes:
+            filepath: Normalized ``Path`` pointing to the output destination for
+                persisted observability records.
+            session_id: String session identifier copied onto every emitted
+                record.
+            sink: Active persistence backend used to append turn records and
+                finalize session records.
+            num_turns: Count of completed conversation turns recorded so far.
+            current_turn: In-progress turn record being populated, or ``None``
+                when no turn is currently active.
+            _current_action_name: Action currently being tracked for per-action
+                usage accounting, or ``None`` when no action is active.
+            _current_action_usage_events: Raw LLM usage events collected for the
+                active action before they are summarized into action metadata.
+        """
         self.filepath = Path(filepath)
         self.session_id = str(session_id)
         self.sink = sink or LocalFileSink()
@@ -202,37 +385,6 @@ class TurnLogger:
         self.current_turn: Optional[ConversationTurn] = None
         self._current_action_name: Optional[ActionName] = None
         self._current_action_usage_events: List[LLMUsageEvent] = []
-        self._session_usage_events: List[LLMUsageEvent] = []
-        self._started_at: Optional[datetime] = None
-        self._ended_at: Optional[datetime] = None
-        self._session_start_perf: Optional[float] = None
-        self._session_total_latency_seconds: Optional[float] = None
-        self._summary_record: Optional[ConversationSummaryRecord] = None
-
-    def start_session(self) -> None:
-        """Mark the beginning of a session for aggregate timing."""
-        self._started_at = datetime.now(timezone.utc)
-        self._session_start_perf = time.perf_counter()
-
-    def finish_session(self) -> ConversationSummaryRecord:
-        """Build and return the final conversation summary record."""
-        self._ended_at = datetime.now(timezone.utc)
-        if self._session_start_perf is None:
-            self._session_total_latency_seconds = None
-        else:
-            self._session_total_latency_seconds = time.perf_counter() - self._session_start_perf
-
-        self._summary_record = ConversationSummaryRecord(
-            session_id=self.session_id,
-            started_at=self._started_at.isoformat() if self._started_at else None,
-            ended_at=self._ended_at.isoformat() if self._ended_at else None,
-            total_latency_seconds=self._session_total_latency_seconds,
-            total_conversation_turns=self.num_turns,
-            token_consumption=TokenConsumptionSummary.from_events(
-                self._session_usage_events
-            ),
-        )
-        return self._summary_record
 
     def start_action(self, action_name: ActionName) -> None:
         """Begin action-scoped LLM-usage capture for the next logged action."""
@@ -240,19 +392,29 @@ class TurnLogger:
         self._current_action_usage_events = []
 
     def record_llm_usage(self, usage_event: LLMUsageEvent) -> None:
-        """Record one LLM usage event for action and session-level accounting."""
+        """
+            Record one LLM usage event for the currently active action.
+            Called by on_llm_end in ObservabilityTokenCallback following an LLM
+            call to a model ObservabilityTokenCallback is attached to, to store
+            LLM usage information for the most recent agent action.
+        """
         if self._current_action_name is not None:
             self._current_action_usage_events.append(usage_event)
-        self._session_usage_events.append(usage_event)
 
     def end_action(self) -> Optional[TokenConsumptionSummary]:
         """End action-scoped capture and return its aggregate token summary."""
+
+        #If action was not llm_enabled (ie. validate, user_description, etc.), this if statement stops the creation of a usage summary record
         if not self._current_action_usage_events:
+            #reset current agent action for next capture
             self._current_action_name = None
             return None
 
+        #caluclate the usage summary for the most recent llm enabled agent action
         summary = TokenConsumptionSummary.from_events(self._current_action_usage_events)
+        #reset current agent action for next capture
         self._current_action_name = None
+        #empty current usage events for next capture
         self._current_action_usage_events = []
         return summary
 
@@ -273,9 +435,11 @@ class TurnLogger:
             self.current_turn = ConversationTurn(
                 session_id=self.session_id,
                 turn=self.num_turns,
+                started_at=datetime.now(timezone.utc).isoformat(),
                 actions=[],
             )
         elif self.current_turn is None:
+            #used to catch misalignment between burt runtime and what is expected from logs
             raise ValueError(
                 "Cannot log non-user action before the first user_description turn exists."
             )
@@ -309,7 +473,6 @@ def _coerce_optional_int(value: Any) -> Optional[int]:
         return int(value)
     except (TypeError, ValueError):
         return None
-
 
 def _extract_token_usage(
     token_usage: dict[str, Any],

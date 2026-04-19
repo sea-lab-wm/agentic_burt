@@ -154,8 +154,15 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         "total_input_tokens_consumed": token_consumption.get("input_tokens"),
         "total_output_tokens_consumed": token_consumption.get("output_tokens"),
         "total_tokens_consumed": token_consumption.get("total_tokens"),
-        "total_time_seconds_of_conversation": (
-            summary_record.get("total_latency_seconds")
+        "started_at": summary_record.get("started_at") if isinstance(summary_record, dict) else None,
+        "ended_at": summary_record.get("ended_at") if isinstance(summary_record, dict) else None,
+        "total_wall_clock_seconds": (
+            summary_record.get("total_wall_clock_seconds")
+            if isinstance(summary_record, dict)
+            else None
+        ),
+        "total_turn_processing_seconds": (
+            summary_record.get("total_turn_processing_seconds")
             if isinstance(summary_record, dict)
             else None
         ),

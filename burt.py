@@ -1,6 +1,7 @@
 import argparse
 import csv
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from database.db import SessionLocal
 from database.database_utils import fetch_graph_data
@@ -10,7 +11,6 @@ import config
 from observability import (
     ActionName,
     Entity,
-    FullReportRecord,
     LocalFileSink,
     ObservabilityTokenCallback,
     TurnLogger,
@@ -31,7 +31,6 @@ load_dotenv()
 
 DESCRIPTION_CSV_PATH = Path(config.DESCRIPTION_CSV_PATH)
 
-
 @dataclass
 class BurtRuntimeContext:
     """Request-local runtime dependencies for one BURT conversation execution."""
@@ -41,7 +40,6 @@ class BurtRuntimeContext:
     sink: LocalFileSink
     usage_callback: ObservabilityTokenCallback
     model: ChatOpenAI
-
 
 def create_runtime_context(
     session_id: str,
@@ -67,14 +65,12 @@ def create_runtime_context(
         model=model,
     )
 
-
 def _get_runtime_context(config: RunnableConfig) -> BurtRuntimeContext:
     """Extract the request-local runtime context from LangGraph config."""
     runtime_context = (config.get("configurable") or {}).get("runtime_context")
     if runtime_context is None:
         raise ValueError("runtime_context is required in the LangGraph config.")
     return runtime_context
-
 
 @log_action(entity=Entity.user, action_name=ActionName.user_description)
 def ingest_user_description(
@@ -337,9 +333,13 @@ def gen_report(
     )
     return generate_report(bug_info, app_graph, runtime_context.model, app_name)
 
-
 def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:
     """Persist the active turn, if one exists, and clear turn-local state."""
+
+    #Beginning of flush marks end of turn lifecycle, mark the turn ended at here
+    if runtime_context.logger.current_turn is not None:
+        runtime_context.logger.current_turn.ended_at = datetime.now(timezone.utc).isoformat()
+
     turn_record = runtime_context.logger.build_turn_record()
     if turn_record is None:
         return
@@ -422,7 +422,6 @@ def main() -> None:
     )
     state = BugAgentState(messages=[initial_state_update["messages"]])
 
-    runtime_context.logger.start_session()
     result = graph.invoke(state, config=config)
     _flush_active_turn(runtime_context)
 
@@ -452,19 +451,11 @@ def main() -> None:
         runtime_context=runtime_context,
     )
     print(final_report["full_report"])
-    runtime_context.sink.append_full_report(
-        FullReportRecord(
-            session_id=runtime_context.session_id,
-            full_report=final_report["full_report"],
-        ),
-        runtime_context.logger.filepath,
+    runtime_context.sink.finalize_session(
+        session_id=runtime_context.session_id,
+        filepath=runtime_context.logger.filepath,
+        full_report=final_report["full_report"],
     )
-    summary_record = runtime_context.logger.finish_session()
-    runtime_context.sink.append_conversation_summary(
-        summary_record,
-        runtime_context.logger.filepath,
-    )
-
 
 if __name__ == "__main__":
     main()

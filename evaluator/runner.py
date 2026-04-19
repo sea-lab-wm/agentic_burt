@@ -93,9 +93,10 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         "total_input_tokens_consumed": context.get("total_input_tokens_consumed"),
         "total_output_tokens_consumed": context.get("total_output_tokens_consumed"),
         "total_tokens_consumed": context.get("total_tokens_consumed"),
-        "total_time_seconds_of_conversation": context.get(
-            "total_time_seconds_of_conversation"
-        ),
+        "started_at": context.get("started_at"),
+        "ended_at": context.get("ended_at"),
+        "total_wall_clock_seconds": context.get("total_wall_clock_seconds"),
+        "total_turn_processing_seconds": context.get("total_turn_processing_seconds"),
         "total_conversation_turns": context.get("total_conversation_turns"),
     }
 

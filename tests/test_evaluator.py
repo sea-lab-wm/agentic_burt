@@ -40,7 +40,8 @@ class EvaluatorTests(unittest.TestCase):
             "session_id": "10",
             "started_at": "2026-04-07T00:00:00+00:00",
             "ended_at": "2026-04-07T00:00:05+00:00",
-            "total_latency_seconds": 5.0,
+            "total_wall_clock_seconds": 5.0,
+            "total_turn_processing_seconds": 3.0,
             "total_conversation_turns": 2,
             "token_consumption": {
                 "input_tokens": 10,
@@ -72,7 +73,10 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["total_input_tokens_consumed"], 10)
         self.assertEqual(context["total_output_tokens_consumed"], 4)
         self.assertEqual(context["total_tokens_consumed"], 14)
-        self.assertEqual(context["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(context["started_at"], "2026-04-07T00:00:00+00:00")
+        self.assertEqual(context["ended_at"], "2026-04-07T00:00:05+00:00")
+        self.assertEqual(context["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(context["total_turn_processing_seconds"], 3.0)
         self.assertEqual(context["total_conversation_turns"], 2)
 
     def test_build_log_context_defaults_summary_metrics_to_null_when_missing(self):
@@ -83,7 +87,10 @@ class EvaluatorTests(unittest.TestCase):
         self.assertIsNone(context["total_input_tokens_consumed"])
         self.assertIsNone(context["total_output_tokens_consumed"])
         self.assertIsNone(context["total_tokens_consumed"])
-        self.assertIsNone(context["total_time_seconds_of_conversation"])
+        self.assertIsNone(context["started_at"])
+        self.assertIsNone(context["ended_at"])
+        self.assertIsNone(context["total_wall_clock_seconds"])
+        self.assertIsNone(context["total_turn_processing_seconds"])
         self.assertIsNone(context["total_conversation_turns"])
         self.assertEqual(context["parse_status"], "ok")
 
@@ -99,7 +106,8 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["total_input_tokens_consumed"], 7)
         self.assertIsNone(context["total_output_tokens_consumed"])
         self.assertIsNone(context["total_tokens_consumed"])
-        self.assertEqual(context["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(context["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(context["total_turn_processing_seconds"], 3.0)
         self.assertIsNone(context["total_conversation_turns"])
 
     def test_evaluate_log_includes_summary_metrics(self):
@@ -127,7 +135,10 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(result["total_input_tokens_consumed"], 10)
         self.assertEqual(result["total_output_tokens_consumed"], 4)
         self.assertEqual(result["total_tokens_consumed"], 14)
-        self.assertEqual(result["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(result["started_at"], "2026-04-07T00:00:00+00:00")
+        self.assertEqual(result["ended_at"], "2026-04-07T00:00:05+00:00")
+        self.assertEqual(result["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(result["total_turn_processing_seconds"], 3.0)
         self.assertEqual(result["total_conversation_turns"], 2)
 
     def test_evaluate_log_parse_error_keeps_summary_metrics_independent(self):
@@ -141,7 +152,10 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(result["total_input_tokens_consumed"], 10)
         self.assertEqual(result["total_output_tokens_consumed"], 4)
         self.assertEqual(result["total_tokens_consumed"], 14)
-        self.assertEqual(result["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(result["started_at"], "2026-04-07T00:00:00+00:00")
+        self.assertEqual(result["ended_at"], "2026-04-07T00:00:05+00:00")
+        self.assertEqual(result["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(result["total_turn_processing_seconds"], 3.0)
         self.assertEqual(result["total_conversation_turns"], 2)
 
 

@@ -212,7 +212,8 @@ def _populate_summary_sheet(
         "info_missing_count",
         "info_incorrect_count",
         "average_total_tokens_consumed_per_conv",
-        "average_conversation_time_in_seconds",
+        "average_wall_clock_seconds_per_conv",
+        "average_turn_processing_seconds_per_conv",
         "average_conversation_turns",
     ]
     sheet.append(headers)
@@ -233,16 +234,21 @@ def _populate_summary_sheet(
         "L": 20,
         "M": 34,
         "N": 32,
-        "O": 26,
+        "O": 34,
+        "P": 26,
     }.items():
         sheet.column_dimensions[column].width = width
 
     token_values: list[float] = []
-    time_values: list[float] = []
+    wall_clock_values: list[float] = []
+    turn_processing_values: list[float] = []
     turns_values: list[float] = []
     for result in evaluation_results:
         _append_numeric_metric(token_values, result.get("total_tokens_consumed"))
-        _append_numeric_metric(time_values, result.get("total_time_seconds_of_conversation"))
+        _append_numeric_metric(wall_clock_values, result.get("total_wall_clock_seconds"))
+        _append_numeric_metric(
+            turn_processing_values, result.get("total_turn_processing_seconds")
+        )
         _append_numeric_metric(turns_values, result.get("total_conversation_turns"))
 
     row_number = 2
@@ -260,7 +266,8 @@ def _populate_summary_sheet(
         _build_info_label_count_formula("Missing"),
         _build_info_label_count_formula("Incorrect"),
         _average_or_none(token_values),
-        _average_or_none(time_values),
+        _average_or_none(wall_clock_values),
+        _average_or_none(turn_processing_values),
         _average_or_none(turns_values),
     ]
     sheet.append(row_values)

@@ -1,7 +1,7 @@
 import json
 import tempfile
-import time
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,9 +9,7 @@ from langchain_core.messages import HumanMessage
 
 from observability import (
     ActionName,
-    ConversationSummaryRecord,
     Entity,
-    FullReportRecord,
     LLMUsageEvent,
     LocalFileSink,
     MetaData,
@@ -64,6 +62,23 @@ class ObservabilityTests(unittest.TestCase):
             idx = offset
 
         return parsed
+
+    @staticmethod
+    def _persist_current_turn(
+        logger: TurnLogger,
+        sink: LocalFileSink,
+        *,
+        started_at: str | None = None,
+        ended_at: str | None = None,
+    ) -> None:
+        if logger.current_turn is None:
+            raise AssertionError("Expected an active turn to persist.")
+        if started_at is not None:
+            logger.current_turn.started_at = started_at
+        if ended_at is not None:
+            logger.current_turn.ended_at = ended_at
+        sink.append_turn(logger.build_turn_record(), logger.filepath)
+        logger.reset_turn()
 
     def test_single_node_token_consumption(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -194,6 +209,8 @@ class ObservabilityTests(unittest.TestCase):
             self.assertIsNotNone(logger.current_turn)
             self.assertEqual(logger.current_turn.session_id, "sess-turns")
             self.assertEqual(logger.current_turn.turn, 1)
+            self.assertIsNotNone(logger.current_turn.started_at)
+            self.assertIsNone(logger.current_turn.ended_at)
             self.assertEqual(
                 logger.current_turn.actions[0].action_name, ActionName.user_description
             )
@@ -228,13 +245,15 @@ class ObservabilityTests(unittest.TestCase):
             self.assertIsNone(logger.current_turn)
             self.assertEqual(logger.num_turns, 1)
 
-    def test_finish_session_builds_conversation_summary_with_aggregated_tokens(self):
+    def test_local_file_sink_finalize_session_builds_summary_from_turn_records(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            logger = TurnLogger(filepath=str(Path(tmpdir) / "test.log"), session_id="sess-5")
+            log_path = Path(tmpdir) / "test.log"
+            sink = LocalFileSink()
+            logger = TurnLogger(filepath=str(log_path), session_id="sess-5", sink=sink)
             callback = ObservabilityTokenCallback(logger=logger)
             runtime_context = SimpleNamespace(logger=logger, model=object())
+            base_time = datetime(2026, 4, 7, 0, 0, 0, tzinfo=timezone.utc)
 
-            logger.start_session()
             self._log_user_description(logger, "initial bug description")
 
             @log_action(entity=Entity.bot, action_name=ActionName.clarity_check)
@@ -253,58 +272,73 @@ class ObservabilityTests(unittest.TestCase):
                 return {"ok": True}
 
             node(runtime_context=runtime_context)
-            time.sleep(0.01)
-            summary = logger.finish_session()
+            self._persist_current_turn(
+                logger,
+                sink,
+                started_at=base_time.isoformat(),
+                ended_at=(base_time + timedelta(seconds=2)).isoformat(),
+            )
 
-            self.assertEqual(summary.record_type, "conversation_summary")
-            self.assertEqual(summary.session_id, "sess-5")
-            self.assertGreater(summary.total_latency_seconds, 0)
-            self.assertEqual(summary.total_conversation_turns, 1)
-            self.assertEqual(summary.token_consumption.input_tokens, 6)
-            self.assertEqual(summary.token_consumption.output_tokens, 4)
-            self.assertEqual(summary.token_consumption.total_tokens, 10)
+            self._log_user_description(logger, "follow-up bug description")
 
-    def test_local_file_sink_appends_turn_then_full_report_then_summary(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            log_path = Path(tmpdir) / "test.log"
-            sink = LocalFileSink()
-            logger = TurnLogger(filepath=str(log_path), session_id="sess-sink", sink=sink)
-
-            self._log_user_description(logger, "initial bug description")
             logger.add_action_to_turn(
                 entity=Entity.bot,
                 action_name=ActionName.evaluate,
                 output={"ok": True},
                 meta_data=MetaData(latency="0.1 s", node_token_consumption=None),
             )
-
-            sink.append_turn(logger.build_turn_record(), logger.filepath)
-            logger.reset_turn()
-            sink.append_full_report(
-                FullReportRecord(
-                    session_id="sess-sink",
-                    full_report={"title": "Bug title"},
+            logger.add_action_to_turn(
+                entity=Entity.bot,
+                action_name=ActionName.follow_up,
+                output={"ok": True},
+                meta_data=MetaData(
+                    latency="0.2 s",
+                    node_token_consumption={
+                        "input_tokens": None,
+                        "output_tokens": 3,
+                        "total_tokens": None,
+                        "llm_calls": 1,
+                        "llm_calls_with_usage": 0,
+                        "llm_calls_missing_usage": 1,
+                    },
                 ),
-                logger.filepath,
             )
-            sink.append_conversation_summary(
-                ConversationSummaryRecord(
-                    session_id="sess-sink",
-                    total_conversation_turns=1,
-                    token_consumption={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
-                ),
-                logger.filepath,
+            self._persist_current_turn(
+                logger,
+                sink,
+                started_at=(base_time + timedelta(seconds=10)).isoformat(),
+                ended_at=(base_time + timedelta(seconds=11)).isoformat(),
+            )
+
+            sink.finalize_session(
+                session_id="sess-5",
+                filepath=logger.filepath,
+                full_report={"title": "Bug title"},
             )
 
             records = self._parse_json_stream(log_path.read_text())
-            self.assertEqual(records[0]["session_id"], "sess-sink")
+            self.assertEqual(records[0]["session_id"], "sess-5")
             self.assertEqual(records[0]["turn"], 1)
+            self.assertEqual(records[0]["started_at"], base_time.isoformat())
+            self.assertEqual(records[0]["ended_at"], (base_time + timedelta(seconds=2)).isoformat())
             self.assertEqual(records[0]["actions"][0]["action_name"], "user_description")
-            self.assertEqual(records[0]["actions"][1]["action_name"], "evaluate")
-            self.assertEqual(records[1]["record_type"], "full_report")
-            self.assertEqual(records[1]["full_report"]["title"], "Bug title")
-            self.assertEqual(records[2]["record_type"], "conversation_summary")
-            self.assertEqual(records[2]["session_id"], "sess-sink")
+            self.assertEqual(records[0]["actions"][1]["action_name"], "clarity_check")
+            self.assertEqual(records[1]["turn"], 2)
+            self.assertEqual(records[2]["record_type"], "full_report")
+            self.assertEqual(records[2]["full_report"]["title"], "Bug title")
+            self.assertEqual(records[3]["record_type"], "conversation_summary")
+            self.assertEqual(records[3]["session_id"], "sess-5")
+            self.assertEqual(records[3]["started_at"], base_time.isoformat())
+            self.assertEqual(records[3]["ended_at"], (base_time + timedelta(seconds=11)).isoformat())
+            self.assertEqual(records[3]["total_wall_clock_seconds"], 11.0)
+            self.assertEqual(records[3]["total_turn_processing_seconds"], 3.0)
+            self.assertEqual(records[3]["total_conversation_turns"], 2)
+            self.assertEqual(records[3]["token_consumption"]["input_tokens"], 6)
+            self.assertEqual(records[3]["token_consumption"]["output_tokens"], 7)
+            self.assertEqual(records[3]["token_consumption"]["total_tokens"], 10)
+            self.assertEqual(records[3]["token_consumption"]["llm_calls"], 2)
+            self.assertEqual(records[3]["token_consumption"]["llm_calls_with_usage"], 1)
+            self.assertEqual(records[3]["token_consumption"]["llm_calls_missing_usage"], 1)
 
 
 if __name__ == "__main__":
