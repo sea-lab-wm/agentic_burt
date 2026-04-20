@@ -1,12 +1,21 @@
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch, sentinel
 
 from app.services import burt_runtime
 
 
 class StartConversationTests(unittest.TestCase):
+    def _runtime_context(self):
+        return SimpleNamespace(
+            sink=MagicMock(),
+            logger=SimpleNamespace(filepath=Path("logs/test.log")),
+        )
+
+    @patch("app.services.burt_runtime._flush_active_turn")
     @patch("app.services.burt_runtime.create_session_record")
-    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
+    @patch("app.services.burt_runtime.create_runtime_context")
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.BugAgentState", return_value=sentinel.initial_state)
@@ -34,7 +43,10 @@ class StartConversationTests(unittest.TestCase):
         mock_build_burt_graph,
         mock_create_runtime_context,
         mock_create_session_record,
+        mock_flush_active_turn,
     ):
+        runtime_context = self._runtime_context()
+        mock_create_runtime_context.return_value = runtime_context
         # Simulate the RedisSaver context manager yielding a checkpointer instance.
         checkpointer = MagicMock()
         # Simulate the compiled graph returned by build_burt_graph(checkpointer).
@@ -67,10 +79,12 @@ class StartConversationTests(unittest.TestCase):
             session_id="session-123",
             bug_id=42,
             description_level="LC_LP",
+            sink_mode="redis_then_file",
+            redis_client=burt_runtime.redis_client,
         )
         mock_ingest_user_description.assert_called_once_with(
             "initial bug description",
-            runtime_context=sentinel.runtime_context,
+            runtime_context=runtime_context,
         )
         mock_bug_agent_state.assert_called_once_with(
             messages=[sentinel.initial_message_update]
@@ -85,10 +99,12 @@ class StartConversationTests(unittest.TestCase):
                     "app_name": "Test App",
                     "screen_descriptions": "screen descriptions",
                     "thread_id": "session-123",
-                    "runtime_context": sentinel.runtime_context,
+                    "runtime_context": runtime_context,
                 }
             },
         )
+        mock_flush_active_turn.assert_called_once_with(runtime_context)
+        runtime_context.sink.finalize_session.assert_not_called()
         mock_create_session_record.assert_called_once_with(
             {
                 "session_id": "session-123",
@@ -101,8 +117,9 @@ class StartConversationTests(unittest.TestCase):
         )
         mock_uuid4.assert_called_once_with()
 
+    @patch("app.services.burt_runtime._flush_active_turn")
     @patch("app.services.burt_runtime.create_session_record")
-    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
+    @patch("app.services.burt_runtime.create_runtime_context")
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.BugAgentState", return_value=sentinel.initial_state)
@@ -130,7 +147,10 @@ class StartConversationTests(unittest.TestCase):
         mock_build_burt_graph,
         mock_create_runtime_context,
         mock_create_session_record,
+        mock_flush_active_turn,
     ):
+        runtime_context = self._runtime_context()
+        mock_create_runtime_context.return_value = runtime_context
         # Simulate the RedisSaver context manager yielding a checkpointer instance.
         checkpointer = MagicMock()
         # Simulate the compiled graph returned by build_burt_graph(checkpointer).
@@ -157,6 +177,13 @@ class StartConversationTests(unittest.TestCase):
             session_id="session-123",
             bug_id=42,
             description_level="LC_LP",
+            sink_mode="redis_then_file",
+            redis_client=burt_runtime.redis_client,
+        )
+        mock_flush_active_turn.assert_called_once_with(runtime_context)
+        runtime_context.sink.finalize_session.assert_called_once_with(
+            session_id="session-123",
+            final_report={"title": "Final report"},
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -171,7 +198,14 @@ class StartConversationTests(unittest.TestCase):
 
 
 class ResumeConversationTests(unittest.TestCase):
+    def _runtime_context(self):
+        return SimpleNamespace(
+            sink=MagicMock(),
+            logger=SimpleNamespace(filepath=Path("logs/test.log")),
+        )
+
     @patch("app.services.burt_runtime.release_session_lock")
+    @patch("app.services.burt_runtime._flush_active_turn")
     @patch("app.services.burt_runtime.create_session_record")
     @patch(
         "app.services.burt_runtime.get_session",
@@ -184,7 +218,7 @@ class ResumeConversationTests(unittest.TestCase):
             "final_report": None,
         },
     )
-    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
+    @patch("app.services.burt_runtime.create_runtime_context")
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.Command", return_value=sentinel.resume_command)
@@ -206,8 +240,11 @@ class ResumeConversationTests(unittest.TestCase):
         mock_create_runtime_context,
         mock_get_session,
         mock_create_session_record,
+        mock_flush_active_turn,
         mock_release_session_lock,
     ):
+        runtime_context = self._runtime_context()
+        mock_create_runtime_context.return_value = runtime_context
         # Simulate the RedisSaver context manager yielding a checkpointer instance.
         checkpointer = MagicMock()
         # Simulate the compiled graph returned by build_burt_graph(checkpointer).
@@ -241,6 +278,8 @@ class ResumeConversationTests(unittest.TestCase):
             session_id="session-123",
             bug_id=42,
             description_level="LC_LP",
+            sink_mode="redis_then_file",
+            redis_client=burt_runtime.redis_client,
         )
         checkpointer.setup.assert_called_once_with()
         mock_build_burt_graph.assert_called_once_with(checkpointer)
@@ -253,10 +292,12 @@ class ResumeConversationTests(unittest.TestCase):
                     "app_name": "Test App",
                     "screen_descriptions": "screen descriptions",
                     "thread_id": "session-123",
-                    "runtime_context": sentinel.runtime_context,
+                    "runtime_context": runtime_context,
                 }
             },
         )
+        mock_flush_active_turn.assert_called_once_with(runtime_context)
+        runtime_context.sink.finalize_session.assert_not_called()
         mock_create_session_record.assert_called_once_with(
             {
                 "session_id": "session-123",
@@ -273,6 +314,7 @@ class ResumeConversationTests(unittest.TestCase):
         )
 
     @patch("app.services.burt_runtime.release_session_lock")
+    @patch("app.services.burt_runtime._flush_active_turn")
     @patch("app.services.burt_runtime.create_session_record")
     @patch(
         "app.services.burt_runtime.get_session",
@@ -285,7 +327,7 @@ class ResumeConversationTests(unittest.TestCase):
             "final_report": None,
         },
     )
-    @patch("app.services.burt_runtime.create_runtime_context", return_value=sentinel.runtime_context)
+    @patch("app.services.burt_runtime.create_runtime_context")
     @patch("app.services.burt_runtime.build_burt_graph")
     @patch("app.services.burt_runtime.RedisSaver.from_conn_string")
     @patch("app.services.burt_runtime.Command", return_value=sentinel.resume_command)
@@ -307,8 +349,11 @@ class ResumeConversationTests(unittest.TestCase):
         mock_create_runtime_context,
         _mock_get_session,
         mock_create_session_record,
+        mock_flush_active_turn,
         mock_release_session_lock,
     ):
+        runtime_context = self._runtime_context()
+        mock_create_runtime_context.return_value = runtime_context
         # Simulate the RedisSaver context manager yielding a checkpointer instance.
         checkpointer = MagicMock()
         # Simulate the compiled graph returned by build_burt_graph(checkpointer).
@@ -338,6 +383,13 @@ class ResumeConversationTests(unittest.TestCase):
             session_id="session-123",
             bug_id=42,
             description_level="LC_LP",
+            sink_mode="redis_then_file",
+            redis_client=burt_runtime.redis_client,
+        )
+        mock_flush_active_turn.assert_called_once_with(runtime_context)
+        runtime_context.sink.finalize_session.assert_called_once_with(
+            session_id="session-123",
+            final_report={"title": "Final report"},
         )
         mock_create_session_record.assert_called_once_with(
             {

@@ -33,7 +33,7 @@ class TurnLogger:
         """Initialize a turn-scoped observability logger for one session."""
         self.filepath = Path(filepath)
         self.session_id = str(session_id)
-        self.sink = sink or LocalFileSink()
+        self.sink = sink or LocalFileSink(filepath=self.filepath)
         self.num_turns: int = 0
         self.current_turn: Optional[ConversationTurn] = None
         self._current_action_name: Optional[ActionName] = None

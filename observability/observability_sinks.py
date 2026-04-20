@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from pydantic import BaseModel
+import redis
 
 from observability.observability_models import (
     ConversationSummaryRecord,
@@ -21,8 +22,11 @@ from observability.observability_models import (
 class ObservabilitySink(ABC):
     """Persistence backend for observability records."""
 
+    def __init__(self, filepath: Path):
+        self.filepath = filepath
+
     @abstractmethod
-    def append_turn(self, turn_record: ConversationTurn, filepath: Path) -> None:
+    def append_turn(self, turn_record: ConversationTurn) -> None:
         """Persist one completed turn record."""
 
     @abstractmethod
@@ -30,10 +34,28 @@ class ObservabilitySink(ABC):
         self,
         *,
         session_id: str,
-        filepath: Path,
         final_report: dict[str, Any],
     ) -> None:
         """Append final report and reconstructed conversation summary records."""
+
+    def _append_record(self, record: BaseModel, filepath: Path) -> None:
+        """
+            Append one serialized observability record to the target log file.
+            Facilitates all sinks to write log contents sequentially to the log file, preserving log strucutre across dev environments.
+        """
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        with filepath.open("a", encoding="utf-8") as file_handle:
+            file_handle.write(record.model_dump_json(indent=2))
+            file_handle.write("\n")
+
+    def _parse_iso_timestamp(self, value: Optional[str]) -> Optional[datetime]:
+        """Parse an ISO-8601 timestamp string into a datetime."""
+        if not value:
+            return None
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
 
     def _aggregate_action_token_summaries(
         self,
@@ -132,16 +154,9 @@ class ObservabilitySink(ABC):
 class LocalFileSink(ObservabilitySink):
     """Append observability records to a local file."""
 
-    def _append_record(self, record: BaseModel, filepath: Path) -> None:
-        """Append one serialized observability record to the target log file."""
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        with filepath.open("a", encoding="utf-8") as file_handle:
-            file_handle.write(record.model_dump_json(indent=2))
-            file_handle.write("\n")
-
-    def append_turn(self, turn_record: ConversationTurn, filepath: Path) -> None:
+    def append_turn(self, turn_record: ConversationTurn) -> None:
         """Persist one completed turn record as the next JSON object in the log."""
-        self._append_record(turn_record, filepath)
+        self._append_record(turn_record, self.filepath)
 
     def _parse_json_records(self, filepath: Path) -> list[dict[str, Any]]:
         """Parse the log file's back-to-back JSON records."""
@@ -166,25 +181,15 @@ class LocalFileSink(ObservabilitySink):
 
         return records
 
-    def _parse_iso_timestamp(self, value: Optional[str]) -> Optional[datetime]:
-        """Parse an ISO-8601 timestamp string into a datetime."""
-        if not value:
-            return None
-        try:
-            return datetime.fromisoformat(value)
-        except ValueError:
-            return None
-
     def finalize_session(
         self,
         *,
         session_id: str,
-        filepath: Path,
         final_report: dict[str, Any],
     ) -> None:
         """Append terminal records after reconstructing totals from persisted turns."""
         turn_records: list[ConversationTurn] = []
-        for record in self._parse_json_records(filepath):
+        for record in self._parse_json_records(self.filepath):
             if "turn" not in record:
                 continue
             turn_records.append(ConversationTurn.model_validate(record))
@@ -199,6 +204,68 @@ class LocalFileSink(ObservabilitySink):
 
         self._append_record(
             FinalReportRecord(session_id=session_id, final_report=final_report),
-            filepath,
+            self.filepath,
         )
-        self._append_record(summary_record, filepath)
+        self._append_record(summary_record, self.filepath)
+
+
+class RedisThenFileSink(ObservabilitySink):
+    """Stage completed turns in Redis, then emit the final file log on completion."""
+
+    def __init__(self, redis_client: redis.Redis, filepath: Path):
+        super().__init__(filepath=filepath)
+        self.redis_client = redis_client
+
+    def _redis_list_key(self, session_id: str) -> str:
+        """Build the Redis list key used to stage observability turns."""
+        return f"burt:session-log:{session_id}"
+
+    def _parse_redis_records(self, session_id: str) -> list[dict[str, Any]]:
+        """Parse staged Redis JSON payloads for one session."""
+        key = self._redis_list_key(session_id)
+        return [json.loads(record) for record in self.redis_client.lrange(key, 0, -1)]
+
+    def append_turn(self, turn_record: ConversationTurn) -> None:
+        """Stage one completed turn record in Redis under its session list."""
+        self.redis_client.rpush(
+            self._redis_list_key(turn_record.session_id),
+            turn_record.model_dump_json(),
+        )
+
+    def finalize_session(
+        self,
+        *,
+        session_id: str,
+        final_report: dict[str, Any],
+    ) -> None:
+        """Write the reconstructed session log to disk, then clear staged Redis turns."""
+        turn_records = [
+            ConversationTurn.model_validate(record)
+            for record in self._parse_redis_records(session_id)
+            if "turn" in record
+        ]
+
+        token_summary = self._aggregate_action_token_summaries(turn_records)
+        summary_record = self._build_conversation_summary(
+            session_id,
+            turn_records,
+            token_summary,
+            self._parse_iso_timestamp,
+        )
+
+        self.filepath.parent.mkdir(parents=True, exist_ok=True)
+        with self.filepath.open("w", encoding="utf-8") as file_handle:
+            for turn_record in turn_records:
+                file_handle.write(turn_record.model_dump_json(indent=2))
+                file_handle.write("\n")
+            file_handle.write(
+                FinalReportRecord(
+                    session_id=session_id,
+                    final_report=final_report,
+                ).model_dump_json(indent=2)
+            )
+            file_handle.write("\n")
+            file_handle.write(summary_record.model_dump_json(indent=2))
+            file_handle.write("\n")
+
+        self.redis_client.delete(self._redis_list_key(session_id))

@@ -4,6 +4,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 from langchain_core.messages import HumanMessage
 
@@ -14,11 +15,12 @@ from observability.logging_runtime import (
 )
 from observability.observability_models import (
     ActionName,
+    ConversationTurn,
     Entity,
     LLMUsageEvent,
     MetaData,
 )
-from observability.observability_sinks import LocalFileSink
+from observability.observability_sinks import LocalFileSink, RedisThenFileSink
 
 
 class FakeMessage:
@@ -79,7 +81,7 @@ class ObservabilityTests(unittest.TestCase):
             logger.current_turn.started_at = started_at
         if ended_at is not None:
             logger.current_turn.ended_at = ended_at
-        sink.append_turn(logger.build_turn_record(), logger.filepath)
+        sink.append_turn(logger.build_turn_record())
         logger.reset_turn()
 
     def test_single_node_token_consumption(self):
@@ -250,7 +252,7 @@ class ObservabilityTests(unittest.TestCase):
     def test_local_file_sink_finalize_session_builds_summary_from_turn_records(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = Path(tmpdir) / "test.log"
-            sink = LocalFileSink()
+            sink = LocalFileSink(filepath=log_path)
             logger = TurnLogger(filepath=str(log_path), session_id="sess-5", sink=sink)
             callback = ObservabilityTokenCallback(logger=logger)
             runtime_context = SimpleNamespace(logger=logger, model=object())
@@ -314,7 +316,6 @@ class ObservabilityTests(unittest.TestCase):
 
             sink.finalize_session(
                 session_id="sess-5",
-                filepath=logger.filepath,
                 final_report={"title": "Bug title"},
             )
 
@@ -343,6 +344,143 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[3]["token_consumption"]["llm_calls"], 2)
             self.assertEqual(records[3]["token_consumption"]["llm_calls_with_usage"], 2)
             self.assertEqual(records[3]["token_consumption"]["llm_calls_missing_usage"], 0)
+
+    def test_redis_then_file_sink_append_turn_pushes_json_to_session_list(self):
+        redis_client = MagicMock()
+        sink = RedisThenFileSink(redis_client=redis_client, filepath=Path("ignored.log"))
+        turn_record = ConversationTurn(
+            session_id="sess-redis",
+            turn=1,
+            started_at="2026-04-07T00:00:00+00:00",
+            ended_at="2026-04-07T00:00:01+00:00",
+            actions=[],
+        )
+
+        sink.append_turn(turn_record)
+
+        redis_client.rpush.assert_called_once_with(
+            "burt:session-log:sess-redis",
+            turn_record.model_dump_json(),
+        )
+
+    def test_redis_then_file_sink_finalize_session_rebuilds_log_and_deletes_staging_list(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "test.log"
+            redis_client = MagicMock()
+            sink = RedisThenFileSink(redis_client=redis_client, filepath=log_path)
+            base_time = datetime(2026, 4, 7, 0, 0, 0, tzinfo=timezone.utc)
+
+            turn_one = {
+                "session_id": "sess-redis",
+                "turn": 1,
+                "started_at": base_time.isoformat(),
+                "ended_at": (base_time + timedelta(seconds=2)).isoformat(),
+                "actions": [
+                    {
+                        "entity": "user",
+                        "action_name": "user_description",
+                        "output": "initial bug description",
+                        "meta_data": {"latency": "0.0 s", "node_token_consumption": None},
+                    },
+                    {
+                        "entity": "bot",
+                        "action_name": "clarity_check",
+                        "output": {"ok": True},
+                        "meta_data": {
+                            "latency": "0.1 s",
+                            "node_token_consumption": {
+                                "input_tokens": 6,
+                                "output_tokens": 4,
+                                "total_tokens": 10,
+                                "llm_calls": 1,
+                                "llm_calls_with_usage": 1,
+                                "llm_calls_missing_usage": 0,
+                            },
+                        },
+                    },
+                ],
+            }
+            turn_two = {
+                "session_id": "sess-redis",
+                "turn": 2,
+                "started_at": (base_time + timedelta(seconds=10)).isoformat(),
+                "ended_at": (base_time + timedelta(seconds=11)).isoformat(),
+                "actions": [
+                    {
+                        "entity": "user",
+                        "action_name": "user_description",
+                        "output": "follow-up description",
+                        "meta_data": {"latency": "0.0 s", "node_token_consumption": None},
+                    },
+                    {
+                        "entity": "bot",
+                        "action_name": "generate_report",
+                        "output": {"full_report": {"title": "Bug title"}},
+                        "meta_data": {
+                            "latency": "0.2 s",
+                            "node_token_consumption": {
+                                "input_tokens": 8,
+                                "output_tokens": 3,
+                                "total_tokens": 11,
+                                "llm_calls": 1,
+                                "llm_calls_with_usage": 1,
+                                "llm_calls_missing_usage": 0,
+                            },
+                        },
+                    },
+                ],
+            }
+            redis_client.lrange.return_value = [
+                json.dumps(turn_one),
+                json.dumps(turn_two),
+            ]
+
+            sink.finalize_session(
+                session_id="sess-redis",
+                final_report={"title": "Bug title"},
+            )
+
+            records = self._parse_json_stream(log_path.read_text())
+            self.assertEqual(records[0]["turn"], 1)
+            self.assertEqual(records[1]["turn"], 2)
+            self.assertEqual(records[2]["record_type"], "final_report")
+            self.assertEqual(records[2]["final_report"]["title"], "Bug title")
+            self.assertEqual(records[3]["record_type"], "conversation_summary")
+            self.assertEqual(records[3]["started_at"], base_time.isoformat())
+            self.assertEqual(records[3]["ended_at"], (base_time + timedelta(seconds=11)).isoformat())
+            self.assertEqual(records[3]["total_wall_clock_seconds"], 11.0)
+            self.assertEqual(records[3]["total_turn_processing_seconds"], 3.0)
+            self.assertEqual(records[3]["token_consumption"]["input_tokens"], 14)
+            self.assertEqual(records[3]["token_consumption"]["output_tokens"], 7)
+            self.assertEqual(records[3]["token_consumption"]["total_tokens"], 21)
+            redis_client.lrange.assert_called_once_with("burt:session-log:sess-redis", 0, -1)
+            redis_client.delete.assert_called_once_with("burt:session-log:sess-redis")
+
+    def test_redis_then_file_sink_finalize_session_does_not_delete_staging_list_if_write_fails(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            redis_client = MagicMock()
+            filepath = Path(tmpdir) / "test.log"
+            sink = RedisThenFileSink(redis_client=redis_client, filepath=filepath)
+            redis_client.lrange.return_value = [
+                json.dumps(
+                    {
+                        "session_id": "sess-redis",
+                        "turn": 1,
+                        "started_at": "2026-04-07T00:00:00+00:00",
+                        "ended_at": "2026-04-07T00:00:01+00:00",
+                        "actions": [],
+                    }
+                )
+            ]
+
+            with patch("pathlib.Path.open", side_effect=OSError("disk full")):
+                with self.assertRaises(OSError):
+                    sink.finalize_session(
+                        session_id="sess-redis",
+                        final_report={"title": "Bug title"},
+                    )
+
+            redis_client.delete.assert_not_called()
 
 
 if __name__ == "__main__":

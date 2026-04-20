@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from database.db import SessionLocal
 from database.database_utils import fetch_graph_data
+from typing import Literal
+import redis
 from state import ActiveFollowUp, BugAgentState, FollowUpKind
 from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
 import config
@@ -17,7 +19,11 @@ from observability.observability_models import (
     ActionName,
     Entity,
 )
-from observability.observability_sinks import LocalFileSink
+from observability.observability_sinks import (
+    LocalFileSink,
+    ObservabilitySink,
+    RedisThenFileSink,
+)
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
@@ -39,7 +45,7 @@ class BurtRuntimeContext:
 
     session_id: str
     logger: TurnLogger
-    sink: LocalFileSink
+    sink: ObservabilitySink
     usage_callback: ObservabilityTokenCallback
     model: ChatOpenAI
 
@@ -47,18 +53,27 @@ def create_runtime_context(
     session_id: str,
     bug_id: int,
     description_level: str,
+    sink_mode: Literal["local", "redis_then_file"] = "local",
+    redis_client: redis.Redis | None = None,
 ) -> BurtRuntimeContext:
     """Create the logger, callback, and model instances for one conversation request."""
+
     version = str(config.PROMPT_VERSION)
     log_path = Path("logs") / version / f"session_{session_id}_bug{bug_id}_{description_level}.log"
-    sink = LocalFileSink()
-    logger = TurnLogger(
-        filepath=str(log_path),
-        session_id=session_id,
-        sink=sink,
-    )
+
+    if sink_mode == "local":
+        sink = LocalFileSink(filepath=log_path)
+    elif sink_mode == "redis_then_file":
+        if redis_client is None:
+            raise ValueError("redis_client is required when sink_mode is 'redis_then_file'.")
+        sink = RedisThenFileSink(redis_client=redis_client, filepath=log_path)
+    else:
+        raise ValueError(f"Unsupported sink_mode: {sink_mode}")
+
+    logger = TurnLogger(filepath=str(log_path), session_id=session_id, sink=sink)
     usage_callback = ObservabilityTokenCallback(logger=logger)
     model = ChatOpenAI(model=config.MODEL_NAME, callbacks=[usage_callback])
+    
     return BurtRuntimeContext(
         session_id=session_id,
         logger=logger,
@@ -337,6 +352,7 @@ def generate_final_report(state: BugAgentState, config: RunnableConfig) -> dict:
     runtime_context = _get_runtime_context(config)
     return generate_report(bug_info, app_graph, runtime_context.model, app_name)
 
+#NOTE: This name is a bit incomplete, it should eventually be something like persist_then_flush_turn
 def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:
     """Persist the active turn, if one exists, and clear turn-local state."""
 
@@ -347,7 +363,7 @@ def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:
     turn_record = runtime_context.logger.build_turn_record()
     if turn_record is None:
         return
-    runtime_context.sink.append_turn(turn_record, runtime_context.logger.filepath)
+    runtime_context.sink.append_turn(turn_record)
     runtime_context.logger.reset_turn()
 
 def build_burt_graph(checkpointer):
@@ -454,7 +470,6 @@ def main() -> None:
     print(final_report)
     runtime_context.sink.finalize_session(
         session_id=runtime_context.session_id,
-        filepath=runtime_context.logger.filepath,
         final_report=final_report,
     )
 

@@ -7,9 +7,11 @@ from app.services.session_store import (
     create_session_record,
     get_session,
     release_session_lock,
+    redis_client,
 )
 from burt import (
     BugAgentState,
+    _flush_active_turn,
     build_burt_graph,
     create_runtime_context,
     ingest_user_description,
@@ -18,8 +20,6 @@ from burt import (
 )
 from langgraph.types import Command
 from langgraph.checkpoint.redis import RedisSaver
-
-
 class SessionNotFoundError(ValueError):
     """Raised when a requested conversation session cannot be found."""
 
@@ -73,8 +73,6 @@ def _persist_and_build_response(
     bug_id: int,
     description_level: str,
     result: dict,
-    app_graph: str,
-    app_name: str,
     runtime_context,
 ) -> ConversationTurnResponse:
     """Convert a graph result into an API response and persist the updated agent conversation session state."""
@@ -96,6 +94,10 @@ def _persist_and_build_response(
             session_id=session_id,
             status="completed",
             question=None,
+            final_report=final_report,
+        )
+        runtime_context.sink.finalize_session(
+            session_id=session_id,
             final_report=final_report,
         )
 
@@ -131,6 +133,8 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
         session_id=session_id,
         bug_id=bug_id,
         description_level=description_level,
+        sink_mode="redis_then_file",
+        redis_client=redis_client,
     )
 
     #build config so agent can fetch graph information to reason over
@@ -154,6 +158,7 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
         checkpointer.setup()
         graph = build_burt_graph(checkpointer)
         result = graph.invoke(state, config=runnable_config)
+    _flush_active_turn(runtime_context)
 
     #create new session record based on graph output
     return _persist_and_build_response(
@@ -161,8 +166,6 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
         bug_id=bug_id,
         description_level=description_level,
         result=result,
-        app_graph=app_graph,
-        app_name=app_name,
         runtime_context=runtime_context,
     )
 
@@ -206,6 +209,8 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             session_id=session_id,
             bug_id=bug_id,
             description_level=description_level,
+            sink_mode="redis_then_file",
+            redis_client=redis_client,
         )
 
         #load initial bug desc from dev set based on bug id and description level
@@ -222,6 +227,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             checkpointer.setup()
             graph = build_burt_graph(checkpointer)
             result = graph.invoke(Command(resume=user_description), config=runnable_config)
+        _flush_active_turn(runtime_context)
 
         #create new session record based on graph output
         return _persist_and_build_response(
@@ -229,8 +235,6 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             bug_id=bug_id,
             description_level=description_level,
             result=result,
-            app_graph=app_graph,
-            app_name=app_name,
             runtime_context=runtime_context,
         )
     finally:

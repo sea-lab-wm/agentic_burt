@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import burt
-from observability.observability_sinks import LocalFileSink
+from observability.observability_sinks import LocalFileSink, RedisThenFileSink
 from state import BugAgentState
 
 
@@ -42,6 +42,63 @@ class BurtRuntimeContextTests(unittest.TestCase):
         self.assertIsNot(context_a.usage_callback, context_b.usage_callback)
         self.assertIs(context_a.model, model_a)
         self.assertIs(context_b.model, model_b)
+
+    @patch("burt.ChatOpenAI")
+    def test_create_runtime_context_builds_redis_then_file_sink(
+        self,
+        mock_chat_openai,
+    ):
+        mock_chat_openai.return_value = object()
+        redis_client = MagicMock()
+
+        context = burt.create_runtime_context(
+            session_id="session-a",
+            bug_id=10,
+            description_level="LC_LP",
+            sink_mode="redis_then_file",
+            redis_client=redis_client,
+        )
+
+        self.assertIsInstance(context.sink, RedisThenFileSink)
+        self.assertIs(context.sink.redis_client, redis_client)
+        self.assertEqual(
+            context.sink.filepath,
+            context.logger.filepath,
+        )
+        self.assertIs(context.logger.sink, context.sink)
+
+    @patch("burt.ChatOpenAI")
+    def test_create_runtime_context_redis_then_file_mode_requires_redis_client(
+        self,
+        mock_chat_openai,
+    ):
+        mock_chat_openai.return_value = object()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "redis_client is required when sink_mode is 'redis_then_file'",
+        ):
+            burt.create_runtime_context(
+                session_id="session-a",
+                bug_id=10,
+                description_level="LC_LP",
+                sink_mode="redis_then_file",
+            )
+
+    @patch("burt.ChatOpenAI")
+    def test_create_runtime_context_rejects_unknown_sink_mode(
+        self,
+        mock_chat_openai,
+    ):
+        mock_chat_openai.return_value = object()
+
+        with self.assertRaisesRegex(ValueError, "Unsupported sink_mode: invalid"):
+            burt.create_runtime_context(
+                session_id="session-a",
+                bug_id=10,
+                description_level="LC_LP",
+                sink_mode="invalid",
+            )
 
     @patch("burt.fetch_graph_data", return_value=("app graph", "Test App", "screens"))
     @patch("burt.SessionLocal")
