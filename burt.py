@@ -3,13 +3,12 @@ import csv
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from database.db import SessionLocal
-from database.database_utils import fetch_graph_data
 from typing import Literal
 import redis
 from state import ActiveFollowUp, BugAgentState, FollowUpKind
 from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
 import config
+from gui_graph_context_management.loader import fetch_graph_data
 from observability.logging_runtime import (
     ObservabilityTokenCallback,
     TurnLogger,
@@ -162,11 +161,7 @@ def load_initial_message(current_bug: int, description_level: str) -> str:
 
 def load_bug_graph_context(current_bug: int) -> tuple[str, str, str]:
     """Fetch the graph, app name, and screen descriptions for one bug."""
-    session = SessionLocal()
-    try:
-        app_graph, app_name, screen_descriptions = fetch_graph_data(session=session, bug_id=current_bug)
-    finally:
-        session.close()
+    app_graph, app_name, screen_descriptions = fetch_graph_data(bug_id=current_bug)
 
     if not app_graph or not app_name:
         raise ValueError(f"No app graph/app name found for bug ID {current_bug}.")

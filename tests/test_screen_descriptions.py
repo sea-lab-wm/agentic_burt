@@ -1,5 +1,7 @@
 import io
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -16,6 +18,7 @@ from database.generate_screen_descriptions import generate_screen_descriptions
 from database.generate_screen_descriptions import ScreenDescriptionItem, ScreenDescriptionsOutput
 from database.graph_data_parser import get_screens_with_information_from_text
 from database import load_data as load_data_module
+from gui_graph_context_access import build_context as build_context_module
 
 
 HASH_A = "a" * 64
@@ -134,8 +137,9 @@ class ScreenDescriptionTests(unittest.TestCase):
             patch.object(load_data_module, "ChatOpenAI", return_value=fake_model),
             patch.object(load_data_module, "get_graph_file_path", return_value="/tmp/Bug2/graph.txt"),
             patch.object(load_data_module, "filter_graph", return_value="filtered-graph"),
+            patch.object(load_data_module, "load_dotenv"),
             patch.object(load_data_module.os.path, "isdir", return_value=True),
-            patch("builtins.open", return_value=io.StringIO(GRAPH_TEXT)),
+            patch("builtins.open", side_effect=lambda *args, **kwargs: io.StringIO(GRAPH_TEXT)),
         ):
             load_data_module.load_data()
 
@@ -146,6 +150,156 @@ class ScreenDescriptionTests(unittest.TestCase):
         self.assertEqual(inserted_bug.gui_graph, "filtered-graph")
         self.assertIn(HASH_A, inserted_bug.screen_descriptions)
         self.assertIn(HASH_B, inserted_bug.screen_descriptions)
+
+    def test_build_context_writes_json_graph_context(self):
+        fake_model = FakeModel(
+            ScreenDescriptionsOutput(
+                screen_descriptions=[
+                    ScreenDescriptionItem(
+                        screen_id="S1",
+                        screen_name="HomeScreen",
+                        short_description="Landing page.",
+                    ),
+                    ScreenDescriptionItem(
+                        screen_id="S2",
+                        screen_name="SettingsScreen",
+                        short_description="Settings page.",
+                    ),
+                ]
+            )
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_root = Path(temp_dir) / "gui_graph_context"
+
+            with (
+                patch.object(build_context_module, "SELECTED_DATA", {2: "Family_Finance"}),
+                patch.object(build_context_module, "OUTPUT_ROOT", output_root),
+                patch.object(build_context_module, "ChatOpenAI", return_value=fake_model),
+                patch.object(build_context_module, "get_graph_file_path", return_value="/tmp/Bug2/graph.txt"),
+                patch.object(build_context_module, "filter_graph", return_value="Transitions (1):\nfiltered-graph"),
+                patch.object(build_context_module, "load_dotenv"),
+                patch.object(build_context_module.os.path, "isdir", return_value=True),
+                patch("builtins.open", side_effect=lambda *args, **kwargs: io.StringIO(GRAPH_TEXT)),
+            ):
+                build_context_module.build_context()
+
+            output_path = output_root / "bug2" / "context.json"
+            self.assertTrue(output_path.exists())
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(payload["application_name"], "Family_Finance")
+        self.assertEqual(payload["transitions"], ["Transitions (1):", "filtered-graph"])
+        self.assertEqual(
+            payload["screen_names_and_descriptions"],
+            [
+                f"{HASH_A} - HomeScreen: Landing page.",
+                f"{HASH_B} - SettingsScreen: Settings page.",
+            ],
+        )
+        self.assertNotIn("S1 -", "\n".join(payload["screen_names_and_descriptions"]))
+        self.assertNotIn("S2 -", "\n".join(payload["screen_names_and_descriptions"]))
+
+    def test_build_context_uses_empty_array_for_blank_screen_descriptions(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_root = Path(temp_dir) / "gui_graph_context"
+
+            with (
+                patch.object(build_context_module, "SELECTED_DATA", {2: "Family_Finance"}),
+                patch.object(build_context_module, "OUTPUT_ROOT", output_root),
+                patch.object(build_context_module, "ChatOpenAI", return_value=object()),
+                patch.object(build_context_module, "get_graph_file_path", return_value="/tmp/Bug2/graph.txt"),
+                patch.object(build_context_module, "filter_graph", return_value="filtered-graph"),
+                patch.object(build_context_module, "generate_screen_descriptions", return_value=""),
+                patch.object(build_context_module, "load_dotenv"),
+                patch.object(build_context_module.os.path, "isdir", return_value=True),
+                patch("builtins.open", side_effect=lambda *args, **kwargs: io.StringIO(GRAPH_TEXT)),
+            ):
+                build_context_module.build_context()
+
+            payload = json.loads(
+                (output_root / "bug2" / "context.json").read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(payload["screen_names_and_descriptions"], [])
+
+    def test_build_context_skips_missing_bug_folder_and_continues(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_root = Path(temp_dir) / "gui_graph_context"
+
+            def fake_get_graph_file_path(_data_dir, bug_id):
+                if bug_id == 2:
+                    raise FileNotFoundError("missing bug graph")
+                return "/tmp/Bug10/graph.txt"
+
+            with (
+                patch.object(
+                    build_context_module,
+                    "SELECTED_DATA",
+                    {2: "Family_Finance", 10: "Material_Files"},
+                ),
+                patch.object(build_context_module, "OUTPUT_ROOT", output_root),
+                patch.object(build_context_module, "ChatOpenAI", return_value=object()),
+                patch.object(build_context_module, "get_graph_file_path", side_effect=fake_get_graph_file_path),
+                patch.object(build_context_module, "filter_graph", return_value="filtered-graph"),
+                patch.object(build_context_module, "generate_screen_descriptions", return_value="screen line"),
+                patch.object(build_context_module, "load_dotenv"),
+                patch.object(build_context_module.os.path, "isdir", return_value=True),
+                patch("builtins.open", side_effect=lambda *args, **kwargs: io.StringIO(GRAPH_TEXT)),
+            ):
+                build_context_module.build_context()
+
+            self.assertFalse((output_root / "bug2" / "context.json").exists())
+            self.assertTrue((output_root / "bug10" / "context.json").exists())
+
+    def test_build_context_raises_for_missing_data_root(self):
+        with (
+            patch.object(build_context_module, "load_dotenv"),
+            patch.object(build_context_module, "ChatOpenAI", return_value=object()),
+            patch.object(build_context_module.os.path, "isdir", return_value=False),
+        ):
+            with self.assertRaisesRegex(
+                FileNotFoundError,
+                "DATA_DIR does not exist or is not a directory",
+            ):
+                build_context_module.build_context()
+
+    def test_build_context_rejects_invalid_mode(self):
+        with (
+            patch.object(build_context_module, "load_dotenv"),
+            patch.object(build_context_module, "ChatOpenAI", return_value=object()),
+        ):
+            with self.assertRaisesRegex(
+                ValueError,
+                "Please set mode to either 'dev' or 'test",
+            ):
+                build_context_module.build_context(mode="invalid")
+
+    def test_build_context_overwrites_existing_output_file(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_root = Path(temp_dir) / "gui_graph_context"
+            output_path = output_root / "bug2" / "context.json"
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text('{"stale": true}\n', encoding="utf-8")
+
+            with (
+                patch.object(build_context_module, "SELECTED_DATA", {2: "Family_Finance"}),
+                patch.object(build_context_module, "OUTPUT_ROOT", output_root),
+                patch.object(build_context_module, "ChatOpenAI", return_value=object()),
+                patch.object(build_context_module, "get_graph_file_path", return_value="/tmp/Bug2/graph.txt"),
+                patch.object(build_context_module, "filter_graph", return_value="new-graph"),
+                patch.object(build_context_module, "generate_screen_descriptions", return_value="new-screen"),
+                patch.object(build_context_module, "load_dotenv"),
+                patch.object(build_context_module.os.path, "isdir", return_value=True),
+                patch("builtins.open", side_effect=lambda *args, **kwargs: io.StringIO(GRAPH_TEXT)),
+            ):
+                build_context_module.build_context()
+
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(payload["application_name"], "Family_Finance")
+        self.assertEqual(payload["transitions"], ["new-graph"])
+        self.assertEqual(payload["screen_names_and_descriptions"], ["new-screen"])
 
 
 if __name__ == "__main__":
