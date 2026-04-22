@@ -2,11 +2,9 @@
 
 This repository contains the BURT++ bug-reporting agent, its observability logging system, and the evaluation pipeline used to score generated bug reports against the development-set ground truth.
 
-NOTE: This README is intentionally scoped to the current local quick-development workflow. It does not yet document the containerized/API deployment path.
-
 The current workflow is:
 
-1. Run the agent for one bug/description pair or for a full or diminished development set.
+1. Run the agent through the containerized session API or through the local CLI workflow.
 2. Evaluate the resulting logs with the LLM-as-judge pipeline.
 3. Manually validate the judge outputs using the generated review workbook.
 
@@ -23,7 +21,55 @@ The active defaults live in [config.py](config.py). Below you can see what each 
 3. `DESCRIPTION_CSV_PATH = ...`
     - the path of dev set gt and bug descriptions
 
-## Setup
+## Run The Containerized Deployment
+
+Use Docker Compose to start the API and Redis together:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- the FastAPI service on `http://localhost:8000`
+- the Redis service used for session storage and LangGraph checkpointing
+
+Before starting the containers, make sure these inputs exist:
+
+- a root `.env` file with the OpenAI credentials required by `langchain-openai`
+- the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
+- the GUI graph context directory at [gui_graph_context](gui_graph_context)
+
+Useful API endpoints:
+
+- `GET /healthz`
+- `POST /sessions`
+- `GET /sessions/{session_id}`
+- `POST /sessions/{session_id}/messages`
+
+Example session flow:
+
+```bash
+curl http://localhost:8000/healthz
+
+curl -X POST http://localhost:8000/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"bug_id": 10, "description_level": "LC_LP"}'
+
+curl http://localhost:8000/sessions/<session_id>
+
+curl -X POST http://localhost:8000/sessions/<session_id>/messages \
+  -H "Content-Type: application/json" \
+  -d '{"user_description": "The app crashed after I tapped save."}'
+```
+
+Stop the deployment with:
+
+```bash
+docker compose down
+```
+
+## Setup For Local CLI Work
 
 Install dependencies:
 
@@ -40,7 +86,7 @@ Before running the agent, make sure these inputs exist:
 - the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
 - the GUI graph context directory at [gui_graph_context](gui_graph_context)
 
-## Run The Agent
+## Run The Agent Locally
 
 Use [burt.py](burt.py) for a single interactive run:
 
