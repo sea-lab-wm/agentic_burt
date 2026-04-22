@@ -101,21 +101,14 @@ class BurtRuntimeContextTests(unittest.TestCase):
             )
 
     @patch("burt.fetch_graph_data", return_value=("app graph", "Test App", "screens"))
-    @patch("burt.SessionLocal")
     def test_load_bug_graph_context_only_returns_graph_data(
         self,
-        mock_session_local,
         mock_fetch_graph_data,
     ):
-        session = MagicMock()
-        mock_session_local.return_value = session
-
         result = burt.load_bug_graph_context(current_bug=42)
 
         self.assertEqual(result, ("app graph", "Test App", "screens"))
-        mock_session_local.assert_called_once_with()
-        mock_fetch_graph_data.assert_called_once_with(session=session, bug_id=42)
-        session.close.assert_called_once_with()
+        mock_fetch_graph_data.assert_called_once_with(bug_id=42)
 
     @patch(
         "burt.llm_extract",

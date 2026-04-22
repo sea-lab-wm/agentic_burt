@@ -8,8 +8,8 @@ This document is currently scoped to the local quick-development runtime. It doe
 flowchart LR
     U[User] --> A[Agent runtime in burt.py]
     A -->|load initial description| CSV[(dev CSV)]
-    A -->|fetch graph + app metadata by bug_id| DB[(SQLite DB)]
-    DB -->|gui_graph + app_name + screen_descriptions| A
+    A -->|fetch graph + app metadata by bug_id| GC[gui_graph_context/bug<id>/context.json]
+    GC -->|transitions + app_name + screen_descriptions| A
     A -->|load active prompt templates| PV[(prompt_versioning.json)]
     L2 -->|write observability log| LOGS[(logs/<PROMPT_VERSION>/...)]
 
@@ -47,7 +47,7 @@ flowchart LR
 flowchart TD
     A[Start program] --> B[Load env + parse bug_id and description_level]
     B --> C[Load initial description from dev CSV]
-    C --> D[Fetch gui_graph, app_name, and screen_descriptions from SQLite]
+    C --> D[Fetch gui_graph, app_name, and screen_descriptions from gui_graph_context]
     D --> E[Initialize logger, ChatOpenAI callback, and LangGraph workflow]
     E --> F[Log initial user description into BugAgentState]
     F --> G[information_element_extraction]
@@ -79,7 +79,7 @@ flowchart TD
 
 ## 3. File Responsibilities
 
-- `burt.py`: Main local runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, flushes turn records through the sink, and finalizes the observability log.
+- `burt.py`: Main local runtime entrypoint. Loads inputs, fetches GUI graph context from local JSON files, builds the LangGraph workflow, manages CLI interrupts, flushes turn records through the sink, and finalizes the observability log.
 - `agent_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
 - `prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
 - `prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.
@@ -88,12 +88,11 @@ flowchart TD
 - `observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
 - `observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
 - `observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
-- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATABASE_URL`, and the description CSV path.
-- `database/db.py`: SQLAlchemy engine/session setup wired to `config.DATABASE_URL`.
-- `database/models.py`: SQLAlchemy ORM schema. The active runtime model is the `bug` table with `bug_id`, `application_name`, `gui_graph`, and `screen_descriptions`.
-- `database/database_utils.py`: Query helpers used by the runtime to fetch graph data and app metadata by `bug_id`.
-- `database/load_data.py`: Manual utility for loading selected graph files into the `bug` table and generating `screen_descriptions`.
-- `database/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.
+- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DESCRIPTION_CSV_PATH`, and `REDIS_URL`.
+- `gui_graph_context_management/loader.py`: Runtime loader for reading `gui_graph_context/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
+- `gui_graph_context_management/build_context.py`: Utility for generating the `context.json` payloads from raw graph data.
+- `gui_graph_context_management/generate_screen_descriptions.py`: LLM-assisted generator for screen description text used in each context payload.
+- `gui_graph_context_management/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.
 - `run_all_burt.py`: Batch runner that discovers runnable `(bug_id, description_level)` pairs from the CSV, executes `burt.py` for each one, and then runs the evaluator on the resulting log directory.
 - `evaluator/runner.py`: Evaluation entrypoint. Reads logs, derives evaluation context, runs the judge passes, writes `*.evaluation.json`, and rebuilds the manual-review workbook.
 - `evaluator/parsing.py`: Parsing helpers for discovering log files, extracting metadata from log paths, decoding JSON records, and joining ground-truth CSV rows.
@@ -105,8 +104,6 @@ flowchart TD
 
 ## 4. Core Dependencies
 
-- SQLAlchemy (`2.0.46`): ORM and DB toolkit for the SQLite-backed bug metadata store and Alembic-backed schema management. Docs: <https://docs.sqlalchemy.org/>
-- Alembic (`1.18.3`): Schema migration tool for the SQLite database used by the runtime loader and app-graph store. Docs: <https://alembic.sqlalchemy.org/>
 - LangChain Core (`1.2.7`) + LangChain OpenAI (`1.1.7`): Prompt/message abstractions, structured output helpers, and OpenAI chat-model integration. Docs: <https://python.langchain.com/docs/introduction/>
 - LangGraph (`1.0.6`): Graph-based runtime orchestration, interrupts, resume commands, and checkpointed state for the agent control flow. Docs: <https://langchain-ai.github.io/langgraph/>
 - Pydantic (`2.12.5`): Typed data models and validation for agent state, structured outputs, evaluator schemas, and observability payloads. Docs: <https://docs.pydantic.dev/latest/>

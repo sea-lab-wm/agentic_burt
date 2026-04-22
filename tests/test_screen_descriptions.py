@@ -1,24 +1,19 @@
 import io
 import json
-import sys
 import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
-
-ROOT = Path(__file__).resolve().parents[1]
-DATABASE_DIR = ROOT / "database"
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-if str(DATABASE_DIR) not in sys.path:
-    sys.path.insert(0, str(DATABASE_DIR))
-
-from database.generate_screen_descriptions import generate_screen_descriptions
-from database.generate_screen_descriptions import ScreenDescriptionItem, ScreenDescriptionsOutput
-from database.graph_data_parser import get_screens_with_information_from_text
-from database import load_data as load_data_module
-from gui_graph_context_access import build_context as build_context_module
+from pathlib import Path
+from gui_graph_context_management import build_context as build_context_module
+from gui_graph_context_management.generate_screen_descriptions import (
+    ScreenDescriptionItem,
+    ScreenDescriptionsOutput,
+    generate_screen_descriptions,
+)
+from gui_graph_context_management.graph_data_parser import (
+    get_screens_with_information_from_text,
+)
 
 
 HASH_A = "a" * 64
@@ -47,20 +42,6 @@ class FakeModel:
     def invoke(self, messages):
         self.prompts.append(messages)
         return self.response
-
-
-class FakeSession:
-    def __init__(self):
-        self.added = []
-        self.commits = 0
-
-    def add(self, row):
-        self.added.append(row)
-
-    def commit(self):
-        self.commits += 1
-
-
 class ScreenDescriptionTests(unittest.TestCase):
     def test_get_screens_with_information_from_text_returns_ordered_blocks_and_maps(self):
         screens, screen_id_map, reverse_screen_id_map = get_screens_with_information_from_text(GRAPH_TEXT)
@@ -111,45 +92,6 @@ class ScreenDescriptionTests(unittest.TestCase):
         self.assertIn("S2", prompt)
         self.assertIn("HomeScreen", prompt)
         self.assertIn("SettingsScreen", prompt)
-
-    def test_load_data_populates_bug_screen_descriptions(self):
-        fake_model = FakeModel(
-            ScreenDescriptionsOutput(
-                screen_descriptions=[
-                    ScreenDescriptionItem(
-                        screen_id="S1",
-                        screen_name="HomeScreen",
-                        short_description="Landing page.",
-                    ),
-                    ScreenDescriptionItem(
-                        screen_id="S2",
-                        screen_name="SettingsScreen",
-                        short_description="Settings page.",
-                    ),
-                ]
-            )
-        )
-        fake_session = FakeSession()
-
-        with (
-            patch.object(load_data_module, "SELECTED_DATA", {2: "Family_Finance"}),
-            patch.object(load_data_module, "db_session", fake_session),
-            patch.object(load_data_module, "ChatOpenAI", return_value=fake_model),
-            patch.object(load_data_module, "get_graph_file_path", return_value="/tmp/Bug2/graph.txt"),
-            patch.object(load_data_module, "filter_graph", return_value="filtered-graph"),
-            patch.object(load_data_module, "load_dotenv"),
-            patch.object(load_data_module.os.path, "isdir", return_value=True),
-            patch("builtins.open", side_effect=lambda *args, **kwargs: io.StringIO(GRAPH_TEXT)),
-        ):
-            load_data_module.load_data()
-
-        self.assertEqual(fake_session.commits, 1)
-        self.assertEqual(len(fake_session.added), 1)
-        inserted_bug = fake_session.added[0]
-        self.assertEqual(inserted_bug.bug_id, 2)
-        self.assertEqual(inserted_bug.gui_graph, "filtered-graph")
-        self.assertIn(HASH_A, inserted_bug.screen_descriptions)
-        self.assertIn(HASH_B, inserted_bug.screen_descriptions)
 
     def test_build_context_writes_json_graph_context(self):
         fake_model = FakeModel(

@@ -22,8 +22,6 @@ The active defaults live in [config.py](config.py). Below you can see what each 
     - where the evaluator writes results: `Results/<agent_version>/`
 3. `DESCRIPTION_CSV_PATH = ...`
     - the path of dev set gt and bug descriptions
-4. `DATABASE_URL = ...`
-    - the database access url
 
 ## Setup
 
@@ -40,7 +38,7 @@ Create a `.env` file in root with the OpenAI credentials required by `langchain-
 Before running the agent, make sure these inputs exist:
 
 - the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
-- the SQLite app database at `database/apps.db`
+- the GUI graph context directory at [gui_graph_context](gui_graph_context)
 
 ## Run The Agent
 
@@ -54,7 +52,7 @@ Notes:
 
 - `description-level` must use the format `LC_LP`, `MC_MP`, `HC_HP`, etc.
 - BURT++ pulls the initial user description from the matching `<description level> Desc` column in the dev CSV.
-- BURT++ loads the app graph and screen descriptions from the database for the requested `bug_id`.
+- BURT++ loads the app graph and screen descriptions from `gui_graph_context/bug<id>/context.json`.
 - If the agent needs clarification, it will interrupt in the terminal and ask follow-up questions.
 - When the run completes, BURT++ prints the final bug report and writes an observability log through the default local file sink.
 
@@ -250,65 +248,21 @@ To add a new prompt version:
 
 If you prefer not to edit the JSON file by hand, [prompt_versioning/prompt_versioning_json.py](prompt_versioning/prompt_versioning_json.py) includes `upsert_prompts(...)` for programmatically adding or updating prompt entries.
 
-## Database Management
+## GUI Context Data
 
-The runtime data layer uses SQLite with SQLAlchemy models in [database/models.py](database/models.py) and Alembic migrations in [alembic/versions](alembic/versions).
+The runtime now reads bug-specific application context from JSON files under [gui_graph_context](gui_graph_context).
 
-Current runtime database:
+Current runtime context shape:
 
-```text
-database/apps.db
-```
+- one directory per bug, such as `gui_graph_context/bug10/`
+- one `context.json` file per bug
+- each payload stores `application_name`, `transitions`, and `screen_names_and_descriptions`
 
-Runtime code reads that path from [config.py](config.py) via `DATABASE_URL`.
+The builder utilities for regenerating these files live under [gui_graph_context_management](gui_graph_context_management):
 
-Current schema shape:
-
-- the main runtime table is `bug`
-- each row stores `bug_id`, `application_name`, `gui_graph`, and `screen_descriptions`
-- older individual `screen` and `transition` tables exist in earlier migrations but are not part of the current model
-
-Apply migrations to bring a database up to date:
-
-```bash
-alembic upgrade head
-```
-
-Check the current migration version:
-
-```bash
-alembic current
-```
-
-See migration history:
-
-```bash
-alembic history
-```
-
-Create a new migration after changing [database/models.py](database/models.py):
-
-```bash
-alembic revision --autogenerate -m "describe schema change"
-```
-
-Then review the generated migration in [alembic/versions](alembic/versions) before applying it:
-
-```bash
-alembic upgrade head
-```
-
-Load graph data into the database:
-
-- [database/load_data.py](database/load_data.py) is the current manual loader for inserting selected bugs
-- it locates raw `graph.txt` files, filters the graph text, generates `screen_descriptions`, and inserts rows into `bug`
-- it currently depends on a local absolute graph-data directory and should be treated as a developer utility, not a portable setup script
-
-Important current caveat:
-
-- [alembic.ini](alembic.ini) currently sets `sqlalchemy.url = sqlite:///database/app.db`
-- [config.py](config.py) currently sets `DATABASE_URL = "sqlite:///database/apps.db"`
-- before running Alembic, make sure those point to the same SQLite file or Alembic may migrate a different database than the runtime uses
+- [gui_graph_context_management/build_context.py](gui_graph_context_management/build_context.py)
+- [gui_graph_context_management/generate_screen_descriptions.py](gui_graph_context_management/generate_screen_descriptions.py)
+- [gui_graph_context_management/graph_data_parser.py](gui_graph_context_management/graph_data_parser.py)
 
 ## Testing
 
