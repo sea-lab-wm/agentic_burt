@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -19,13 +20,11 @@ class BurtRuntimeContextTests(unittest.TestCase):
 
         context_a = burt.create_runtime_context(
             session_id="session-a",
-            bug_id=10,
-            description_level="LC_LP",
+            log_path=Path("logs/test/session-a.log"),
         )
         context_b = burt.create_runtime_context(
             session_id="session-b",
-            bug_id=10,
-            description_level="LC_LP",
+            log_path=Path("logs/test/session-b.log"),
         )
 
         self.assertEqual(context_a.session_id, "session-a")
@@ -53,8 +52,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
 
         context = burt.create_runtime_context(
             session_id="session-a",
-            bug_id=10,
-            description_level="LC_LP",
+            log_path=Path("logs/test/session-a.log"),
             sink_mode="redis_then_file",
             redis_client=redis_client,
         )
@@ -80,8 +78,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         ):
             burt.create_runtime_context(
                 session_id="session-a",
-                bug_id=10,
-                description_level="LC_LP",
+                log_path=Path("logs/test/session-a.log"),
                 sink_mode="redis_then_file",
             )
 
@@ -95,8 +92,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported sink_mode: invalid"):
             burt.create_runtime_context(
                 session_id="session-a",
-                bug_id=10,
-                description_level="LC_LP",
+                log_path=Path("logs/test/session-a.log"),
                 sink_mode="invalid",
             )
 

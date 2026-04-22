@@ -50,15 +50,13 @@ class BurtRuntimeContext:
 
 def create_runtime_context(
     session_id: str,
-    bug_id: int,
-    description_level: str,
+    log_path: Path | str,
     sink_mode: Literal["local", "redis_then_file"] = "local",
     redis_client: redis.Redis | None = None,
 ) -> BurtRuntimeContext:
     """Create the logger, callback, and model instances for one conversation request."""
 
-    version = str(config.PROMPT_VERSION)
-    log_path = Path("logs") / version / f"session_{session_id}_bug{bug_id}_{description_level}.log"
+    log_path = Path(log_path)
 
     if sink_mode == "local":
         sink = LocalFileSink(filepath=log_path)
@@ -413,10 +411,10 @@ def main() -> None:
     )
 
     #session id placeholder to ensure other functionality works, might want to change this to make a unique session id or do dev on containers
+    #NOTE: inline log_path creation might be clunky
     runtime_context = create_runtime_context(
         session_id="local",
-        bug_id=args.bug_id,
-        description_level=args.description_level,
+        log_path=Path("logs")/ str(config.PROMPT_VERSION)/ f"session_local_bug{args.bug_id}_{args.description_level}.log",
     )
 
     #this guarantees that every CLI run writes a new log, instead of appending onto old logs of the same name

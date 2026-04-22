@@ -7,7 +7,7 @@ class CreateSessionRequest(BaseModel):
     """Input payload used to create a new agent conversation session."""
 
     bug_id: int
-    description_level: str
+    user_description: str
 
 
 class ResumeConversationRequest(BaseModel):

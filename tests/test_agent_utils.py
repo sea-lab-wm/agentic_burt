@@ -13,7 +13,16 @@ from agent_utils import (
     validate_info_status,
 )
 from llm_schema import ClarityFollowUpSchema, ExtractionSchema, MoreInfoFollowUpSchema
-from state import BugAgentState, CandidateMapping, InfoSlots, InformationElementExtraction, Slot, SlotStatus
+from state import (
+    ActiveFollowUp,
+    BugAgentState,
+    CandidateMapping,
+    FollowUpKind,
+    InfoSlots,
+    InformationElementExtraction,
+    Slot,
+    SlotStatus,
+)
 
 
 class FakeStructuredModel:
@@ -84,6 +93,11 @@ class GraphUtilsTests(unittest.TestCase):
     def test_format_extraction_update_preserves_existing_fields_when_omitted(self):
         state = BugAgentState(
             messages=[HumanMessage(content="the app crashes")],
+            active_follow_up=ActiveFollowUp(
+                kind=FollowUpKind.more_info,
+                question="Which screen were you on?",
+                target_info_elements=["triggering_screen_reference"],
+            ),
             BugInfo=InfoSlots(
                 triggering_screen_reference=Slot(
                     status=SlotStatus.confirmed,
@@ -125,6 +139,7 @@ class GraphUtilsTests(unittest.TestCase):
             update["information_element_extraction"],
             InformationElementExtraction,
         )
+        self.assertIsNone(update["active_follow_up"])
 
     def test_format_bug_info_for_prompt_includes_candidate_evidence(self):
         info = InfoSlots(

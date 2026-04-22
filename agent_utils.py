@@ -366,10 +366,12 @@ def format_extraction_update(state: BugAgentState, extraction: ExtractionSchema)
         correct_behavior=extraction.correct_behavior or current.correct_behavior,
         steps_to_reproduce=extraction.steps_to_reproduce or current.steps_to_reproduce,
     )
-
+    
+    #NOTE: the extra returns in this state update are used for reseting graph state prior to the next conversation turn
     return {
         "BugInfo": updated,
         "information_element_extraction": InformationElementExtraction(),
+        "active_follow_up": None,
         "clarification_window_start_idx": len(state.messages),
     }
 

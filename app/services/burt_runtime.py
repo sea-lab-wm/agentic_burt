@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import uuid4
 
 import config
@@ -16,10 +17,11 @@ from burt import (
     create_runtime_context,
     ingest_user_description,
     load_bug_graph_context,
-    load_initial_message,
 )
 from langgraph.types import Command
 from langgraph.checkpoint.redis import RedisSaver
+
+
 class SessionNotFoundError(ValueError):
     """Raised when a requested conversation session cannot be found."""
 
@@ -71,7 +73,6 @@ def _persist_and_build_response(
     *,
     session_id: str,
     bug_id: int,
-    description_level: str,
     result: dict,
     runtime_context,
 ) -> ConversationTurnResponse:
@@ -106,24 +107,22 @@ def _persist_and_build_response(
         {
             "session_id": session_id,
             "bug_id": bug_id,
-            "description_level": description_level,
             **response.model_dump(mode="json"),
         }
     )
     return response
 
 
-def start_conversation(bug_id: int, description_level: str) -> ConversationTurnResponse:
+def _build_api_log_path(session_id: str) -> Path:
+    """Build the log path used for one containerized API session."""
+    return Path("logs") / str(config.PROMPT_VERSION) / f"session_{session_id}.log"
+
+
+def start_conversation(bug_id: int, user_description: str) -> ConversationTurnResponse:
     """Create a new conversation session, run the first graph step, and save the outcome."""
 
     #create unique session id (uuid4() create a session id so unlikely to be already a duplicate that it can be treated as unique)
     session_id = str(uuid4())
-
-    #load initial bug desc from dev set based on bug id and description level
-    initial_message = load_initial_message(
-        current_bug=bug_id,
-        description_level=description_level,
-    )
 
     #fetch graph data and initialize logger (logger currently offline!) 
     transitions, app_name, screen_descriptions = load_bug_graph_context(
@@ -131,8 +130,7 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
     )
     runtime_context = create_runtime_context(
         session_id=session_id,
-        bug_id=bug_id,
-        description_level=description_level,
+        log_path=_build_api_log_path(session_id),
         sink_mode="redis_then_file",
         redis_client=redis_client,
     )
@@ -148,7 +146,7 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
 
     #log first submitted description and use it to load initial LangGraph state
     initial_state_update = ingest_user_description(
-        initial_message,
+        user_description,
         runtime_context=runtime_context,
     )
     state = BugAgentState(messages=[initial_state_update["messages"]])
@@ -164,7 +162,6 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
     return _persist_and_build_response(
         session_id=session_id,
         bug_id=bug_id,
-        description_level=description_level,
         result=result,
         runtime_context=runtime_context,
     )
@@ -194,9 +191,8 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             raise SessionCompletedError(f"Session {session_id} is already completed.")
 
         bug_id = session_record.get("bug_id")
-        description_level = session_record.get("description_level")
         #check for malformed session
-        if not isinstance(bug_id, int) or not isinstance(description_level, str):
+        if not isinstance(bug_id, int):
             raise InvalidSessionError(
                 f"Session {session_id} is missing required resume metadata."
             )
@@ -207,8 +203,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
         )
         runtime_context = create_runtime_context(
             session_id=session_id,
-            bug_id=bug_id,
-            description_level=description_level,
+            log_path=_build_api_log_path(session_id),
             sink_mode="redis_then_file",
             redis_client=redis_client,
         )
@@ -233,7 +228,6 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
         return _persist_and_build_response(
             session_id=session_id,
             bug_id=bug_id,
-            description_level=description_level,
             result=result,
             runtime_context=runtime_context,
         )

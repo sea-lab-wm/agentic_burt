@@ -35,10 +35,10 @@ def healthz() -> dict[str, str | bool]:
 
 @sessions_router.post("/sessions", response_model=ConversationTurnResponse)
 def create_session(create_session_request: CreateSessionRequest) -> ConversationTurnResponse:
-    """Start a new agent conversation (session) for the requested bug and detail level."""
+    """Start a new agent conversation for the requested bug and initial user description."""
     return start_conversation(
         bug_id=create_session_request.bug_id,
-        description_level=create_session_request.description_level,
+        user_description=create_session_request.user_description,
     )
 
 

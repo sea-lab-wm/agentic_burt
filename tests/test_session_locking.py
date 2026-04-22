@@ -69,6 +69,36 @@ class SessionRouteTests(unittest.TestCase):
         self.client = TestClient(app)
 
     @patch(
+        "app.api.routes.sessions.start_conversation",
+        return_value=burt_runtime.ConversationTurnResponse(
+            session_id="session-123",
+            status="awaiting_user",
+            question="What screen were you on?",
+            final_report=None,
+        ),
+    )
+    def test_create_session_uses_user_description_payload(self, mock_start):
+        response = self.client.post(
+            "/sessions",
+            json={"bug_id": 10, "user_description": "The app crashed after save."},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "session_id": "session-123",
+                "status": "awaiting_user",
+                "question": "What screen were you on?",
+                "final_report": None,
+            },
+        )
+        mock_start.assert_called_once_with(
+            bug_id=10,
+            user_description="The app crashed after save.",
+        )
+
+    @patch(
         "app.api.routes.sessions.resume_conversation",
         side_effect=burt_runtime.SessionLockedError(
             "Session is already being resumed. Retry shortly."

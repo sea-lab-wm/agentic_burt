@@ -37,7 +37,6 @@ This starts:
 Before starting the containers, make sure these inputs exist:
 
 - a root `.env` file with the OpenAI credentials required by `langchain-openai`
-- the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
 - the GUI graph context directory at [gui_graph_context](gui_graph_context)
 
 Useful API endpoints:
@@ -54,7 +53,7 @@ curl http://localhost:8000/healthz
 
 curl -X POST http://localhost:8000/sessions \
   -H "Content-Type: application/json" \
-  -d '{"bug_id": 10, "description_level": "LC_LP"}'
+  -d '{"bug_id": 10, "user_description": "The app crashed after I tapped save."}'
 
 curl http://localhost:8000/sessions/<session_id>
 
