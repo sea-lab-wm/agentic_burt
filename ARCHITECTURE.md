@@ -80,7 +80,7 @@ flowchart TD
 ## 3. File Responsibilities
 
 - `burt.py`: Main local runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, flushes turn records through the sink, and finalizes the observability log.
-- `graph_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
+- `agent_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
 - `prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
 - `prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.
 - `state.py`: Pydantic models for `BugAgentState`, follow-up tracking, extracted information elements, and the structured `BugInfo` slot mapping.

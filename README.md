@@ -236,7 +236,7 @@ How prompt versions are structured:
 
 How the agent uses them:
 
-- [graph_utils.py](graph_utils.py) loads prompt templates from `prompt_versioning.json`
+- [agent_utils.py](agent_utils.py) loads prompt templates from `prompt_versioning.json`
 - the active prompt version is selected by `PROMPT_VERSION` in [config.py](config.py)
 - that same `PROMPT_VERSION` is also used in log output paths and evaluator result grouping
 - the runtime terminal node is still named `generate_report`; prompt-version updates for report synthesis should update the `generate_report` prompt key
@@ -320,7 +320,7 @@ Current test modules include:
 
 - [tests/test_evaluator.py](tests/test_evaluator.py)
 - [tests/test_generate_review.py](tests/test_generate_review.py)
-- [tests/test_graph_utils.py](tests/test_graph_utils.py)
+- [tests/test_agent_utils.py](tests/test_agent_utils.py)
 - [tests/test_observability.py](tests/test_observability.py)
 - [tests/test_run_all_burt.py](tests/test_run_all_burt.py)
 - [tests/test_screen_descriptions.py](tests/test_screen_descriptions.py)

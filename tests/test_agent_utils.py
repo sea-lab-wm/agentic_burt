@@ -2,7 +2,7 @@ import unittest
 
 from langchain_core.messages import HumanMessage
 
-from graph_utils import (
+from agent_utils import (
     find_unknown_or_ambiguous,
     format_bug_info_for_prompt,
     format_extraction_update,

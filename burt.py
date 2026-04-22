@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import Literal
 import redis
 from state import ActiveFollowUp, BugAgentState, FollowUpKind
-from graph_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
+from agent_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
 import config
 from gui_graph_context_management.loader import fetch_graph_data
 from observability.logging_runtime import (
@@ -160,12 +160,12 @@ def load_initial_message(current_bug: int, description_level: str) -> str:
     raise ValueError(f"Bug ID {current_bug} was not found in {DESCRIPTION_CSV_PATH}.")
 
 def load_bug_graph_context(current_bug: int) -> tuple[str, str, str]:
-    """Fetch the graph, app name, and screen descriptions for one bug."""
-    app_graph, app_name, screen_descriptions = fetch_graph_data(bug_id=current_bug)
+    """Fetch the transitions, app name, and screen descriptions for one bug."""
+    transitions, app_name, screen_descriptions = fetch_graph_data(bug_id=current_bug)
 
-    if not app_graph or not app_name:
-        raise ValueError(f"No app graph/app name found for bug ID {current_bug}.")
-    return app_graph, app_name, screen_descriptions
+    if not transitions or not app_name:
+        raise ValueError(f"No transitions/app name found for bug ID {current_bug}.")
+    return transitions, app_name, screen_descriptions
 
 @log_action(entity=Entity.bot, action_name=ActionName.information_element_extraction)
 def information_element_extraction(state: BugAgentState, config: RunnableConfig) -> dict:
@@ -252,17 +252,17 @@ def map_to_graph(state : BugAgentState, config : RunnableConfig) -> dict:
     current_bug_info = state.BugInfo
 
     configurable = config.get("configurable") or {}
-    app_graph = configurable.get("app_graph")
+    transitions = configurable.get("transitions")
     app_name = configurable.get("app_name")
-    screen_name_and_description_list = configurable.get("screen_descriptions")
+    screen_descriptions = configurable.get("screen_descriptions")
     runtime_context = _get_runtime_context(config)
 
     extracted_information_elements = state.information_element_extraction
 
     result = llm_map(
         current_bug_info=current_bug_info,
-        app_graph=app_graph,
-        screen_name_and_description_list=screen_name_and_description_list,
+        transitions=transitions,
+        screen_descriptions=screen_descriptions,
         extracted_information_elements=extracted_information_elements,
         model=runtime_context.model,
         app_name=app_name,
@@ -294,9 +294,9 @@ def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
     current_bug_info = state.BugInfo
 
     configurable = config.get("configurable") or {}
-    app_graph = configurable.get("app_graph")
+    transitions = configurable.get("transitions")
     app_name = configurable.get("app_name")
-    screen_name_and_description_list = configurable.get("screen_descriptions")
+    screen_descriptions = configurable.get("screen_descriptions")
     runtime_context = _get_runtime_context(config)
 
     formatted_unknown_and_low_confidence_info = format_unknown_or_ambiguous_references(
@@ -306,8 +306,8 @@ def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
 
     follow_up = llm_more_info_follow_up(
         current_bug_info,
-        app_graph,
-        screen_name_and_description_list,
+        transitions,
+        screen_descriptions,
         formatted_unknown_and_low_confidence_info,
         runtime_context.model,
         app_name,
@@ -342,10 +342,10 @@ def generate_final_report(state: BugAgentState, config: RunnableConfig) -> dict:
         )
 
     configurable = config.get("configurable") or {}
-    app_graph = configurable.get("app_graph")
+    transitions = configurable.get("transitions")
     app_name = configurable.get("app_name")
     runtime_context = _get_runtime_context(config)
-    return generate_report(bug_info, app_graph, runtime_context.model, app_name)
+    return generate_report(bug_info, transitions, runtime_context.model, app_name)
 
 #NOTE: This name is a bit incomplete, it should eventually be something like persist_then_flush_turn
 def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:
@@ -408,7 +408,7 @@ def main() -> None:
         current_bug=args.bug_id,
         description_level=args.description_level,
     )
-    app_graph, app_name, screen_descriptions = load_bug_graph_context(
+    transitions, app_name, screen_descriptions = load_bug_graph_context(
         current_bug=args.bug_id
     )
 
@@ -426,7 +426,7 @@ def main() -> None:
     graph = build_burt_graph(MemorySaver())
     config = {
         "configurable": {
-            "app_graph": app_graph,
+            "transitions": transitions,
             "app_name": app_name,
             "screen_descriptions": screen_descriptions,
             "thread_id": "1",
