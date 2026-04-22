@@ -25,7 +25,7 @@ class StartConversationTests(unittest.TestCase):
     )
     @patch(
         "app.services.burt_runtime.load_bug_graph_context",
-        return_value=("app graph", "Test App", "screen descriptions"),
+        return_value=("transitions", "Test App", "screen descriptions"),
     )
     @patch(
         "app.services.burt_runtime.load_initial_message",
@@ -95,7 +95,7 @@ class StartConversationTests(unittest.TestCase):
             sentinel.initial_state,
             config={
                 "configurable": {
-                    "app_graph": "app graph",
+                    "transitions": "transitions",
                     "app_name": "Test App",
                     "screen_descriptions": "screen descriptions",
                     "thread_id": "session-123",
@@ -129,7 +129,7 @@ class StartConversationTests(unittest.TestCase):
     )
     @patch(
         "app.services.burt_runtime.load_bug_graph_context",
-        return_value=("app graph", "Test App", "screen descriptions"),
+        return_value=("transitions", "Test App", "screen descriptions"),
     )
     @patch(
         "app.services.burt_runtime.load_initial_message",
@@ -224,7 +224,7 @@ class ResumeConversationTests(unittest.TestCase):
     @patch("app.services.burt_runtime.Command", return_value=sentinel.resume_command)
     @patch(
         "app.services.burt_runtime.load_bug_graph_context",
-        return_value=("app graph", "Test App", "screen descriptions"),
+        return_value=("transitions", "Test App", "screen descriptions"),
     )
     @patch(
         "app.services.burt_runtime.acquire_session_lock",
@@ -288,7 +288,7 @@ class ResumeConversationTests(unittest.TestCase):
             sentinel.resume_command,
             config={
                 "configurable": {
-                    "app_graph": "app graph",
+                    "transitions": "transitions",
                     "app_name": "Test App",
                     "screen_descriptions": "screen descriptions",
                     "thread_id": "session-123",
@@ -333,7 +333,7 @@ class ResumeConversationTests(unittest.TestCase):
     @patch("app.services.burt_runtime.Command", return_value=sentinel.resume_command)
     @patch(
         "app.services.burt_runtime.load_bug_graph_context",
-        return_value=("app graph", "Test App", "screen descriptions"),
+        return_value=("transitions", "Test App", "screen descriptions"),
     )
     @patch(
         "app.services.burt_runtime.acquire_session_lock",

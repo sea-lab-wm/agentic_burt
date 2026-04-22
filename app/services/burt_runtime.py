@@ -50,7 +50,7 @@ def _extract_follow_up_question(interrupt_payload) -> str | None:
 
 def _build_runnable_config(
     session_id: str,
-    app_graph: str,
+    transitions: str,
     app_name: str,
     screen_descriptions: str,
     runtime_context,
@@ -58,7 +58,7 @@ def _build_runnable_config(
     """Build the LangGraph runtime config used for both new and resumed sessions."""
     return {
         "configurable": {
-            "app_graph": app_graph,
+            "transitions": transitions,
             "app_name": app_name,
             "screen_descriptions": screen_descriptions,
             "thread_id": session_id,
@@ -126,7 +126,7 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
     )
 
     #fetch graph data and initialize logger (logger currently offline!) 
-    app_graph, app_name, screen_descriptions = load_bug_graph_context(
+    transitions, app_name, screen_descriptions = load_bug_graph_context(
         current_bug=bug_id
     )
     runtime_context = create_runtime_context(
@@ -140,7 +140,7 @@ def start_conversation(bug_id: int, description_level: str) -> ConversationTurnR
     #build config so agent can fetch graph information to reason over
     runnable_config = _build_runnable_config(
         session_id=session_id,
-        app_graph=app_graph,
+        transitions=transitions,
         app_name=app_name,
         screen_descriptions=screen_descriptions,
         runtime_context=runtime_context,
@@ -202,7 +202,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
             )
 
         #load initial bug desc from dev set based on bug id and description level
-        app_graph, app_name, screen_descriptions = load_bug_graph_context(
+        transitions, app_name, screen_descriptions = load_bug_graph_context(
             current_bug=bug_id
         )
         runtime_context = create_runtime_context(
@@ -216,7 +216,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
         #load initial bug desc from dev set based on bug id and description level
         runnable_config = _build_runnable_config(
             session_id=session_id,
-            app_graph=app_graph,
+            transitions=transitions,
             app_name=app_name,
             screen_descriptions=screen_descriptions,
             runtime_context=runtime_context,
