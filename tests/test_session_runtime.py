@@ -98,6 +98,7 @@ class StartConversationTests(unittest.TestCase):
         )
         mock_flush_active_turn.assert_called_once_with(runtime_context)
         runtime_context.sink.finalize_session.assert_not_called()
+        checkpointer.delete_thread.assert_not_called()
         mock_create_session_record.assert_called_once_with(
             {
                 "session_id": "session-123",
@@ -170,6 +171,7 @@ class StartConversationTests(unittest.TestCase):
             redis_client=burt_runtime.redis_client,
         )
         mock_flush_active_turn.assert_called_once_with(runtime_context)
+        self.assertEqual(checkpointer.setup.call_count, 2)
         runtime_context.sink.finalize_session.assert_called_once_with(
             session_id="session-123",
             final_report={"title": "Final report"},
@@ -183,6 +185,7 @@ class StartConversationTests(unittest.TestCase):
                 "final_report": {"title": "Final report"},
             }
         )
+        checkpointer.delete_thread.assert_called_once_with("session-123")
 
 
 class ResumeConversationTests(unittest.TestCase):
@@ -284,6 +287,7 @@ class ResumeConversationTests(unittest.TestCase):
         )
         mock_flush_active_turn.assert_called_once_with(runtime_context)
         runtime_context.sink.finalize_session.assert_not_called()
+        checkpointer.delete_thread.assert_not_called()
         mock_create_session_record.assert_called_once_with(
             {
                 "session_id": "session-123",
@@ -370,6 +374,7 @@ class ResumeConversationTests(unittest.TestCase):
             redis_client=burt_runtime.redis_client,
         )
         mock_flush_active_turn.assert_called_once_with(runtime_context)
+        self.assertEqual(checkpointer.setup.call_count, 2)
         runtime_context.sink.finalize_session.assert_called_once_with(
             session_id="session-123",
             final_report={"title": "Final report"},
@@ -383,6 +388,7 @@ class ResumeConversationTests(unittest.TestCase):
                 "final_report": {"title": "Final report"},
             }
         )
+        checkpointer.delete_thread.assert_called_once_with("session-123")
         mock_release_session_lock.assert_called_once_with(
             "session-123",
             "owner-token",

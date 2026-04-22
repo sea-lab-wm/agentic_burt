@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from uuid import uuid4
 
@@ -20,6 +21,8 @@ from burt import (
 )
 from langgraph.types import Command
 from langgraph.checkpoint.redis import RedisSaver
+
+logger = logging.getLogger(__name__)
 
 
 class SessionNotFoundError(ValueError):
@@ -110,6 +113,17 @@ def _persist_and_build_response(
             **response.model_dump(mode="json"),
         }
     )
+
+    if response.status == "completed":
+        try:
+            with RedisSaver.from_conn_string(config.REDIS_URL) as checkpointer:
+                checkpointer.setup()
+                checkpointer.delete_thread(session_id)
+        except Exception:
+            #emit log record on failiure, but still return gen. report payload
+            logger.warning(
+                "Failed to delete LangGraph checkpoints for completed session %s.",session_id,exc_info=True)
+
     return response
 
 
