@@ -1,5 +1,8 @@
 {
+  "session_id": "local",
   "turn": 1,
+  "started_at": "2026-04-22T02:14:08.244481+00:00",
+  "ended_at": "2026-04-22T02:14:42.297060+00:00",
   "actions": [
     {
       "entity": "user",
@@ -11,11 +14,11 @@
           "response_metadata": {},
           "type": "human",
           "name": null,
-          "id": "d0cf11c3-9398-459f-811a-33067b973f38"
+          "id": "9075f2ea-6a48-4c0e-ba45-9107854958d6"
         }
       },
       "meta_data": {
-        "latency": "5.170799977349816e-05 s",
+        "latency": "1.158299892267678e-05 s",
         "node_token_consumption": null
       }
     },
@@ -57,7 +60,7 @@
         }
       },
       "meta_data": {
-        "latency": "4.883835833000376 s",
+        "latency": "3.7473534169985214 s",
         "node_token_consumption": {
           "input_tokens": 952,
           "output_tokens": 238,
@@ -76,7 +79,7 @@
         "clarity_issues": []
       },
       "meta_data": {
-        "latency": "1.0833368749999863 s",
+        "latency": "1.018923250001535 s",
         "node_token_consumption": {
           "input_tokens": 630,
           "output_tokens": 21,
@@ -96,8 +99,8 @@
             "status": "confirmed",
             "candidates": [
               {
-                "value": "5f73d16c7a634772a51c9c854a69bc9dec5f65b77d44fab362d5462a759767e8",
-                "evidence": "User says the bug occurs on 'the Category screen in the Parent Categories tab'. Screen 5f73d16c... is CategoryDetailsActivity with tabs 'MEDIA', 'SUBCATEGORIES', and 'PARENT CATEGORIES', matching that description."
+                "value": "602a7968c560523c8680b370923e9002a6519817d8779fbe90b8e942efbb9173",
+                "evidence": "User says the bug occurs on 'the Category screen in the Parent Categories tab'. In the graph, screen 602a7968c560523c8680b370923e9002a6519817d8779fbe90b8e942efbb9173 is CategoryDetailsActivity for 'Category:Focus stacking images of insects' and has tabs 'MEDIA', 'SUBCATEGORIES', and 'PARENT CATEGORIES'. The bug is triggered there by clicking the Parent Categories tab."
               }
             ]
           },
@@ -107,7 +110,7 @@
               "candidates": [
                 {
                   "value": "31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f",
-                  "evidence": "User states 'clicking the Parent Categories tab results in a blank page'. Transition 31951cb9... is a click on the 'PARENT CATEGORIES' tab from the category details screen."
+                  "evidence": "User states 'clicking the Parent Categories tab results in a blank page'. Transition 31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f is a click on 'PARENT CATEGORIES' from the category details screen."
                 }
               ]
             }
@@ -116,8 +119,8 @@
             "status": "confirmed",
             "candidates": [
               {
-                "value": "a blank page is shown after clicking the Parent Categories tab",
-                "evidence": "User explicitly reports that 'clicking the Parent Categories tab results in a blank page' and 'a blank page is shown'."
+                "value": "a blank page is shown",
+                "evidence": "User explicitly says 'results in a blank page'."
               }
             ]
           },
@@ -126,7 +129,7 @@
             "candidates": [
               {
                 "value": "the Parent Categories of the current category should be displayed",
-                "evidence": "User explicitly states 'the Parent Categories of the current category should be displayed'."
+                "evidence": "User explicitly says 'the Parent Categories of the current category should be displayed'."
               }
             ]
           },
@@ -145,7 +148,7 @@
               "candidates": [
                 {
                   "value": "b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d",
-                  "evidence": "Matches first 'swipe left' in onboarding."
+                  "evidence": "Matches first 'swipe left' in 'swipe left four times'."
                 }
               ]
             },
@@ -154,7 +157,7 @@
               "candidates": [
                 {
                   "value": "e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4",
-                  "evidence": "Matches second 'swipe left' in onboarding."
+                  "evidence": "Matches second 'swipe left' in 'swipe left four times'."
                 }
               ]
             },
@@ -163,7 +166,7 @@
               "candidates": [
                 {
                   "value": "8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1",
-                  "evidence": "Matches third 'swipe left' in onboarding."
+                  "evidence": "Matches third 'swipe left' in 'swipe left four times'."
                 }
               ]
             },
@@ -172,7 +175,7 @@
               "candidates": [
                 {
                   "value": "b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8",
-                  "evidence": "Matches fourth 'swipe left' in onboarding."
+                  "evidence": "Matches fourth 'swipe left' in 'swipe left four times'."
                 }
               ]
             },
@@ -182,24 +185,6 @@
                 {
                   "value": "9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5",
                   "evidence": "Matches 'tap YES' on the final welcome screen."
-                }
-              ]
-            },
-            {
-              "status": "confirmed",
-              "candidates": [
-                {
-                  "value": "738b1be7acd4234c8f3960ed0b484e5f36707addded2ececa123a90c9fc1a1a6",
-                  "evidence": "After tapping YES, Bookmarks opens. To reach Skip, user must open navigation drawer; this transition matches 'open the navigation drawer' from Bookmarks."
-                }
-              ]
-            },
-            {
-              "status": "confirmed",
-              "candidates": [
-                {
-                  "value": "863b062d36cf4d96b243d1072ccaeab8367b05f9eb8d32b048e37b1b1fdf9c4e",
-                  "evidence": "From the opened drawer, selecting 'Log in' is the graph-backed path needed before 'tap Skip'; user-reported sequence includes 'tap Skip' next."
                 }
               ]
             },
@@ -226,7 +211,7 @@
               "candidates": [
                 {
                   "value": "1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e",
-                  "evidence": "Matches 'open the navigation drawer' on Explore."
+                  "evidence": "Matches 'open the navigation drawer' from the Explore screen."
                 }
               ]
             },
@@ -244,7 +229,7 @@
               "candidates": [
                 {
                   "value": "eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1",
-                  "evidence": "Matches 'tap a picture' from the Explore grid to open media details."
+                  "evidence": "Matches 'tap a picture' from the Explore gallery to open media details."
                 }
               ]
             },
@@ -253,7 +238,7 @@
               "candidates": [
                 {
                   "value": "d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac",
-                  "evidence": "Matches first 'swipe up' on the media details screen."
+                  "evidence": "Matches first 'swipe up' in 'swipe up twice' on the media details screen."
                 }
               ]
             },
@@ -262,7 +247,7 @@
               "candidates": [
                 {
                   "value": "44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7",
-                  "evidence": "Matches second 'swipe up' on the media details screen."
+                  "evidence": "Matches second 'swipe up' in 'swipe up twice' on the media details screen."
                 }
               ]
             },
@@ -271,7 +256,7 @@
               "candidates": [
                 {
                   "value": "f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc",
-                  "evidence": "Matches 'tap a category' from the media details metadata list."
+                  "evidence": "Matches 'tap a category' from the media details categories list."
                 }
               ]
             },
@@ -280,7 +265,7 @@
               "candidates": [
                 {
                   "value": "31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f",
-                  "evidence": "Matches 'tap Parent Categories' to reach the Category screen in the Parent Categories tab."
+                  "evidence": "Matches 'tap Parent Categories to reach the Category screen in the Parent Categories tab' and is also the triggering interaction."
                 }
               ]
             }
@@ -296,11 +281,11 @@
         "clarification_window_start_idx": 1
       },
       "meta_data": {
-        "latency": "18.976789542000006 s",
+        "latency": "18.936930374999065 s",
         "node_token_consumption": {
-          "input_tokens": 22200,
-          "output_tokens": 1484,
-          "total_tokens": 23684,
+          "input_tokens": 22309,
+          "output_tokens": 1412,
+          "total_tokens": 23721,
           "llm_calls": 1,
           "llm_calls_with_usage": 1,
           "llm_calls_missing_usage": 0
@@ -314,27 +299,27 @@
         "unknown_and_low_confidence_info": []
       },
       "meta_data": {
-        "latency": "3.441700027906336e-05 s",
+        "latency": "0.00038624999979219865 s",
         "node_token_consumption": null
       }
     },
     {
-      "entity": "user",
+      "entity": "bot",
       "action_name": "generate_report",
       "output": {
         "full_report": {
-          "title": "Parent Categories tab opens a blank page on the category details screen",
-          "observed_behavior": "On the Category Details screen in the Parent Categories tab, if the user taps the PARENT CATEGORIES tab, a blank page is shown.",
+          "title": "Opening the Parent Categories tab on a category page shows a blank page instead of the parent categories list",
+          "observed_behavior": "On the category details screen for a category, if the user taps the PARENT CATEGORIES tab, a blank page is shown.",
           "expected_behavior": "The Parent Categories of the current category should be displayed.",
-          "steps_to_reproduce": "1. Open the app. <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>\n2. Swipe left on the first onboarding screen. <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>\n3. Swipe left on the next onboarding screen. <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>\n4. Swipe left on the next onboarding screen. <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>\n5. Swipe left on the next onboarding screen. <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>\n6. Tap YES! on the final welcome screen. <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>\n7. Open the navigation drawer from the Bookmarks screen. <738b1be7acd4234c8f3960ed0b484e5f36707addded2ececa123a90c9fc1a1a6>\n8. Tap Log in in the navigation drawer. <863b062d36cf4d96b243d1072ccaeab8367b05f9eb8d32b048e37b1b1fdf9c4e>\n9. Tap Skip on the login screen. <bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4>\n10. Tap YES on the skip-login confirmation dialog. <a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b>\n11. Open the navigation drawer from the Explore screen. <1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e>\n12. Tap Explore in the navigation drawer. <2cb54b6b2c319fadcb77770ddc6f08bc1620d2ea99af5e4315a0e04d97476e34>\n13. Tap a picture from the Explore grid. <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>\n14. Swipe up on the media details screen. <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>\n15. Swipe up again on the media details screen. <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>\n16. Tap a category in the media details metadata list. <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>\n17. Tap the PARENT CATEGORIES tab on the category details screen. <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>"
+          "steps_to_reproduce": "1. Open the app. <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>\n2. Swipe left on the onboarding screen. <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>\n3. Swipe left again on the onboarding screen. <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>\n4. Swipe left again on the onboarding screen. <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>\n5. Swipe left a fourth time on the onboarding screen. <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>\n6. Tap YES! on the final welcome screen. <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>\n7. Tap Skip on the login screen. <bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4>\n8. Tap YES on the skip-login confirmation dialog. <a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b>\n9. Open the navigation drawer from the Explore screen. <1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e>\n10. Select Explore from the navigation drawer. <2cb54b6b2c319fadcb77770ddc6f08bc1620d2ea99af5e4315a0e04d97476e34>\n11. Tap a picture in the Explore feed to open its media details. <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>\n12. Swipe up on the media details screen. <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>\n13. Swipe up again on the media details screen. <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>\n14. Tap a category from the categories list. <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>\n15. Tap the PARENT CATEGORIES tab. <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>"
         }
       },
       "meta_data": {
-        "latency": "11.118031749999318 s",
+        "latency": "10.341979458000424 s",
         "node_token_consumption": {
-          "input_tokens": 18950,
-          "output_tokens": 951,
-          "total_tokens": 19901,
+          "input_tokens": 18858,
+          "output_tokens": 848,
+          "total_tokens": 19706,
           "llm_calls": 1,
           "llm_calls_with_usage": 1,
           "llm_calls_missing_usage": 0
@@ -344,16 +329,27 @@
   ]
 }
 {
+  "record_type": "final_report",
+  "session_id": "local",
+  "final_report": {
+    "title": "Opening the Parent Categories tab on a category page shows a blank page instead of the parent categories list",
+    "observed_behavior": "On the category details screen for a category, if the user taps the PARENT CATEGORIES tab, a blank page is shown.",
+    "expected_behavior": "The Parent Categories of the current category should be displayed.",
+    "steps_to_reproduce": "1. Open the app. <8e8c7133a537849ea1f09bcc2625161404e90d5f93d33e01c0e90230c92a5a7a>\n2. Swipe left on the onboarding screen. <b3d177434c01973aefd635e9b2c077d1ba46bf4e2a80da4ed89474511160b63d>\n3. Swipe left again on the onboarding screen. <e0f12adac56be76acb79d37d0e90aa329ca9de72ca3481f451a5311f141027c4>\n4. Swipe left again on the onboarding screen. <8816181fdd2f34a86b06a3bc7208d741eee74c5da62d980f09630d2cf47f6df1>\n5. Swipe left a fourth time on the onboarding screen. <b71f779a1f0963d53f1859ce1784a17f4a319592a660124b62c8f18a53cf46e8>\n6. Tap YES! on the final welcome screen. <9637973e88b508b265333dbf56463d16981017c2c09b4c69c5b9902e347d39e5>\n7. Tap Skip on the login screen. <bb009cd969fdfffc3f5842081f292334289f80d5b8fc399d1fce7ec4972173c4>\n8. Tap YES on the skip-login confirmation dialog. <a15358162dfdc9d6068f688c1a95276f63e1788b93f9311047afa58f7e695b0b>\n9. Open the navigation drawer from the Explore screen. <1d89fc61d139df7152892234c2a3f5174669a9b3b57a90c88ff95b811528ce5e>\n10. Select Explore from the navigation drawer. <2cb54b6b2c319fadcb77770ddc6f08bc1620d2ea99af5e4315a0e04d97476e34>\n11. Tap a picture in the Explore feed to open its media details. <eeb2dcc5b038a5365fc5e3968862c3ae476f8c007955b49e9585b8a8b05bc0c1>\n12. Swipe up on the media details screen. <d84994fbe18eaf7d76f1dfe454496f07db5e6a0c2213452558c14661322567ac>\n13. Swipe up again on the media details screen. <44efd4db46c1a856f86f5f10423f5a596b37a4499b0d7f8dbc4036eba4edddf7>\n14. Tap a category from the categories list. <f855240a7c5488e1a1fd483c6fec3b99757ca2940f7ceba50517a42c5e6211dc>\n15. Tap the PARENT CATEGORIES tab. <31951cb9f29b46f435d8f75ccd1b6f6cc6ead9febe61faa81dad6e547e91a68f>"
+  }
+}
+{
   "record_type": "conversation_summary",
-  "conversation_id": "135",
-  "started_at": "2026-04-13T02:39:51.639784+00:00",
-  "ended_at": "2026-04-13T02:40:27.707378+00:00",
-  "total_latency_seconds": 36.06657175000055,
+  "session_id": "local",
+  "started_at": "2026-04-22T02:14:08.244481+00:00",
+  "ended_at": "2026-04-22T02:14:42.297060+00:00",
+  "total_wall_clock_seconds": 34.052579,
+  "total_turn_processing_seconds": 34.052579,
   "total_conversation_turns": 1,
   "token_consumption": {
-    "input_tokens": 42732,
-    "output_tokens": 2694,
-    "total_tokens": 45426,
+    "input_tokens": 42749,
+    "output_tokens": 2519,
+    "total_tokens": 45268,
     "llm_calls": 4,
     "llm_calls_with_usage": 4,
     "llm_calls_missing_usage": 0

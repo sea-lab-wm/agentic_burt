@@ -21,26 +21,38 @@ class EvaluatorTests(unittest.TestCase):
         return log_path
 
     @staticmethod
-    def _generate_report_record() -> dict:
+    def _final_report_record() -> dict:
         return {
-            "turn": 1,
+            "record_type": "final_report",
+            "session_id": "10",
+            "final_report": {
+                "title": "Bug title",
+                "observed_behavior": "Observed behavior",
+                "expected_behavior": "Expected behavior",
+                "steps_to_reproduce": "1. Do thing",
+            },
+        }
+
+    @staticmethod
+    def _turn_with_generate_report_action() -> dict:
+        return {
+            "session_id": "10",
+            "turn": 2,
+            "started_at": "2026-04-07T00:00:01+00:00",
+            "ended_at": "2026-04-07T00:00:02+00:00",
             "actions": [
+                {
+                    "entity": "user",
+                    "action_name": "user_description",
+                    "output": {"messages": {"content": "bug description"}},
+                    "meta_data": {"latency": "0.01 s", "node_token_consumption": None},
+                },
                 {
                     "entity": "bot",
                     "action_name": "generate_report",
-                    "output": {
-                        "full_report": {
-                            "title": "Bug title",
-                            "observed_behavior": "Observed behavior",
-                            "expected_behavior": "Expected behavior",
-                            "steps_to_reproduce": "1. Do thing",
-                        },
-                        "extracted_information_elements": {
-                            "buggy_behavior": "Observed behavior"
-                        },
-                    },
-                    "meta_data": {"latency": "0.1 s", "node_token_consumption": None},
-                }
+                    "output": {"full_report": {"title": "Action Bug title"}},
+                    "meta_data": {"latency": "0.5 s", "node_token_consumption": None},
+                },
             ],
         }
 
@@ -48,10 +60,11 @@ class EvaluatorTests(unittest.TestCase):
     def _summary_record(**overrides) -> dict:
         summary = {
             "record_type": "conversation_summary",
-            "conversation_id": "10",
+            "session_id": "10",
             "started_at": "2026-04-07T00:00:00+00:00",
             "ended_at": "2026-04-07T00:00:05+00:00",
-            "total_latency_seconds": 5.0,
+            "total_wall_clock_seconds": 5.0,
+            "total_turn_processing_seconds": 3.0,
             "total_conversation_turns": 2,
             "token_consumption": {
                 "input_tokens": 10,
@@ -75,7 +88,7 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_build_log_context_extracts_summary_metrics(self):
         log_path = self._write_log(
-            [self._generate_report_record(), self._summary_record()]
+            [self._final_report_record(), self._summary_record()]
         )
 
         context = build_log_context(log_path, self._ground_truth_rows())
@@ -83,18 +96,24 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["total_input_tokens_consumed"], 10)
         self.assertEqual(context["total_output_tokens_consumed"], 4)
         self.assertEqual(context["total_tokens_consumed"], 14)
-        self.assertEqual(context["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(context["started_at"], "2026-04-07T00:00:00+00:00")
+        self.assertEqual(context["ended_at"], "2026-04-07T00:00:05+00:00")
+        self.assertEqual(context["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(context["total_turn_processing_seconds"], 3.0)
         self.assertEqual(context["total_conversation_turns"], 2)
 
     def test_build_log_context_defaults_summary_metrics_to_null_when_missing(self):
-        log_path = self._write_log([self._generate_report_record()])
+        log_path = self._write_log([self._final_report_record()])
 
         context = build_log_context(log_path, self._ground_truth_rows())
 
         self.assertIsNone(context["total_input_tokens_consumed"])
         self.assertIsNone(context["total_output_tokens_consumed"])
         self.assertIsNone(context["total_tokens_consumed"])
-        self.assertIsNone(context["total_time_seconds_of_conversation"])
+        self.assertIsNone(context["started_at"])
+        self.assertIsNone(context["ended_at"])
+        self.assertIsNone(context["total_wall_clock_seconds"])
+        self.assertIsNone(context["total_turn_processing_seconds"])
         self.assertIsNone(context["total_conversation_turns"])
         self.assertEqual(context["parse_status"], "ok")
 
@@ -103,19 +122,30 @@ class EvaluatorTests(unittest.TestCase):
             total_conversation_turns=None,
             token_consumption={"input_tokens": 7},
         )
-        log_path = self._write_log([self._generate_report_record(), partial_summary])
+        log_path = self._write_log([self._final_report_record(), partial_summary])
 
         context = build_log_context(log_path, self._ground_truth_rows())
 
         self.assertEqual(context["total_input_tokens_consumed"], 7)
         self.assertIsNone(context["total_output_tokens_consumed"])
         self.assertIsNone(context["total_tokens_consumed"])
-        self.assertEqual(context["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(context["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(context["total_turn_processing_seconds"], 3.0)
         self.assertIsNone(context["total_conversation_turns"])
+
+    def test_build_log_context_falls_back_to_generate_report_action(self):
+        log_path = self._write_log(
+            [self._turn_with_generate_report_action(), self._summary_record()]
+        )
+
+        context = build_log_context(log_path, self._ground_truth_rows())
+
+        self.assertEqual(context["parse_status"], "ok")
+        self.assertEqual(context["final_report"]["title"], "Action Bug title")
 
     def test_evaluate_log_includes_summary_metrics(self):
         log_path = self._write_log(
-            [self._generate_report_record(), self._summary_record()]
+            [self._final_report_record(), self._summary_record()]
         )
         model = object()
 
@@ -138,7 +168,10 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(result["total_input_tokens_consumed"], 10)
         self.assertEqual(result["total_output_tokens_consumed"], 4)
         self.assertEqual(result["total_tokens_consumed"], 14)
-        self.assertEqual(result["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(result["started_at"], "2026-04-07T00:00:00+00:00")
+        self.assertEqual(result["ended_at"], "2026-04-07T00:00:05+00:00")
+        self.assertEqual(result["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(result["total_turn_processing_seconds"], 3.0)
         self.assertEqual(result["total_conversation_turns"], 2)
 
     def test_evaluate_log_parse_error_keeps_summary_metrics_independent(self):
@@ -148,11 +181,14 @@ class EvaluatorTests(unittest.TestCase):
         result = evaluate_log(log_path, model, self._ground_truth_rows())
 
         self.assertEqual(result["status"], "parse_error")
-        self.assertEqual(result["parse_status"], "missing_generate_report")
+        self.assertEqual(result["parse_status"], "missing_full_report")
         self.assertEqual(result["total_input_tokens_consumed"], 10)
         self.assertEqual(result["total_output_tokens_consumed"], 4)
         self.assertEqual(result["total_tokens_consumed"], 14)
-        self.assertEqual(result["total_time_seconds_of_conversation"], 5.0)
+        self.assertEqual(result["started_at"], "2026-04-07T00:00:00+00:00")
+        self.assertEqual(result["ended_at"], "2026-04-07T00:00:05+00:00")
+        self.assertEqual(result["total_wall_clock_seconds"], 5.0)
+        self.assertEqual(result["total_turn_processing_seconds"], 3.0)
         self.assertEqual(result["total_conversation_turns"], 2)
 
 

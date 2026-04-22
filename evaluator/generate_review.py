@@ -212,7 +212,8 @@ def _populate_summary_sheet(
         "info_missing_count",
         "info_incorrect_count",
         "average_total_tokens_consumed_per_conv",
-        "average_conversation_time_in_seconds",
+        "average_wall_clock_seconds_per_conv",
+        "average_turn_processing_seconds_per_conv",
         "average_conversation_turns",
     ]
     sheet.append(headers)
@@ -233,16 +234,21 @@ def _populate_summary_sheet(
         "L": 20,
         "M": 34,
         "N": 32,
-        "O": 26,
+        "O": 34,
+        "P": 26,
     }.items():
         sheet.column_dimensions[column].width = width
 
     token_values: list[float] = []
-    time_values: list[float] = []
+    wall_clock_values: list[float] = []
+    turn_processing_values: list[float] = []
     turns_values: list[float] = []
     for result in evaluation_results:
         _append_numeric_metric(token_values, result.get("total_tokens_consumed"))
-        _append_numeric_metric(time_values, result.get("total_time_seconds_of_conversation"))
+        _append_numeric_metric(wall_clock_values, result.get("total_wall_clock_seconds"))
+        _append_numeric_metric(
+            turn_processing_values, result.get("total_turn_processing_seconds")
+        )
         _append_numeric_metric(turns_values, result.get("total_conversation_turns"))
 
     row_number = 2
@@ -260,7 +266,8 @@ def _populate_summary_sheet(
         _build_info_label_count_formula("Missing"),
         _build_info_label_count_formula("Incorrect"),
         _average_or_none(token_values),
-        _average_or_none(time_values),
+        _average_or_none(wall_clock_values),
+        _average_or_none(turn_processing_values),
         _average_or_none(turns_values),
     ]
     sheet.append(row_values)
@@ -316,11 +323,11 @@ def _lookup_description_text(gt_row: dict[str, str] | None, description_level: s
 
 def _build_full_bug_report_text(result: dict[str, Any]) -> str:
     """Compose a display-friendly bug-report text block for workbook cells."""
-    full_report = result.get("full_report") or {}
+    final_report = result.get("final_report") or {}
     parts = [
-        ("Title", full_report.get("title")),
-        ("Observed Behavior", full_report.get("observed_behavior")),
-        ("Expected Behavior", full_report.get("expected_behavior")),
+        ("Title", final_report.get("title")),
+        ("Observed Behavior", final_report.get("observed_behavior")),
+        ("Expected Behavior", final_report.get("expected_behavior")),
     ]
     return "\n\n".join(f"{label}: {value}" for label, value in parts if value)
 

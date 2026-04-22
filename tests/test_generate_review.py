@@ -47,7 +47,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
         agent_version: str,
         description_level: str,
         total_tokens_consumed=None,
-        total_time_seconds_of_conversation=None,
+        total_wall_clock_seconds=None,
+        total_turn_processing_seconds=None,
         total_conversation_turns=None,
         s2r_judge=None,
         info_elements_judge=None,
@@ -58,7 +59,7 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
             "description_level": description_level,
             "agent_version": agent_version,
             "app_name": f"Test App {bug_id}",
-            "full_report": {
+            "final_report": {
                 "title": f"Bug {bug_id}",
                 "observed_behavior": "Observed",
                 "expected_behavior": "Expected",
@@ -98,7 +99,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
                 },
             ],
             "total_tokens_consumed": total_tokens_consumed,
-            "total_time_seconds_of_conversation": total_time_seconds_of_conversation,
+            "total_wall_clock_seconds": total_wall_clock_seconds,
+            "total_turn_processing_seconds": total_turn_processing_seconds,
             "total_conversation_turns": total_conversation_turns,
         }
 
@@ -112,7 +114,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
                 agent_version="VTest",
                 description_level="HC_LP",
                 total_tokens_consumed=100,
-                total_time_seconds_of_conversation=12.5,
+                total_wall_clock_seconds=12.5,
+                total_turn_processing_seconds=8.0,
                 total_conversation_turns=3,
             ),
         )
@@ -139,7 +142,7 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
         self.assertEqual(s2r_sheet["N2"].value, '=IFERROR(2*(L2*M2)/(L2+M2),"")')
 
         summary_sheet = workbook["Summary"]
-        headers = [summary_sheet.cell(row=1, column=column).value for column in range(1, 16)]
+        headers = [summary_sheet.cell(row=1, column=column).value for column in range(1, 17)]
         self.assertEqual(
             headers,
             [
@@ -156,7 +159,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
                 "info_missing_count",
                 "info_incorrect_count",
                 "average_total_tokens_consumed_per_conv",
-                "average_conversation_time_in_seconds",
+                "average_wall_clock_seconds_per_conv",
+                "average_turn_processing_seconds_per_conv",
                 "average_conversation_turns",
             ],
         )
@@ -191,7 +195,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
         )
         self.assertEqual(summary_sheet["M2"].value, 100.0)
         self.assertEqual(summary_sheet["N2"].value, 12.5)
-        self.assertEqual(summary_sheet["O2"].value, 3.0)
+        self.assertEqual(summary_sheet["O2"].value, 8.0)
+        self.assertEqual(summary_sheet["P2"].value, 3.0)
 
     def test_rebuild_manual_review_workbook_uses_single_summary_row_and_ignores_null_json_metrics(self):
         version_dir = self.results_root / "VTest"
@@ -203,7 +208,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
                 agent_version="AV1",
                 description_level="HC_LP",
                 total_tokens_consumed=100,
-                total_time_seconds_of_conversation=12.0,
+                total_wall_clock_seconds=12.0,
+                total_turn_processing_seconds=7.0,
                 total_conversation_turns=2,
             ),
         )
@@ -215,7 +221,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
                 agent_version="AV1",
                 description_level="HC_HP",
                 total_tokens_consumed=None,
-                total_time_seconds_of_conversation=18.0,
+                total_wall_clock_seconds=18.0,
+                total_turn_processing_seconds=9.0,
                 total_conversation_turns=None,
                 s2r_judge=[
                     {
@@ -240,7 +247,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
                 agent_version="BV2",
                 description_level="MC_MP",
                 total_tokens_consumed=None,
-                total_time_seconds_of_conversation=None,
+                total_wall_clock_seconds=None,
+                total_turn_processing_seconds=None,
                 total_conversation_turns=None,
             ),
         )
@@ -264,7 +272,8 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
         )
         self.assertEqual(summary_sheet["M2"].value, 100.0)
         self.assertEqual(summary_sheet["N2"].value, 15.0)
-        self.assertEqual(summary_sheet["O2"].value, 2.0)
+        self.assertEqual(summary_sheet["O2"].value, 8.0)
+        self.assertEqual(summary_sheet["P2"].value, 2.0)
 
         s2r_sheet = workbook["S2R Review"]
         self.assertEqual(s2r_sheet["O2"].value, 2)

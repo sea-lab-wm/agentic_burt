@@ -4,7 +4,7 @@ This repository contains the BURT++ bug-reporting agent, its observability loggi
 
 The current workflow is:
 
-1. Run the agent for one bug/description pair or for a full or diminished development set.
+1. Run the agent through the containerized session API or through the local CLI workflow.
 2. Evaluate the resulting logs with the LLM-as-judge pipeline.
 3. Manually validate the judge outputs using the generated review workbook.
 
@@ -20,10 +20,56 @@ The active defaults live in [config.py](config.py). Below you can see what each 
     - where the evaluator writes results: `Results/<agent_version>/`
 3. `DESCRIPTION_CSV_PATH = ...`
     - the path of dev set gt and bug descriptions
-4. `DATABASE_URL = ...`
-    - the database access url
 
-## Setup
+## Run The Containerized Deployment
+
+Use Docker Compose to start the API and Redis together:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- the FastAPI service on `http://localhost:8000`
+- the Redis service used for session storage and LangGraph checkpointing
+
+Before starting the containers, make sure these inputs exist:
+
+- a root `.env` file with the OpenAI credentials required by `langchain-openai`
+- the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
+- the GUI graph context directory at [gui_graph_context](gui_graph_context)
+
+Useful API endpoints:
+
+- `GET /healthz`
+- `POST /sessions`
+- `GET /sessions/{session_id}`
+- `POST /sessions/{session_id}/messages`
+
+Example session flow:
+
+```bash
+curl http://localhost:8000/healthz
+
+curl -X POST http://localhost:8000/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"bug_id": 10, "description_level": "LC_LP"}'
+
+curl http://localhost:8000/sessions/<session_id>
+
+curl -X POST http://localhost:8000/sessions/<session_id>/messages \
+  -H "Content-Type: application/json" \
+  -d '{"user_description": "The app crashed after I tapped save."}'
+```
+
+Stop the deployment with:
+
+```bash
+docker compose down
+```
+
+## Setup For Local CLI Work
 
 Install dependencies:
 
@@ -38,9 +84,9 @@ Create a `.env` file in root with the OpenAI credentials required by `langchain-
 Before running the agent, make sure these inputs exist:
 
 - the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
-- the SQLite app database at `database/apps.db`
+- the GUI graph context directory at [gui_graph_context](gui_graph_context)
 
-## Run The Agent
+## Run The Agent Locally
 
 Use [burt.py](burt.py) for a single interactive run:
 
@@ -52,9 +98,9 @@ Notes:
 
 - `description-level` must use the format `LC_LP`, `MC_MP`, `HC_HP`, etc.
 - BURT++ pulls the initial user description from the matching `<description level> Desc` column in the dev CSV.
-- BURT++ loads the app graph and screen descriptions from the database for the requested `bug_id`.
+- BURT++ loads the app graph and screen descriptions from `gui_graph_context/bug<id>/context.json`.
 - If the agent needs clarification, it will interrupt in the terminal and ask follow-up questions.
-- When the run completes, BURT++ prints the final bug report and writes an observability log.
+- When the run completes, BURT++ prints the final bug report and writes an observability log through the default local file sink.
 
 ## Run The Full Experiment
 
@@ -80,18 +126,24 @@ Behavior:
 
 BURT++ writes one observability log per run. These logs are the input to the evaluator.
 
-Log location:
+Local CLI log location:
 
 ```text
-logs/<PROMPT_VERSION>/bug<bug_id>_<description_level>.log
+logs/<PROMPT_VERSION>/session_local_bug<bug_id>_<description_level>.log
 ```
+
+Current logging behavior:
+
+- `TurnLogger` builds turn records in memory and hands persistence off to an `ObservabilitySink`.
+- The default sink is `LocalFileSink`, which appends back-to-back JSON records to the local log file.
+- At the end of the run, the sink reconstructs conversation totals from the persisted turn records and appends terminal records.
 
 What each log includes:
 
 - one JSON record per conversation turn
 - within each turn, an `actions` list covering the user description and each logged agent step
 - for each action: the acting entity, action name, output payload, latency, and any available token-usage summary
-- the final `generate_report` action output, including the generated bug report used by the evaluator
+- a terminal `final_report` JSON record appended by the sink as a compatibility snapshot of the generated report. NOTE: this will eventually represent the final report agreed upon by the user and BURT++.
 - a final `conversation_summary` JSON record with run-level totals such as total latency, total turns, and aggregate token consumption
 
 Logged action names currently include:
@@ -119,8 +171,8 @@ Evaluate specific log files:
 
 ```bash
 python -m evaluator.runner \
-  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug10_LC_LP.log \
-  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/bug135_MC_HP.log
+  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/session_local_bug10_LC_LP.log \
+  logs/bugscribe_mutli-candidate_transitions_and_screen_descriptions/session_local_bug135_MC_HP.log
 ```
 
 Override the judge model:
@@ -133,7 +185,7 @@ For each log, the evaluator:
 
 1. parses the observability records
 2. extracts `bug_id`, `description_level`, and `agent_version` from the log path
-3. finds the `generate_report` action
+3. finds the terminal `final_report` record or falls back to the `generate_report` action for legacy log files
 4. reads the final generated bug report
 5. joins the matching ground-truth row from the dev CSV
 6. recomputes information elements from the generated report
@@ -194,7 +246,7 @@ Single run:
 
 ```bash
 python burt.py --bug-id [bug_id] --description-level [desc_level]
-python -m evaluator.runner logs/[agent_version_of_previous_run]/bug[bug_id]_[desc_level].log
+python -m evaluator.runner logs/[agent_version_of_previous_run]/session_local_bug[bug_id]_[desc_level].log
 ```
 
 Batch run:
@@ -228,9 +280,10 @@ How prompt versions are structured:
 
 How the agent uses them:
 
-- [graph_utils.py](graph_utils.py) loads prompt templates from `prompt_versioning.json`
+- [agent_utils.py](agent_utils.py) loads prompt templates from `prompt_versioning.json`
 - the active prompt version is selected by `PROMPT_VERSION` in [config.py](config.py)
 - that same `PROMPT_VERSION` is also used in log output paths and evaluator result grouping
+- the runtime terminal node is still named `generate_report`; prompt-version updates for report synthesis should update the `generate_report` prompt key
 
 To add a new prompt version:
 
@@ -241,65 +294,21 @@ To add a new prompt version:
 
 If you prefer not to edit the JSON file by hand, [prompt_versioning/prompt_versioning_json.py](prompt_versioning/prompt_versioning_json.py) includes `upsert_prompts(...)` for programmatically adding or updating prompt entries.
 
-## Database Management
+## GUI Context Data
 
-The runtime data layer uses SQLite with SQLAlchemy models in [database/models.py](database/models.py) and Alembic migrations in [alembic/versions](alembic/versions).
+The runtime now reads bug-specific application context from JSON files under [gui_graph_context](gui_graph_context).
 
-Current runtime database:
+Current runtime context shape:
 
-```text
-database/apps.db
-```
+- one directory per bug, such as `gui_graph_context/bug10/`
+- one `context.json` file per bug
+- each payload stores `application_name`, `transitions`, and `screen_names_and_descriptions`
 
-Runtime code reads that path from [config.py](config.py) via `DATABASE_URL`.
+The builder utilities for regenerating these files live under [gui_graph_context_management](gui_graph_context_management):
 
-Current schema shape:
-
-- the main runtime table is `bug`
-- each row stores `bug_id`, `application_name`, `gui_graph`, and `screen_descriptions`
-- older individual `screen` and `transition` tables exist in earlier migrations but are not part of the current model
-
-Apply migrations to bring a database up to date:
-
-```bash
-alembic upgrade head
-```
-
-Check the current migration version:
-
-```bash
-alembic current
-```
-
-See migration history:
-
-```bash
-alembic history
-```
-
-Create a new migration after changing [database/models.py](database/models.py):
-
-```bash
-alembic revision --autogenerate -m "describe schema change"
-```
-
-Then review the generated migration in [alembic/versions](alembic/versions) before applying it:
-
-```bash
-alembic upgrade head
-```
-
-Load graph data into the database:
-
-- [database/load_data.py](database/load_data.py) is the current manual loader for inserting selected bugs
-- it locates raw `graph.txt` files, filters the graph text, generates `screen_descriptions`, and inserts rows into `bug`
-- it currently depends on a local absolute graph-data directory and should be treated as a developer utility, not a portable setup script
-
-Important current caveat:
-
-- [alembic.ini](alembic.ini) currently sets `sqlalchemy.url = sqlite:///database/app.db`
-- [config.py](config.py) currently sets `DATABASE_URL = "sqlite:///database/apps.db"`
-- before running Alembic, make sure those point to the same SQLite file or Alembic may migrate a different database than the runtime uses
+- [gui_graph_context_management/build_context.py](gui_graph_context_management/build_context.py)
+- [gui_graph_context_management/generate_screen_descriptions.py](gui_graph_context_management/generate_screen_descriptions.py)
+- [gui_graph_context_management/graph_data_parser.py](gui_graph_context_management/graph_data_parser.py)
 
 ## Testing
 
@@ -311,7 +320,7 @@ Current test modules include:
 
 - [tests/test_evaluator.py](tests/test_evaluator.py)
 - [tests/test_generate_review.py](tests/test_generate_review.py)
-- [tests/test_graph_utils.py](tests/test_graph_utils.py)
+- [tests/test_agent_utils.py](tests/test_agent_utils.py)
 - [tests/test_observability.py](tests/test_observability.py)
 - [tests/test_run_all_burt.py](tests/test_run_all_burt.py)
 - [tests/test_screen_descriptions.py](tests/test_screen_descriptions.py)

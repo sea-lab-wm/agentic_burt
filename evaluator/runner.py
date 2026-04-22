@@ -78,8 +78,8 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         "description_level": context["description_level"],
         "agent_version": context["agent_version"],
         "app_name": context.get("app_name"),
-        "title": (context.get("full_report") or {}).get("title"),
-        "full_report": context.get("full_report"),
+        "title": (context.get("final_report") or {}).get("title"),
+        "final_report": context.get("final_report"),
         "ground_truth": context.get("ground_truth"),
         "recomputed_info_elements": None,
         "info_elements_judge": None,
@@ -93,9 +93,10 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         "total_input_tokens_consumed": context.get("total_input_tokens_consumed"),
         "total_output_tokens_consumed": context.get("total_output_tokens_consumed"),
         "total_tokens_consumed": context.get("total_tokens_consumed"),
-        "total_time_seconds_of_conversation": context.get(
-            "total_time_seconds_of_conversation"
-        ),
+        "started_at": context.get("started_at"),
+        "ended_at": context.get("ended_at"),
+        "total_wall_clock_seconds": context.get("total_wall_clock_seconds"),
+        "total_turn_processing_seconds": context.get("total_turn_processing_seconds"),
         "total_conversation_turns": context.get("total_conversation_turns"),
     }
 
@@ -105,7 +106,7 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         result["status"] = "parse_error"
         return result
 
-    full_report = context["full_report"] or {}
+    final_report = context["final_report"] or {}
     ground_truth = context.get("ground_truth") or {}
 
     info_judge_result: InfoElementsJudgeResult | None = None
@@ -115,8 +116,8 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         # Recompute the information elements from the final report so judging is
         # based on a fresh extraction pass, not only the values captured in the log.
         result["recomputed_info_elements"] = extract_information_elements_from_OB_EB(
-            observed_behavior=full_report.get("observed_behavior", ""),
-            expected_behavior=full_report.get("expected_behavior", ""),
+            observed_behavior=final_report.get("observed_behavior", ""),
+            expected_behavior=final_report.get("expected_behavior", ""),
             model=model,
         )
     except Exception as exc:
@@ -140,10 +141,10 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
             "reason": "Missing recomputed info elements or info_elements_gt.",
         }
 
-    if full_report.get("steps_to_reproduce") and ground_truth.get("S2R_ground_truth"):
+    if final_report.get("steps_to_reproduce") and ground_truth.get("S2R_ground_truth"):
         try:
             s2r_judge_result = judge_s2r(
-                generated_s2rs=full_report["steps_to_reproduce"],
+                generated_s2rs=final_report["steps_to_reproduce"],
                 ground_truth_s2r=ground_truth["S2R_ground_truth"],
                 model=model,
             )

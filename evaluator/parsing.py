@@ -94,6 +94,14 @@ def extract_log_metadata(log_path: Path) -> dict[str, Any]:
     }
 
 
+def find_final_report_record(records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Find the dedicated final_report record, if present."""
+    for record in reversed(records):
+        if record.get("record_type") == "final_report":
+            return record
+    return None
+
+
 def find_generate_report_action(records: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Find the final action that contains the generated bug report payload."""
     for record in records:
@@ -124,6 +132,7 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
     """
     metadata = extract_log_metadata(log_path)
     records = parse_json_records(log_path)
+    final_report_record = find_final_report_record(records)
     generate_report_action = find_generate_report_action(records)
     summary_record = find_conversation_summary_record(records)
     token_consumption = (
@@ -138,15 +147,22 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         **metadata,
         "parse_status": "ok",
         "parse_error": None,
-        "full_report": None,
+        "final_report": None,
         "logged_extracted_information_elements": None,
         "ground_truth": None,
         "app_name": None,
         "total_input_tokens_consumed": token_consumption.get("input_tokens"),
         "total_output_tokens_consumed": token_consumption.get("output_tokens"),
         "total_tokens_consumed": token_consumption.get("total_tokens"),
-        "total_time_seconds_of_conversation": (
-            summary_record.get("total_latency_seconds")
+        "started_at": summary_record.get("started_at") if isinstance(summary_record, dict) else None,
+        "ended_at": summary_record.get("ended_at") if isinstance(summary_record, dict) else None,
+        "total_wall_clock_seconds": (
+            summary_record.get("total_wall_clock_seconds")
+            if isinstance(summary_record, dict)
+            else None
+        ),
+        "total_turn_processing_seconds": (
+            summary_record.get("total_turn_processing_seconds")
             if isinstance(summary_record, dict)
             else None
         ),
@@ -157,22 +173,26 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         ),
     }
 
-    if generate_report_action is None:
-        context["parse_status"] = "missing_generate_report"
-        context["parse_error"] = "No generate_report action found in log."
-        return context
-
-    output = generate_report_action.get("output") or {}
-    full_report = output.get("full_report")
-    if not isinstance(full_report, dict):
+    #NOTE: There is a fallback in place for legacy log formats that do not have the top leve final report. Those logs used a full report json object within an output record.
+    if isinstance(final_report_record, dict):
+        final_report = final_report_record.get("final_report")
+    elif generate_report_action is not None:
+        output = generate_report_action.get("output") or {}
+        final_report = output.get("full_report")
+        context["logged_extracted_information_elements"] = output.get(
+            "extracted_information_elements"
+        )
+    else:
         context["parse_status"] = "missing_full_report"
-        context["parse_error"] = "generate_report action did not include a valid full_report object."
+        context["parse_error"] = "No final_report record found in log."
         return context
 
-    context["full_report"] = full_report
-    # Keep the logged extraction in the parser context for debugging and
-    # future comparisons even though it is not written into the evaluation JSON.
-    context["logged_extracted_information_elements"] = output.get("extracted_information_elements")
+    if not isinstance(final_report, dict):
+        context["parse_status"] = "missing_full_report"
+        context["parse_error"] = "final_report record did not include a valid final_report object."
+        return context
+
+    context["final_report"] = final_report
 
     bug_id = context.get("bug_id")
     if bug_id is not None:

@@ -3,10 +3,16 @@ from typing import Any
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
 
-from graph_data_parser import (
-    get_screens_with_information_from_text,
-    replace_simplified_screen_ids_with_original_ids,
-)
+try:
+    from .graph_data_parser import (
+        get_screens_with_information_from_text,
+        replace_simplified_screen_ids_with_original_ids,
+    )
+except ImportError:  # pragma: no cover - support direct script execution
+    from graph_data_parser import (
+        get_screens_with_information_from_text,
+        replace_simplified_screen_ids_with_original_ids,
+    )
 
 
 SCREEN_DESCRIPTION_PROMPT_TEMPLATE = """

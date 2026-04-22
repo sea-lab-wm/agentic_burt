@@ -1,36 +1,43 @@
 # Architecture
 
+This document is currently scoped to the local quick-development runtime. It does not yet describe the containerized deployment path.
+
 ## 1. System Design
 
 ```mermaid
 flowchart LR
     U[User] --> A[Agent runtime in burt.py]
     A -->|load initial description| CSV[(dev CSV)]
-    A -->|fetch graph + app metadata by bug_id| DB[(SQLite DB)]
-    DB -->|gui_graph + app_name + screen_descriptions| A
+    A -->|fetch graph + app metadata by bug_id| GC[gui_graph_context/bug<id>/context.json]
+    GC -->|transitions + app_name + screen_descriptions| A
     A -->|load active prompt templates| PV[(prompt_versioning.json)]
     L2 -->|write observability log| LOGS[(logs/<PROMPT_VERSION>/...)]
 
     subgraph OBS[Observability]
       L1[log_action decorator]
-      L2[ConversationLogger]
+      L2[TurnLogger]
       L3[ObservabilityTokenCallback]
+      L4[ObservabilitySink / LocalFileSink]
       L1 --> L2
       L3 --> L2
+      L2 --> L4
     end
 
     A -->|node outputs + latency| L1
     A -->|LLM token usage| L3
+    A -->|flush completed turns + finalize session| L4
 
     LOGS --> E[Evaluator]
     E --> R[(Results/<agent_version>/...)]
 ```
 
 ### Deeper on Logging
-- Per-action logging is handled by `@log_action` in `observability.py`, which wraps instrumented runtime functions, measures latency, and records their outputs.
+- Per-action logging is handled by `@log_action` in `observability/logging_runtime.py`, which wraps instrumented runtime functions, measures latency, and records their outputs.
 - `ObservabilityTokenCallback` attaches to the active `ChatOpenAI` model and captures provider token usage for both action-level and conversation-level summaries.
-- `ConversationLogger.start_conversation()` and `ConversationLogger.finish_conversation()` record conversation-wide timing and build the final `conversation_summary` record.
-- Logs are written as back-to-back JSON records: one record per conversation turn, followed by a final `conversation_summary` record.
+- `TurnLogger` owns the in-memory turn lifecycle, while `ObservabilitySink` owns persistence.
+- The current local backend is `LocalFileSink`, which appends back-to-back JSON records to `logs/<PROMPT_VERSION>/...`.
+- CLI runs flush each completed turn to disk, then call `sink.finalize_session(...)` after the graph finishes.
+- Finalization reloads the persisted turn records, aggregates token/timing totals, and appends `final_report` plus `conversation_summary` terminal records.
 - Each turn contains an `actions` list with entries such as `user_description`, `information_element_extraction`, `clarity_check`, `extract_and_update`, `follow_up`, and `generate_report`.
 - Log paths are versioned by `config.PROMPT_VERSION`, so runtime logs and evaluation outputs can be grouped by active prompt version.
 
@@ -40,7 +47,7 @@ flowchart LR
 flowchart TD
     A[Start program] --> B[Load env + parse bug_id and description_level]
     B --> C[Load initial description from dev CSV]
-    C --> D[Fetch gui_graph, app_name, and screen_descriptions from SQLite]
+    C --> D[Fetch gui_graph, app_name, and screen_descriptions from gui_graph_context]
     D --> E[Initialize logger, ChatOpenAI callback, and LangGraph workflow]
     E --> F[Log initial user description into BugAgentState]
     F --> G[information_element_extraction]
@@ -66,23 +73,26 @@ flowchart TD
 - `clarity_check` can request one clarification round before the graph continues to mapping.
 - `map_to_graph` grounds extracted natural-language information elements into the structured `BugInfo` mapping using the application graph and screen descriptions.
 - `evaluate_state` checks for unresolved slots. If any remain, `more_info_follow_up` generates the next user-facing question and the graph interrupts.
-- Final report generation happens after the graph loop ends. `gen_report()` refuses to run if unresolved bug-info slots still remain.
+- `generate_report` is the terminal LangGraph node and returns the final `full_report` payload.
+- The `generate_report` action entry is the canonical report-generation action record, including per-node token accounting.
+- The sink still appends a compatibility `final_report` record at session finalization so downstream consumers can read a stable terminal snapshot.
 
 ## 3. File Responsibilities
 
-- `burt.py`: Main runtime entrypoint. Loads inputs, fetches database context, builds the LangGraph workflow, manages CLI interrupts, generates the final report, and writes the observability log.
-- `graph_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
+- `burt.py`: Main local runtime entrypoint. Loads inputs, fetches GUI graph context from local JSON files, builds the LangGraph workflow, manages CLI interrupts, flushes turn records through the sink, and finalizes the observability log.
+- `agent_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
 - `prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
 - `prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.
 - `state.py`: Pydantic models for `BugAgentState`, follow-up tracking, extracted information elements, and the structured `BugInfo` slot mapping.
 - `llm_schema.py`: Structured-output schemas used by runtime LLM calls for extraction, follow-up generation, clarity decisions, mapping updates, and report generation.
-- `observability.py`: Logging models, action instrumentation, token-usage callback capture, conversation summary generation, and log-file serialization.
-- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATABASE_URL`, and the description CSV path.
-- `database/db.py`: SQLAlchemy engine/session setup wired to `config.DATABASE_URL`.
-- `database/models.py`: SQLAlchemy ORM schema. The active runtime model is the `bug` table with `bug_id`, `application_name`, `gui_graph`, and `screen_descriptions`.
-- `database/database_utils.py`: Query helpers used by the runtime to fetch graph data and app metadata by `bug_id`.
-- `database/load_data.py`: Manual utility for loading selected graph files into the `bug` table and generating `screen_descriptions`.
-- `database/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.
+- `observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
+- `observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
+- `observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
+- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DESCRIPTION_CSV_PATH`, and `REDIS_URL`.
+- `gui_graph_context_management/loader.py`: Runtime loader for reading `gui_graph_context/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
+- `gui_graph_context_management/build_context.py`: Utility for generating the `context.json` payloads from raw graph data.
+- `gui_graph_context_management/generate_screen_descriptions.py`: LLM-assisted generator for screen description text used in each context payload.
+- `gui_graph_context_management/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.
 - `run_all_burt.py`: Batch runner that discovers runnable `(bug_id, description_level)` pairs from the CSV, executes `burt.py` for each one, and then runs the evaluator on the resulting log directory.
 - `evaluator/runner.py`: Evaluation entrypoint. Reads logs, derives evaluation context, runs the judge passes, writes `*.evaluation.json`, and rebuilds the manual-review workbook.
 - `evaluator/parsing.py`: Parsing helpers for discovering log files, extracting metadata from log paths, decoding JSON records, and joining ground-truth CSV rows.
@@ -94,8 +104,6 @@ flowchart TD
 
 ## 4. Core Dependencies
 
-- SQLAlchemy (`2.0.46`): ORM and DB toolkit for the SQLite-backed bug metadata store and Alembic-backed schema management. Docs: <https://docs.sqlalchemy.org/>
-- Alembic (`1.18.3`): Schema migration tool for the SQLite database used by the runtime loader and app-graph store. Docs: <https://alembic.sqlalchemy.org/>
 - LangChain Core (`1.2.7`) + LangChain OpenAI (`1.1.7`): Prompt/message abstractions, structured output helpers, and OpenAI chat-model integration. Docs: <https://python.langchain.com/docs/introduction/>
 - LangGraph (`1.0.6`): Graph-based runtime orchestration, interrupts, resume commands, and checkpointed state for the agent control flow. Docs: <https://langchain-ai.github.io/langgraph/>
 - Pydantic (`2.12.5`): Typed data models and validation for agent state, structured outputs, evaluator schemas, and observability payloads. Docs: <https://docs.pydantic.dev/latest/>

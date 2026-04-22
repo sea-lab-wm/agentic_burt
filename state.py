@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, List, Literal, Optional
+from typing import Annotated, Any, List, Literal, Optional
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
@@ -123,3 +123,4 @@ class BugAgentState(BaseModel):
     clarification_window_start_idx: int = 0
     unknown_and_low_confidence_info: set[str] = Field(default_factory=set)
     active_follow_up: Optional[ActiveFollowUp] = None
+    full_report: Optional[dict[str, Any]] = None
