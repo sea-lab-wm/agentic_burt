@@ -3,6 +3,10 @@ export type CreateSessionRequest = {
   user_description: string;
 };
 
+export type ActiveBugIdsResponse = {
+  bug_ids: number[];
+};
+
 export type ResumeConversationRequest = {
   user_description: string;
 };

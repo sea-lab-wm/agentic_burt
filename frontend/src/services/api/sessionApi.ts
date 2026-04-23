@@ -1,5 +1,6 @@
 import { API_BASE_PATH } from "../../config/runtime";
 import type {
+  ActiveBugIdsResponse,
   ConversationTurnResponse,
   CreateSessionRequest,
   ResumeConversationRequest,
@@ -39,6 +40,10 @@ export function createSession(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function fetchActiveBugIds(): Promise<ActiveBugIdsResponse> {
+  return requestJson<ActiveBugIdsResponse>(`${API_BASE_PATH}/bugs/active`);
 }
 
 export function resumeSession(

@@ -6,20 +6,32 @@ import { useChatSession } from "../features/chat/hooks/useChatSession";
 export function App() {
   const {
     appState,
+    availableBugIds,
+    bugDiscoveryStatus,
     draft,
     setDraft,
     submitDraft,
     changeBug,
     activeConversation,
   } = useChatSession();
+  const composerDisabled =
+    bugDiscoveryStatus !== "ready" ||
+    appState.selectedBugId === null ||
+    activeConversation.status === "submitting" ||
+    activeConversation.status === "completed";
 
   return (
     <div className="app-shell">
-      <HeaderBar selectedBugId={appState.selectedBugId} onBugChange={changeBug} />
+      <HeaderBar
+        availableBugIds={availableBugIds}
+        bugDiscoveryStatus={bugDiscoveryStatus}
+        selectedBugId={appState.selectedBugId}
+        onBugChange={changeBug}
+      />
       <ChatTranscript messages={activeConversation.messages} />
       <div className="composer-shell">
         <Composer
-          disabled={activeConversation.status === "submitting" || activeConversation.status === "completed"}
+          disabled={composerDisabled}
           draft={draft}
           onDraftChange={setDraft}
           onSubmit={() => {

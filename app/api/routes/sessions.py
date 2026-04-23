@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from redis.exceptions import RedisError
 
 from app.schemas.sessions import (
+    ActiveBugIdsResponse,
     ConversationTurnResponse,
     CreateSessionRequest,
     ResumeConversationRequest,
@@ -15,6 +16,7 @@ from app.services.burt_runtime import (
     start_conversation,
 )
 from app.services.session_store import get_session, ping
+from gui_graph_context_management.loader import list_active_bug_ids
 
 sessions_router = APIRouter()
 
@@ -31,6 +33,12 @@ def healthz() -> dict[str, str | bool]:
         "status": "ok" if redis_ok else "degraded",
         "redis": redis_ok,
     }
+
+
+@sessions_router.get("/bugs/active", response_model=ActiveBugIdsResponse)
+def active_bugs() -> ActiveBugIdsResponse:
+    """List bug ids whose GUI graph contexts are loadable by the runtime."""
+    return ActiveBugIdsResponse(bug_ids=list_active_bug_ids())
 
 
 @sessions_router.post("/sessions", response_model=ConversationTurnResponse)

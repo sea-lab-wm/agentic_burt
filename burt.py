@@ -199,6 +199,8 @@ def information_element_extraction(state: BugAgentState, config: RunnableConfig)
         extraction_mode=extraction_mode,
         target_info_elements=target_info_elements,
     )
+    
+    #print(extraction)
 
     return {
         "information_element_extraction": extraction
@@ -311,12 +313,16 @@ def more_info_follow_up(state : BugAgentState, config : RunnableConfig) -> dict:
         app_name,
     )
 
-    return {
-        "active_follow_up": ActiveFollowUp(
+    active_follow_up = ActiveFollowUp(
             kind=FollowUpKind.more_info,
             question=follow_up.follow_up_question,
             target_info_elements=follow_up.clarification_target_info_elements,
         )
+    
+    #print(active_follow_up)
+
+    return {
+        "active_follow_up": active_follow_up
     }
 
 def interrupt_and_present(state : BugAgentState, config : RunnableConfig) -> dict:

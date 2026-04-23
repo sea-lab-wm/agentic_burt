@@ -1,17 +1,12 @@
-import { BUG_OPTIONS } from "../../config/bugs";
 import type { ConversationSnapshot } from "../../features/chat/types/chat";
 import { buildOpeningMessages } from "../../features/chat/types/opening";
 
 const STORAGE_KEY = "burt-chat-state";
 
 type PersistedAppState = {
-  selectedBugId: number;
+  selectedBugId: number | null;
   conversations: Record<string, ConversationSnapshot>;
 };
-
-function defaultBugId(): number {
-  return BUG_OPTIONS[0]?.value ?? 10;
-}
 
 export function createFreshConversation(bugId: number): ConversationSnapshot {
   return {
@@ -22,40 +17,33 @@ export function createFreshConversation(bugId: number): ConversationSnapshot {
 }
 
 export function buildDefaultState(): PersistedAppState {
-  const selectedBugId = defaultBugId();
   return {
-    selectedBugId,
-    conversations: {
-      [selectedBugId]: createFreshConversation(selectedBugId),
-    },
+    selectedBugId: null,
+    conversations: {},
   };
 }
 
 export function loadAppState(): PersistedAppState {
-  const fallback = buildDefaultState();
-
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return fallback;
+      return buildDefaultState();
     }
 
     const parsed = JSON.parse(raw) as Partial<PersistedAppState>;
     const selectedBugId =
-      typeof parsed.selectedBugId === "number" ? parsed.selectedBugId : fallback.selectedBugId;
-    const conversations = parsed.conversations ?? {};
-    const currentConversation =
-      conversations[String(selectedBugId)] ?? createFreshConversation(selectedBugId);
+      typeof parsed.selectedBugId === "number" || parsed.selectedBugId === null
+        ? parsed.selectedBugId
+        : null;
+    const conversations =
+      parsed.conversations && typeof parsed.conversations === "object" ? parsed.conversations : {};
 
     return {
       selectedBugId,
-      conversations: {
-        ...conversations,
-        [selectedBugId]: currentConversation,
-      },
+      conversations,
     };
   } catch {
-    return fallback;
+    return buildDefaultState();
   }
 }
 
@@ -73,6 +61,20 @@ export function resetConversationForBug(
     conversations: {
       ...state.conversations,
       [bugId]: createFreshConversation(bugId),
+    },
+  };
+}
+
+export function initializeConversationForBug(
+  state: PersistedAppState,
+  bugId: number,
+): PersistedAppState {
+  return {
+    ...state,
+    selectedBugId: bugId,
+    conversations: {
+      ...state.conversations,
+      [bugId]: state.conversations[String(bugId)] ?? createFreshConversation(bugId),
     },
   };
 }

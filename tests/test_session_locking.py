@@ -2,9 +2,28 @@ import unittest
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from fastapi.middleware.cors import CORSMiddleware
 
+import config
 from app.main import app
 from app.services import burt_runtime, session_store
+
+
+class CorsConfigTests(unittest.TestCase):
+    @patch.dict("os.environ", {}, clear=True)
+    def test_parse_cors_allowed_origins_defaults_to_local_vite_origin(self):
+        self.assertEqual(
+            config._parse_cors_allowed_origins(None),
+            ["http://localhost:5173"],
+        )
+
+    def test_parse_cors_allowed_origins_trims_csv_values(self):
+        self.assertEqual(
+            config._parse_cors_allowed_origins(
+                " http://localhost:5173, https://app.example.com  ,"
+            ),
+            ["http://localhost:5173", "https://app.example.com"],
+        )
 
 
 class SessionStoreLockTests(unittest.TestCase):
@@ -68,6 +87,11 @@ class SessionRouteTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
 
+    def test_app_installs_cors_middleware(self):
+        self.assertTrue(
+            any(middleware.cls is CORSMiddleware for middleware in app.user_middleware)
+        )
+
     @patch(
         "app.api.routes.sessions.start_conversation",
         return_value=burt_runtime.ConversationTurnResponse(
@@ -97,6 +121,50 @@ class SessionRouteTests(unittest.TestCase):
             bug_id=10,
             user_description="The app crashed after save.",
         )
+
+    @patch("app.api.routes.sessions.list_active_bug_ids", return_value=[2, 10, 135])
+    def test_active_bugs_returns_sorted_bug_ids(self, mock_list_active_bug_ids):
+        response = self.client.get("/bugs/active")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"bug_ids": [2, 10, 135]})
+        mock_list_active_bug_ids.assert_called_once_with()
+
+    def test_cors_allows_the_local_vite_origin(self):
+        response = self.client.get(
+            "/healthz",
+            headers={"Origin": "http://localhost:5173"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers.get("access-control-allow-origin"),
+            "http://localhost:5173",
+        )
+
+    def test_cors_preflight_succeeds_for_allowed_origin(self):
+        response = self.client.options(
+            "/sessions",
+            headers={
+                "Origin": "http://localhost:5173",
+                "Access-Control-Request-Method": "POST",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers.get("access-control-allow-origin"),
+            "http://localhost:5173",
+        )
+
+    def test_cors_does_not_allow_unlisted_origin(self):
+        response = self.client.get(
+            "/healthz",
+            headers={"Origin": "http://localhost:4173"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.headers.get("access-control-allow-origin"))
 
     @patch(
         "app.api.routes.sessions.resume_conversation",

@@ -25,3 +25,9 @@ class ConversationTurnResponse(BaseModel):
     status: Literal["awaiting_user", "completed"]
     question: str | None = None
     final_report: dict[str, Any] | None = None
+
+
+class ActiveBugIdsResponse(BaseModel):
+    """API response describing which bug ids are currently reportable."""
+
+    bug_ids: list[int]

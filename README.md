@@ -20,10 +20,13 @@ The active defaults live in [config.py](config.py). Below you can see what each 
     - where the evaluator writes results: `Results/<agent_version>/`
 3. `DESCRIPTION_CSV_PATH = ...`
     - the path of dev set gt and bug descriptions
+4. `CORS_ALLOWED_ORIGINS = ...`
+    - comma-separated frontend origins allowed to call the backend API
+    - defaults to `http://localhost:5173` for local Vite development
 
 ## Run The Containerized Deployment
 
-Use Docker Compose to start the API and Redis together:
+Use Docker Compose to start the backend API and Redis together:
 
 ```bash
 docker compose up --build
@@ -33,14 +36,54 @@ This starts:
 
 - the FastAPI service on `http://localhost:8000`
 - the Redis service used for session storage and LangGraph checkpointing
+- the session API consumed by the frontend, including:
+  - `GET /healthz`
+  - `GET /bugs/active`
+  - `POST /sessions`
+  - `GET /sessions/{session_id}`
+  - `POST /sessions/{session_id}/messages`
 
 Before starting the containers, make sure these inputs exist:
 
 - a root `.env` file with the OpenAI credentials required by `langchain-openai`
+- optional: `CORS_ALLOWED_ORIGINS=...` in the root `.env` if you need to override the default local frontend origin allowlist
 - the GUI graph context directory at [gui_graph_context](gui_graph_context)
+
+### Frontend + Container Backend Startup Path
+
+The current UI workflow is:
+
+1. Start the containerized backend:
+
+```bash
+docker compose up --build
+```
+
+2. In a second terminal, install frontend dependencies if needed:
+
+```bash
+cd frontend
+npm install
+```
+
+3. Start the Vite frontend:
+
+```bash
+npm run dev
+```
+
+4. Open the frontend at the local Vite URL, usually `http://localhost:5173`
+
+Notes:
+
+- The frontend talks to the containerized FastAPI backend on `http://localhost:8000`.
+- The frontend reads `VITE_API_BASE_PATH` from [frontend/.env.local](frontend/.env.local), which should point to `http://localhost:8000` for local development.
+- The backend now allows the local Vite origin through CORS by default, so the frontend calls the API directly instead of relying on a Vite proxy.
+- If you only need the backend API and not the UI, you can skip the frontend steps above.
 
 Useful API endpoints:
 
+- `GET /bugs/active`
 - `GET /healthz`
 - `POST /sessions`
 - `GET /sessions/{session_id}`

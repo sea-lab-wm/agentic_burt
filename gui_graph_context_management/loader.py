@@ -34,3 +34,34 @@ def fetch_graph_data(bug_id: int) -> tuple[str | None, str | None, str | None]:
     screen_names_and_screen_descriptions = _join_context_lines(payload.get("screen_names_and_descriptions"))
 
     return transitions, application_name, screen_names_and_screen_descriptions
+
+
+def list_active_bug_ids() -> list[int]:
+    """
+    Return bug ids whose GUI graph context is present and loadable enough for the
+    runtime to start a conversation.
+    """
+    active_bug_ids: list[int] = []
+
+    candidate_bug_ids: list[int] = []
+
+    for bug_dir in CONTEXT_ROOT.glob("bug*"):
+        if not bug_dir.is_dir():
+            continue
+
+        bug_id_text = bug_dir.name.removeprefix("bug")
+        if not bug_id_text.isdigit():
+            continue
+
+        candidate_bug_ids.append(int(bug_id_text))
+
+    for bug_id in sorted(candidate_bug_ids):
+        try:
+            transitions, app_name, _screen_descriptions = fetch_graph_data(bug_id=bug_id)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            continue
+
+        if transitions and app_name:
+            active_bug_ids.append(bug_id)
+
+    return active_bug_ids

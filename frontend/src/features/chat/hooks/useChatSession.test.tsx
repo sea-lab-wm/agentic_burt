@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { createFreshConversation, resetConversationForBug, buildDefaultState } from "../../../services/storage/chatStorage";
+import {
+  buildDefaultState,
+  createFreshConversation,
+  initializeConversationForBug,
+  resetConversationForBug,
+} from "../../../services/storage/chatStorage";
 import { getRequestMode, responseToMessages } from "./useChatSession";
 
 describe("useChatSession helpers", () => {
@@ -24,6 +29,15 @@ describe("useChatSession helpers", () => {
     expect(resetState.selectedBugId).toBe(135);
     expect(resetState.conversations["135"]?.sessionId).toBeNull();
     expect(resetState.conversations["135"]?.messages).toHaveLength(2);
+  });
+
+  it("initializes the first discovered bug with opening messages", () => {
+    const state = buildDefaultState();
+    const initializedState = initializeConversationForBug(state, 10);
+
+    expect(initializedState.selectedBugId).toBe(10);
+    expect(initializedState.conversations["10"]?.sessionId).toBeNull();
+    expect(initializedState.conversations["10"]?.messages).toHaveLength(2);
   });
 
   it("maps final report responses into a final report message", () => {

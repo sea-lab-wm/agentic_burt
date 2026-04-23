@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 
-import { createSession, resumeSession, ApiError } from "../../../services/api/sessionApi";
+import {
+  ApiError,
+  createSession,
+  fetchActiveBugIds,
+  resumeSession,
+} from "../../../services/api/sessionApi";
 import {
   buildDefaultState,
+  initializeConversationForBug,
   loadAppState,
   resetConversationForBug,
   saveAppState,
@@ -12,11 +18,19 @@ import type { ChatMessage, ConversationSnapshot } from "../types/chat";
 
 type ActiveConversationState = {
   appState: PersistedAppState;
+  availableBugIds: number[];
+  bugDiscoveryStatus: "loading" | "ready" | "error";
   draft: string;
   setDraft: (value: string) => void;
   submitDraft: () => Promise<void>;
   changeBug: (bugId: number) => void;
   activeConversation: ConversationSnapshot;
+};
+
+const EMPTY_CONVERSATION: ConversationSnapshot = {
+  sessionId: null,
+  status: "idle",
+  messages: [],
 };
 
 function makeMessageId(prefix: string): string {
@@ -73,6 +87,17 @@ export function getRequestMode(snapshot: ConversationSnapshot): "create" | "resu
   return snapshot.sessionId ? "resume" : "create";
 }
 
+function resolveSelectedBugId(
+  currentSelectedBugId: number | null,
+  availableBugIds: number[],
+): number | null {
+  if (currentSelectedBugId !== null && availableBugIds.includes(currentSelectedBugId)) {
+    return currentSelectedBugId;
+  }
+
+  return availableBugIds[0] ?? null;
+}
+
 export function useChatSession(): ActiveConversationState {
   const [appState, setAppState] = useState<PersistedAppState>(() => {
     if (typeof window === "undefined") {
@@ -81,34 +106,106 @@ export function useChatSession(): ActiveConversationState {
 
     return loadAppState();
   });
+  const [availableBugIds, setAvailableBugIds] = useState<number[]>([]);
+  const [bugDiscoveryStatus, setBugDiscoveryStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const [draft, setDraft] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadActiveBugs(): Promise<void> {
+      setBugDiscoveryStatus("loading");
+
+      try {
+        const response = await fetchActiveBugIds();
+        if (cancelled) {
+          return;
+        }
+
+        setAvailableBugIds(response.bug_ids);
+        setAppState((currentState) => {
+          const selectedBugId = resolveSelectedBugId(
+            currentState.selectedBugId,
+            response.bug_ids,
+          );
+
+          if (selectedBugId === null) {
+            return buildDefaultState();
+          }
+
+          return initializeConversationForBug(currentState, selectedBugId);
+        });
+        setBugDiscoveryStatus("ready");
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setAvailableBugIds([]);
+        setAppState(buildDefaultState());
+        setBugDiscoveryStatus("error");
+      }
+    }
+
+    void loadActiveBugs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     saveAppState(appState);
   }, [appState]);
 
   const activeConversation =
-    appState.conversations[String(appState.selectedBugId)] ??
-    resetConversationForBug(appState, appState.selectedBugId).conversations[String(appState.selectedBugId)];
+    appState.selectedBugId === null
+      ? EMPTY_CONVERSATION
+      : appState.conversations[String(appState.selectedBugId)] ??
+        initializeConversationForBug(appState, appState.selectedBugId).conversations[
+          String(appState.selectedBugId)
+        ]!;
 
   function setActiveConversation(nextConversation: ConversationSnapshot): void {
-    setAppState((currentState) => ({
-      ...currentState,
-      conversations: {
-        ...currentState.conversations,
-        [currentState.selectedBugId]: nextConversation,
-      },
-    }));
+    if (appState.selectedBugId === null) {
+      return;
+    }
+
+    setAppState((currentState) => {
+      if (currentState.selectedBugId === null) {
+        return currentState;
+      }
+
+      return {
+        ...currentState,
+        conversations: {
+          ...currentState.conversations,
+          [currentState.selectedBugId]: nextConversation,
+        },
+      };
+    });
   }
 
   function changeBug(bugId: number): void {
+    if (!availableBugIds.includes(bugId)) {
+      return;
+    }
+
     setDraft("");
     setAppState((currentState) => resetConversationForBug(currentState, bugId));
   }
 
   async function submitDraft(): Promise<void> {
     const trimmedDraft = draft.trim();
-    if (!trimmedDraft || activeConversation.status === "submitting" || activeConversation.status === "completed") {
+    if (
+      !trimmedDraft ||
+      appState.selectedBugId === null ||
+      bugDiscoveryStatus !== "ready" ||
+      activeConversation.status === "submitting" ||
+      activeConversation.status === "completed"
+    ) {
       return;
     }
 
@@ -167,6 +264,8 @@ export function useChatSession(): ActiveConversationState {
 
   return {
     appState,
+    availableBugIds,
+    bugDiscoveryStatus,
     draft,
     setDraft,
     submitDraft,

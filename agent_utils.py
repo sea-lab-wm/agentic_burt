@@ -158,7 +158,6 @@ def llm_extract(
 
     structured = model.with_structured_output(InformationElementExtraction)
     extraction = structured.invoke(formatted_messages)
-    print(f"Information Element Extraction: {extraction}\n")
     return extraction
 
 def llm_check_clarity(
