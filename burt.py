@@ -428,7 +428,7 @@ def main() -> None:
 
     #configure initial state of graph
     graph = build_burt_graph(MemorySaver())
-    config = {
+    agent_config = {
         "configurable": {
             "transitions": transitions,
             "app_name": app_name,
@@ -443,7 +443,7 @@ def main() -> None:
     )
     state = BugAgentState(messages=[initial_state_update["messages"]])
 
-    result = graph.invoke(state, config=config)
+    result = graph.invoke(state, config=agent_config)
     _flush_active_turn(runtime_context)
 
     while True:
@@ -452,7 +452,7 @@ def main() -> None:
         if "__interrupt__" not in result:
             break
 
-        snapshot = graph.get_state(config)
+        snapshot = graph.get_state(agent_config)
         print("STATE BEFORE NEXT FOLLOW UP:\n")
         pprint(snapshot.values, width=100)
         print("\n\n")
@@ -461,7 +461,7 @@ def main() -> None:
         print(question)
         user_response = input("> ")
 
-        result = graph.invoke(Command(resume=user_response), config=config)
+        result = graph.invoke(Command(resume=user_response), config=agent_config)
         _flush_active_turn(runtime_context)
 
     print("FINAL BUG REPORT:\n\n")

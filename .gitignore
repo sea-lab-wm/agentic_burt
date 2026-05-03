@@ -3,3 +3,4 @@
 __pycache__
 *.db
 gui_graph_context/
+.DS_Store
