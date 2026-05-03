@@ -1,4 +1,3 @@
-import { API_BASE_PATH } from "../../config/runtime";
 import type {
   ActiveBugIdsResponse,
   ConversationTurnResponse,
@@ -36,14 +35,14 @@ async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T
 export function createSession(
   payload: CreateSessionRequest,
 ): Promise<ConversationTurnResponse> {
-  return requestJson<ConversationTurnResponse>(`${API_BASE_PATH}/sessions`, {
+  return requestJson<ConversationTurnResponse>("/api/sessions", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
 export function fetchActiveBugIds(): Promise<ActiveBugIdsResponse> {
-  return requestJson<ActiveBugIdsResponse>(`${API_BASE_PATH}/bugs/active`);
+  return requestJson<ActiveBugIdsResponse>("/api/bugs/active");
 }
 
 export function resumeSession(
@@ -51,7 +50,7 @@ export function resumeSession(
   payload: ResumeConversationRequest,
 ): Promise<ConversationTurnResponse> {
   return requestJson<ConversationTurnResponse>(
-    `${API_BASE_PATH}/sessions/${sessionId}/messages`,
+    `/api/sessions/${sessionId}/messages`,
     {
       method: "POST",
       body: JSON.stringify(payload),

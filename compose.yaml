@@ -1,4 +1,11 @@
 services:
+  nginx:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
   api:
     build:
       context: .
@@ -7,8 +14,6 @@ services:
       - .env
     environment:
       REDIS_URL: redis://redis:6379
-    ports:
-      - "8000:8000"
     volumes:
       - .:/app
       - ./logs:/app/logs
