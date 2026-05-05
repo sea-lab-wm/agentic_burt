@@ -9,6 +9,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
+import config
+
 try:
     from .generate_screen_descriptions import generate_screen_descriptions
     from .graph_data_parser import filter_graph, get_graph_file_path
@@ -30,7 +32,7 @@ SELECTED_DATA = {
     1568: "lrkFM_File_Manager",
 }
 
-OUTPUT_ROOT = Path(__file__).resolve().parent.parent / "gui_graph_context"
+OUTPUT_ROOT = Path(__file__).resolve().parent.parent / "json_graph_data" / config.DATASET
 DEV_DATA_DIR = "/Users/sambennett/desktop/BURT++/bug_reporting_with_llm/graph_data/graphs_json_data_AstroBR"
 TEST_DATA_DIR = ""
 

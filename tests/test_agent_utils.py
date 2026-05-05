@@ -284,8 +284,8 @@ class GraphUtilsTests(unittest.TestCase):
 
         result = llm_more_info_follow_up(
             current_bug_info=InfoSlots(),
-            app_graph="open_app -> home",
-            screen_name_and_description_list="[home] - Home: landing screen",
+            transitions="open_app -> home",
+            screen_descriptions="[home] - Home: landing screen",
             formatted_unknown_and_low_confidence_info="- triggering_screen_reference",
             model=model,
             app_name="Test App",

@@ -8,7 +8,7 @@ This document is currently scoped to the local quick-development runtime. It doe
 flowchart LR
     U[User] --> A[Agent runtime in burt.py]
     A -->|load initial description| CSV[(dev CSV)]
-    A -->|fetch graph + app metadata by bug_id| GC[gui_graph_context/bug<id>/context.json]
+    A -->|fetch graph + app metadata by bug_id| GC[json_graph_data/<DATASET>/bug<id>/context.json]
     GC -->|transitions + app_name + screen_descriptions| A
     A -->|load active prompt templates| PV[(prompt_versioning.json)]
     L2 -->|write observability log| LOGS[(logs/<PROMPT_VERSION>/...)]
@@ -47,7 +47,7 @@ flowchart LR
 flowchart TD
     A[Start program] --> B[Load env + parse bug_id and description_level]
     B --> C[Load initial description from dev CSV]
-    C --> D[Fetch gui_graph, app_name, and screen_descriptions from gui_graph_context]
+    C --> D[Fetch gui_graph, app_name, and screen_descriptions from json_graph_data/<DATASET>]
     D --> E[Initialize logger, ChatOpenAI callback, and LangGraph workflow]
     E --> F[Log initial user description into BugAgentState]
     F --> G[information_element_extraction]
@@ -88,8 +88,8 @@ flowchart TD
 - `observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
 - `observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
 - `observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
-- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DESCRIPTION_CSV_PATH`, and `REDIS_URL`.
-- `gui_graph_context_management/loader.py`: Runtime loader for reading `gui_graph_context/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
+- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATASET`, `DESCRIPTION_CSV_PATH`, and `REDIS_URL`.
+- `gui_graph_context_management/loader.py`: Runtime loader for reading `json_graph_data/<DATASET>/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
 - `gui_graph_context_management/build_context.py`: Utility for generating the `context.json` payloads from raw graph data.
 - `gui_graph_context_management/generate_screen_descriptions.py`: LLM-assisted generator for screen description text used in each context payload.
 - `gui_graph_context_management/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.

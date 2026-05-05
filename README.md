@@ -47,7 +47,7 @@ Before starting the containers, make sure these inputs exist:
 
 - a root `.env` file with the OpenAI credentials required by `langchain-openai`
 - optional: `CORS_ALLOWED_ORIGINS=...` in the root `.env` if you need to override the default local frontend origin allowlist
-- the GUI graph context directory at [gui_graph_context](gui_graph_context)
+- the GUI graph context dataset directory at `json_graph_data/AstroBR`
 
 ### Frontend + Container Backend Startup Path
 
@@ -126,7 +126,7 @@ Create a `.env` file in root with the OpenAI credentials required by `langchain-
 Before running the agent, make sure these inputs exist:
 
 - the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
-- the GUI graph context directory at [gui_graph_context](gui_graph_context)
+- the GUI graph context dataset directory at `json_graph_data/AstroBR`
 
 ## Run The Agent Locally
 
@@ -140,7 +140,7 @@ Notes:
 
 - `description-level` must use the format `LC_LP`, `MC_MP`, `HC_HP`, etc.
 - BURT++ pulls the initial user description from the matching `<description level> Desc` column in the dev CSV.
-- BURT++ loads the app graph and screen descriptions from `gui_graph_context/bug<id>/context.json`.
+- BURT++ loads the app graph and screen descriptions from `json_graph_data/<DATASET>/bug<id>/context.json`.
 - If the agent needs clarification, it will interrupt in the terminal and ask follow-up questions.
 - When the run completes, BURT++ prints the final bug report and writes an observability log through the default local file sink.
 
@@ -338,11 +338,11 @@ If you prefer not to edit the JSON file by hand, [prompt_versioning/prompt_versi
 
 ## GUI Context Data
 
-The runtime now reads bug-specific application context from JSON files under [gui_graph_context](gui_graph_context).
+The runtime now reads bug-specific application context from JSON files under `json_graph_data/<DATASET>`, where `DATASET` is configured in [config.py](config.py).
 
 Current runtime context shape:
 
-- one directory per bug, such as `gui_graph_context/bug10/`
+- one directory per bug, such as `json_graph_data/AstroBR/bug10/`
 - one `context.json` file per bug
 - each payload stores `application_name`, `transitions`, and `screen_names_and_descriptions`
 

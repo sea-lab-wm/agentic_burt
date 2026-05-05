@@ -4,10 +4,20 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import config
 from gui_graph_context_management import loader
 
 
 class ActiveBugIdDiscoveryTests(unittest.TestCase):
+    def test_context_root_uses_configured_dataset(self):
+        expected_root = (
+            Path(loader.__file__).resolve().parent.parent
+            / "json_graph_data"
+            / config.DATASET
+        )
+
+        self.assertEqual(loader.CONTEXT_ROOT, expected_root)
+
     def test_list_active_bug_ids_only_returns_loadable_runtime_contexts(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             context_root = Path(tmp_dir)

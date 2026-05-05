@@ -139,7 +139,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         state.BugInfo = MagicMock()
         config = {
             "configurable": {
-                "app_graph": "app graph",
+                "transitions": "app graph",
                 "app_name": "Test App",
                 "runtime_context": runtime_context,
             }

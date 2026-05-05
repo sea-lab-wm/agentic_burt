@@ -2,8 +2,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-#NOTE: Seems Clunky, but will work
-CONTEXT_ROOT = Path(__file__).resolve().parent.parent / "gui_graph_context"
+import config
+
+CONTEXT_ROOT = Path(__file__).resolve().parent.parent / "json_graph_data" / config.DATASET
 
 
 def _join_context_lines(value: Any) -> str | None:
@@ -20,7 +21,8 @@ def _join_context_lines(value: Any) -> str | None:
 def fetch_graph_data(bug_id: int) -> tuple[str | None, str | None, str | None]:
     """
     Fetch the application execution information necessary for reasoning on the
-    current bug description from the matching ``gui_graph_context/bug<id>/context.json``.
+    current bug description from the matching
+    ``json_graph_data/<DATASET>/bug<id>/context.json``.
     """
     context_path = CONTEXT_ROOT / f"bug{bug_id}" / "context.json"
     if not context_path.is_file():
