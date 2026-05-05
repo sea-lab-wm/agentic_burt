@@ -71,7 +71,7 @@ class StartConversationTests(unittest.TestCase):
         )
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
-            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session_session-123.log",
+            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session-123.log",
             sink_mode="redis_then_file",
             redis_client=burt_runtime.redis_client,
         )
@@ -166,7 +166,7 @@ class StartConversationTests(unittest.TestCase):
         self.assertEqual(response.final_report, {"title": "Final report"})
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
-            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session_session-123.log",
+            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session-123.log",
             sink_mode="redis_then_file",
             redis_client=burt_runtime.redis_client,
         )
@@ -175,6 +175,12 @@ class StartConversationTests(unittest.TestCase):
         runtime_context.sink.finalize_session.assert_called_once_with(
             session_id="session-123",
             final_report={"title": "Final report"},
+            run_metadata={
+                "bug_id": 42,
+                "description_level": None,
+                "input_source": "user",
+                "runtime": "api",
+            },
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -266,7 +272,7 @@ class ResumeConversationTests(unittest.TestCase):
         )
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
-            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session_session-123.log",
+            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session-123.log",
             sink_mode="redis_then_file",
             redis_client=burt_runtime.redis_client,
         )
@@ -369,7 +375,7 @@ class ResumeConversationTests(unittest.TestCase):
         self.assertEqual(response.final_report, {"title": "Final report"})
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
-            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session_session-123.log",
+            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session-123.log",
             sink_mode="redis_then_file",
             redis_client=burt_runtime.redis_client,
         )
@@ -378,6 +384,12 @@ class ResumeConversationTests(unittest.TestCase):
         runtime_context.sink.finalize_session.assert_called_once_with(
             session_id="session-123",
             final_report={"title": "Final report"},
+            run_metadata={
+                "bug_id": 42,
+                "description_level": None,
+                "input_source": "user",
+                "runtime": "api",
+            },
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -552,7 +564,7 @@ class ResumeConversationTests(unittest.TestCase):
         self.assertEqual(response.status, "awaiting_user")
         mock_create_runtime_context.assert_called_once_with(
             session_id="session-123",
-            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session_session-123.log",
+            log_path=Path("logs") / str(burt_runtime.config.PROMPT_VERSION) / "session-123.log",
             sink_mode="redis_then_file",
             redis_client=burt_runtime.redis_client,
         )

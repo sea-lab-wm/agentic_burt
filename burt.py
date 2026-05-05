@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from typing import Literal
+from uuid import uuid4
 import redis
 from state import ActiveFollowUp, BugAgentState, FollowUpKind
 from agent_utils import llm_extract, llm_check_clarity, llm_clarity_follow_up, llm_map, format_extraction_update, find_unknown_or_ambiguous, format_unknown_or_ambiguous_references, llm_more_info_follow_up, generate_report
@@ -416,11 +417,11 @@ def main() -> None:
         current_bug=args.bug_id
     )
 
-    #session id placeholder to ensure other functionality works, might want to change this to make a unique session id or do dev on containers
-    #NOTE: inline log_path creation might be clunky
+    session_id = str(uuid4())
+
     runtime_context = create_runtime_context(
-        session_id="local",
-        log_path=Path("logs")/ str(config.PROMPT_VERSION)/ f"session_local_bug{args.bug_id}_{args.description_level}.log",
+        session_id=session_id,
+        log_path=Path("logs") / str(config.PROMPT_VERSION) / f"{session_id}.log",
     )
 
     #this guarantees that every CLI run writes a new log, instead of appending onto old logs of the same name
@@ -433,7 +434,7 @@ def main() -> None:
             "transitions": transitions,
             "app_name": app_name,
             "screen_descriptions": screen_descriptions,
-            "thread_id": "1",
+            "thread_id": session_id,
             "runtime_context": runtime_context,
         }
     }
@@ -470,6 +471,12 @@ def main() -> None:
     runtime_context.sink.finalize_session(
         session_id=runtime_context.session_id,
         final_report=final_report,
+        run_metadata={
+            "bug_id": args.bug_id,
+            "description_level": args.description_level,
+            "input_source": "dev_csv",
+            "runtime": "cli",
+        },
     )
 
 if __name__ == "__main__":

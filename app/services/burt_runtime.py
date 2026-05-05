@@ -103,6 +103,12 @@ def _persist_and_build_response(
         runtime_context.sink.finalize_session(
             session_id=session_id,
             final_report=final_report,
+            run_metadata={
+                "bug_id": bug_id,
+                "description_level": None,
+                "input_source": "user",
+                "runtime": "api",
+            },
         )
 
     #create a session record to track session meta data and most recent user facing generation for recovery
@@ -129,7 +135,7 @@ def _persist_and_build_response(
 
 def _build_api_log_path(session_id: str) -> Path:
     """Build the log path used for one containerized API session."""
-    return Path("logs") / str(config.PROMPT_VERSION) / f"session_{session_id}.log"
+    return Path("logs") / str(config.PROMPT_VERSION) / f"{session_id}.log"
 
 
 def start_conversation(bug_id: int, user_description: str) -> ConversationTurnResponse:

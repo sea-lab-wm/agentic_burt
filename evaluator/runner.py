@@ -76,6 +76,8 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
         "log_path": context["log_path"],
         "bug_id": context["bug_id"],
         "description_level": context["description_level"],
+        "input_source": context.get("input_source"),
+        "runtime": context.get("runtime"),
         "agent_version": context["agent_version"],
         "app_name": context.get("app_name"),
         "title": (context.get("final_report") or {}).get("title"),

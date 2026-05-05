@@ -119,6 +119,15 @@ class TokenConsumptionSummary(BaseModel):
         )
 
 
+class RunMetadata(BaseModel):
+    """Stable run identity and source metadata for evaluator joins."""
+
+    bug_id: Optional[int] = None
+    description_level: Optional[str] = None
+    input_source: Optional[str] = None
+    runtime: Optional[str] = None
+
+
 class FinalReportRecord(BaseModel):
     """Terminal record that stores the generated report payload."""
 
@@ -132,6 +141,7 @@ class ConversationSummaryRecord(BaseModel):
 
     record_type: str = "conversation_summary"
     session_id: str
+    run_metadata: Optional[RunMetadata] = None
     started_at: Optional[str] = None
     ended_at: Optional[str] = None
     total_wall_clock_seconds: Optional[float] = None

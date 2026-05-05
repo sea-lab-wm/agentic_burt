@@ -317,6 +317,12 @@ class ObservabilityTests(unittest.TestCase):
             sink.finalize_session(
                 session_id="sess-5",
                 final_report={"title": "Bug title"},
+                run_metadata={
+                    "bug_id": 10,
+                    "description_level": "LC_LP",
+                    "input_source": "dev_csv",
+                    "runtime": "cli",
+                },
             )
 
             records = self._parse_json_stream(log_path.read_text())
@@ -333,6 +339,15 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[2]["final_report"]["title"], "Bug title")
             self.assertEqual(records[3]["record_type"], "conversation_summary")
             self.assertEqual(records[3]["session_id"], "sess-5")
+            self.assertEqual(
+                records[3]["run_metadata"],
+                {
+                    "bug_id": 10,
+                    "description_level": "LC_LP",
+                    "input_source": "dev_csv",
+                    "runtime": "cli",
+                },
+            )
             self.assertEqual(records[3]["started_at"], base_time.isoformat())
             self.assertEqual(records[3]["ended_at"], (base_time + timedelta(seconds=11)).isoformat())
             self.assertEqual(records[3]["total_wall_clock_seconds"], 11.0)
@@ -438,6 +453,12 @@ class ObservabilityTests(unittest.TestCase):
             sink.finalize_session(
                 session_id="sess-redis",
                 final_report={"title": "Bug title"},
+                run_metadata={
+                    "bug_id": 2,
+                    "description_level": None,
+                    "input_source": "user",
+                    "runtime": "api",
+                },
             )
 
             records = self._parse_json_stream(log_path.read_text())
@@ -446,6 +467,15 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[2]["record_type"], "final_report")
             self.assertEqual(records[2]["final_report"]["title"], "Bug title")
             self.assertEqual(records[3]["record_type"], "conversation_summary")
+            self.assertEqual(
+                records[3]["run_metadata"],
+                {
+                    "bug_id": 2,
+                    "description_level": None,
+                    "input_source": "user",
+                    "runtime": "api",
+                },
+            )
             self.assertEqual(records[3]["started_at"], base_time.isoformat())
             self.assertEqual(records[3]["ended_at"], (base_time + timedelta(seconds=11)).isoformat())
             self.assertEqual(records[3]["total_wall_clock_seconds"], 11.0)

@@ -15,6 +15,7 @@ from observability.observability_models import (
     ConversationSummaryRecord,
     ConversationTurn,
     FinalReportRecord,
+    RunMetadata,
     TokenConsumptionSummary,
 )
 
@@ -35,6 +36,7 @@ class ObservabilitySink(ABC):
         *,
         session_id: str,
         final_report: dict[str, Any],
+        run_metadata: RunMetadata | dict[str, Any] | None = None,
     ) -> None:
         """Append final report and reconstructed conversation summary records."""
 
@@ -110,6 +112,7 @@ class ObservabilitySink(ABC):
         turn_records: list[ConversationTurn],
         token_summary: TokenConsumptionSummary,
         parse_iso_timestamp: Callable[[Optional[str]], Optional[datetime]],
+        run_metadata: RunMetadata | dict[str, Any] | None = None,
     ) -> ConversationSummaryRecord:
         """Build a conversation summary from persisted turn records."""
         sorted_turns = sorted(turn_records, key=lambda turn: turn.turn)
@@ -140,6 +143,11 @@ class ObservabilitySink(ABC):
 
         return ConversationSummaryRecord(
             session_id=session_id,
+            run_metadata=(
+                RunMetadata.model_validate(run_metadata)
+                if run_metadata is not None
+                else None
+            ),
             started_at=started_at,
             ended_at=ended_at,
             total_wall_clock_seconds=total_wall_clock_seconds,
@@ -186,6 +194,7 @@ class LocalFileSink(ObservabilitySink):
         *,
         session_id: str,
         final_report: dict[str, Any],
+        run_metadata: RunMetadata | dict[str, Any] | None = None,
     ) -> None:
         """Append terminal records after reconstructing totals from persisted turns."""
         turn_records: list[ConversationTurn] = []
@@ -200,6 +209,7 @@ class LocalFileSink(ObservabilitySink):
             turn_records,
             token_summary,
             self._parse_iso_timestamp,
+            run_metadata,
         )
 
         self._append_record(
@@ -237,6 +247,7 @@ class RedisThenFileSink(ObservabilitySink):
         *,
         session_id: str,
         final_report: dict[str, Any],
+        run_metadata: RunMetadata | dict[str, Any] | None = None,
     ) -> None:
         """Write the reconstructed session log to disk, then clear staged Redis turns."""
         turn_records = [
@@ -251,6 +262,7 @@ class RedisThenFileSink(ObservabilitySink):
             turn_records,
             token_summary,
             self._parse_iso_timestamp,
+            run_metadata,
         )
 
         self.filepath.parent.mkdir(parents=True, exist_ok=True)

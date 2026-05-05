@@ -83,6 +83,12 @@ class EvaluatorTests(unittest.TestCase):
                 "app_name": "Test App",
                 "info_elements_gt": "gt info",
                 "S2R_ground_truth": "1. gt step",
+            },
+            2: {
+                "bug_id": "2",
+                "app_name": "API Test App",
+                "info_elements_gt": "api gt info",
+                "S2R_ground_truth": "1. api gt step",
             }
         }
 
@@ -101,6 +107,89 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["total_wall_clock_seconds"], 5.0)
         self.assertEqual(context["total_turn_processing_seconds"], 3.0)
         self.assertEqual(context["total_conversation_turns"], 2)
+
+    def test_build_log_context_uses_embedded_run_metadata(self):
+        log_path = self._write_log(
+            [
+                self._final_report_record(),
+                self._summary_record(
+                    run_metadata={
+                        "bug_id": 10,
+                        "description_level": "LC_LP",
+                        "input_source": "dev_csv",
+                        "runtime": "cli",
+                    }
+                ),
+            ],
+            filename="session-123.log",
+        )
+
+        context = build_log_context(log_path, self._ground_truth_rows())
+
+        self.assertEqual(context["bug_id"], 10)
+        self.assertEqual(context["description_level"], "LC_LP")
+        self.assertEqual(context["input_source"], "dev_csv")
+        self.assertEqual(context["runtime"], "cli")
+        self.assertEqual(context["ground_truth"]["bug_id"], "10")
+        self.assertEqual(context["app_name"], "Test App")
+
+    def test_build_log_context_embedded_metadata_takes_precedence_over_filename(self):
+        log_path = self._write_log(
+            [
+                self._final_report_record(),
+                self._summary_record(
+                    run_metadata={
+                        "bug_id": 2,
+                        "description_level": "HC_HP",
+                        "input_source": "user",
+                        "runtime": "api",
+                    }
+                ),
+            ],
+            filename="bug10_LC_LP.log",
+        )
+
+        context = build_log_context(log_path, self._ground_truth_rows())
+
+        self.assertEqual(context["bug_id"], 2)
+        self.assertEqual(context["description_level"], "HC_HP")
+        self.assertEqual(context["ground_truth"]["bug_id"], "2")
+        self.assertEqual(context["app_name"], "API Test App")
+
+    def test_build_log_context_legacy_filename_metadata_still_resolves(self):
+        log_path = self._write_log(
+            [self._final_report_record(), self._summary_record()],
+            filename="session_local_bug10_LC_LP.log",
+        )
+
+        context = build_log_context(log_path, self._ground_truth_rows())
+
+        self.assertEqual(context["bug_id"], 10)
+        self.assertEqual(context["description_level"], "LC_LP")
+        self.assertEqual(context["ground_truth"]["bug_id"], "10")
+
+    def test_build_log_context_api_metadata_without_description_level_joins_ground_truth(self):
+        log_path = self._write_log(
+            [
+                self._final_report_record(),
+                self._summary_record(
+                    run_metadata={
+                        "bug_id": 2,
+                        "description_level": None,
+                        "input_source": "user",
+                        "runtime": "api",
+                    }
+                ),
+            ],
+            filename="session-123.log",
+        )
+
+        context = build_log_context(log_path, self._ground_truth_rows())
+
+        self.assertEqual(context["bug_id"], 2)
+        self.assertIsNone(context["description_level"])
+        self.assertEqual(context["ground_truth"]["bug_id"], "2")
+        self.assertEqual(context["app_name"], "API Test App")
 
     def test_build_log_context_defaults_summary_metrics_to_null_when_missing(self):
         log_path = self._write_log([self._final_report_record()])
