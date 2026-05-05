@@ -10,7 +10,8 @@ import config
 
 DESCRIPTION_SUFFIX = " Desc"
 BURT_SCRIPT_PATH = Path("burt.py")
-DESCRIPTION_CSV_PATH = Path(config.DESCRIPTION_CSV_PATH)
+REPO_ROOT = Path(__file__).resolve().parent
+DESCRIPTION_CSV_PATH = REPO_ROOT / "gt_and_test_data" / f"{config.DATASET}.csv"
 LOGS_ROOT = Path("logs")
 
 

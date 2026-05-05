@@ -116,7 +116,7 @@ class EvaluatorTests(unittest.TestCase):
                     run_metadata={
                         "bug_id": 10,
                         "description_level": "LC_LP",
-                        "input_source": "dev_csv",
+                        "input_source": "AstroBR",
                         "runtime": "cli",
                     }
                 ),
@@ -128,7 +128,7 @@ class EvaluatorTests(unittest.TestCase):
 
         self.assertEqual(context["bug_id"], 10)
         self.assertEqual(context["description_level"], "LC_LP")
-        self.assertEqual(context["input_source"], "dev_csv")
+        self.assertEqual(context["input_source"], "AstroBR")
         self.assertEqual(context["runtime"], "cli")
         self.assertEqual(context["ground_truth"]["bug_id"], "10")
         self.assertEqual(context["app_name"], "Test App")

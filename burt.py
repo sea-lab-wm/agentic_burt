@@ -37,7 +37,8 @@ from pathlib import Path
 #loading in environment variables
 load_dotenv()
 
-DESCRIPTION_CSV_PATH = Path(config.DESCRIPTION_CSV_PATH)
+REPO_ROOT = Path(__file__).resolve().parent
+DESCRIPTION_CSV_PATH = REPO_ROOT / "gt_and_test_data" / f"{config.DATASET}.csv"
 
 @dataclass
 class BurtRuntimeContext:
@@ -474,7 +475,7 @@ def main() -> None:
         run_metadata={
             "bug_id": args.bug_id,
             "description_level": args.description_level,
-            "input_source": "dev_csv",
+            "input_source": config.DATASET,
             "runtime": "cli",
         },
     )

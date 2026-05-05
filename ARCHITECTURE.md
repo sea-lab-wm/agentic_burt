@@ -88,7 +88,7 @@ flowchart TD
 - `observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
 - `observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
 - `observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
-- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATASET`, `DESCRIPTION_CSV_PATH`, and `REDIS_URL`.
+- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATASET`, and `REDIS_URL`.
 - `gui_graph_context_management/loader.py`: Runtime loader for reading `json_graph_data/<DATASET>/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
 - `gui_graph_context_management/build_context.py`: Utility for generating the `context.json` payloads from raw graph data.
 - `gui_graph_context_management/generate_screen_descriptions.py`: LLM-assisted generator for screen description text used in each context payload.

@@ -9,9 +9,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
+import config
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_CSV_PATH = REPO_ROOT / "data" / "dev_set_info_element_gt_and_input_desc.csv"
+DEFAULT_CSV_PATH = REPO_ROOT / "gt_and_test_data" / f"{config.DATASET}.csv"
+
+#neccessary for legacy log type, can remove in future
 LOG_FILENAME_PATTERN = re.compile(
     r"bug(?P<bug_id>\d+)_(?P<description_level>[A-Z]{1,2}C_[A-Z]{1,2}P)\.log$",
     re.IGNORECASE,

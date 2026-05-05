@@ -18,8 +18,10 @@ The active defaults live in [config.py](config.py). Below you can see what each 
     - what set of prompts stored in prompt_versioning is active
     - where BURT writes logs: `logs/<PROMPT_VERSION>/`
     - where the evaluator writes results: `Results/<agent_version>/`
-3. `DESCRIPTION_CSV_PATH = ...`
-    - the path of dev set gt and bug descriptions
+3. `DATASET = ...`
+    - which dataset BURT uses for CSV input/ground truth and JSON graph context
+    - CSV path convention: `gt_and_test_data/<DATASET>.csv`
+    - graph context path convention: `json_graph_data/<DATASET>/`
 4. `CORS_ALLOWED_ORIGINS = ...`
     - comma-separated frontend origins allowed to call the backend API
     - defaults to `http://localhost:5173` for local Vite development
@@ -125,7 +127,7 @@ Create a `.env` file in root with the OpenAI credentials required by `langchain-
 
 Before running the agent, make sure these inputs exist:
 
-- the description CSV at [data/dev_set_info_element_gt_and_input_desc.csv](data/dev_set_info_element_gt_and_input_desc.csv)
+- the description/ground-truth CSV at `gt_and_test_data/AstroBR.csv`
 - the GUI graph context dataset directory at `json_graph_data/AstroBR`
 
 ## Run The Agent Locally
@@ -139,7 +141,7 @@ python burt.py --bug-id 10 --description-level LC_LP
 Notes:
 
 - `description-level` must use the format `LC_LP`, `MC_MP`, `HC_HP`, etc.
-- BURT++ pulls the initial user description from the matching `<description level> Desc` column in the dev CSV.
+- BURT++ pulls the initial user description from the matching `<description level> Desc` column in `gt_and_test_data/<DATASET>.csv`.
 - BURT++ loads the app graph and screen descriptions from `json_graph_data/<DATASET>/bug<id>/context.json`.
 - If the agent needs clarification, it will interrupt in the terminal and ask follow-up questions.
 - When the run completes, BURT++ prints the final bug report and writes an observability log through the default local file sink.

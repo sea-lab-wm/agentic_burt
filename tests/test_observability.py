@@ -320,7 +320,7 @@ class ObservabilityTests(unittest.TestCase):
                 run_metadata={
                     "bug_id": 10,
                     "description_level": "LC_LP",
-                    "input_source": "dev_csv",
+                    "input_source": "AstroBR",
                     "runtime": "cli",
                 },
             )
@@ -344,7 +344,7 @@ class ObservabilityTests(unittest.TestCase):
                 {
                     "bug_id": 10,
                     "description_level": "LC_LP",
-                    "input_source": "dev_csv",
+                    "input_source": "AstroBR",
                     "runtime": "cli",
                 },
             )
