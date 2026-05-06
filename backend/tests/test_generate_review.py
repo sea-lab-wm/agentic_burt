@@ -13,7 +13,7 @@ class GenerateReviewWorkbookTests(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory(dir=generate_review.REPO_ROOT)
         self.addCleanup(self.tempdir.cleanup)
-        self.results_root = Path(self.tempdir.name) / "Results"
+        self.results_root = Path(self.tempdir.name) / "results"
         self.results_root.mkdir(parents=True, exist_ok=True)
 
     @staticmethod

@@ -1,0 +1,310 @@
+{
+  "session_id": "ac9354dd-690f-4035-8191-280c60b8fa4e",
+  "turn": 1,
+  "started_at": "2026-05-06T04:48:45.010456+00:00",
+  "ended_at": "2026-05-06T04:49:11.302825+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Open the app, tap Allow, open the navigation drawer, select FTP server to reach the FTP server screen, toggle the status switch on and then off to stop the server; then close the app—the server restarts automatically, but the FTP server should remain stopped.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "774b230b-526a-43c6-8205-3592e4e3dca6"
+        }
+      },
+      "meta_data": {
+        "latency": "3.4374999998476596e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the FTP server screen",
+            "evidence": [
+              "select FTP server to reach the FTP server screen"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "toggle the status switch on and then off to stop the server; then close the app",
+            "evidence": [
+              "toggle the status switch on and then off to stop the server; then close the app"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the server restarts automatically",
+            "evidence": [
+              "the server restarts automatically"
+            ]
+          },
+          "correct_behavior": {
+            "value": "the FTP server should remain stopped",
+            "evidence": [
+              "the FTP server should remain stopped"
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Open the app, tap Allow, open the navigation drawer, select FTP server to reach the FTP server screen, toggle the status switch on and then off to stop the server, then close the app.",
+            "evidence": [
+              "Open the app, tap Allow, open the navigation drawer, select FTP server to reach the FTP server screen, toggle the status switch on and then off to stop the server; then close the app"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "3.8314357510000008 s",
+        "node_token_consumption": {
+          "input_tokens": 930,
+          "output_tokens": 219,
+          "total_tokens": 1149,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.2289387510000012 s",
+        "node_token_consumption": {
+          "input_tokens": 613,
+          "output_tokens": 21,
+          "total_tokens": 634,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013",
+                "evidence": "User said the bug occurs on 'the FTP server screen' after 'select FTP server to reach the FTP server screen'. Screen a0ae2c21a12bc864024f18b7af900668f54e251f7fd5fc6e49da5bf1f8c6a013 is FtpServerActivity(Window=Main)."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5",
+                  "evidence": "Matches 'toggle the status switch on' on the FTP server screen; transition 8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5 clicks the Status switch with tx=ON on FtpServerActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+                  "evidence": "Matches 'and then off to stop the server'; transition 5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b clicks the Status switch with tx=OFF on FtpServerActivity."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+                  "evidence": "User said 'then close the app'. The graph-valid closing action from the FTP server screen is BACK_MODAL from FtpServerActivity to RecentsActivity via transition 944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "the server restarts automatically",
+                "evidence": "User explicitly reported: 'the server restarts automatically'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "the FTP server should remain stopped",
+                "evidence": "User explicitly reported: 'the FTP server should remain stopped'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2",
+                  "evidence": "Matches 'Open the app'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d",
+                  "evidence": "Matches 'tap Allow' from the permission dialog."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49",
+                  "evidence": "Matches 'open the navigation drawer' from the file list via Navigate up/hamburger to the drawer-open state."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec",
+                  "evidence": "Matches 'select FTP server to reach the FTP server screen' from the navigation drawer."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5",
+                  "evidence": "Matches 'toggle the status switch on' on the FTP server screen."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b",
+                  "evidence": "Matches 'and then off to stop the server' on the FTP server screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c",
+                  "evidence": "Included because the user said 'then close the app'; graph-valid closing step from the FTP server screen is BACK_MODAL to RecentsActivity."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "15.965917757 s",
+        "node_token_consumption": {
+          "input_tokens": 47455,
+          "output_tokens": 1068,
+          "total_tokens": 48523,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.0458999998140825e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "FTP server restarts automatically after being turned off and the app is closed",
+          "observed_behavior": "On the FTP server screen, if the user turns the Status switch on, then turns it off, and then closes the app, the server restarts automatically.",
+          "expected_behavior": "The FTP server should remain stopped.",
+          "steps_to_reproduce": "1. Open the app. <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>\n2. Tap Allow on the permission dialog. <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>\n3. Open the navigation drawer from the main file list screen. <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>\n4. Select FTP server from the navigation drawer. <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>\n5. Turn the Status switch on. <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5>\n6. Turn the Status switch off to stop the server. <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>\n7. Close the app. <944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c>"
+        }
+      },
+      "meta_data": {
+        "latency": "5.247417460999998 s",
+        "node_token_consumption": {
+          "input_tokens": 39915,
+          "output_tokens": 415,
+          "total_tokens": 40330,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "ac9354dd-690f-4035-8191-280c60b8fa4e",
+  "final_report": {
+    "title": "FTP server restarts automatically after being turned off and the app is closed",
+    "observed_behavior": "On the FTP server screen, if the user turns the Status switch on, then turns it off, and then closes the app, the server restarts automatically.",
+    "expected_behavior": "The FTP server should remain stopped.",
+    "steps_to_reproduce": "1. Open the app. <aa09f6aef3409759f67d672c9efcbd64d8f3b0ee61cf3e8d197f0539e34430d2>\n2. Tap Allow on the permission dialog. <9253ef287211a96261d15d2522d1499f880b411f5e49851b98bae34f3403ab9d>\n3. Open the navigation drawer from the main file list screen. <3abd760d81519f7d0b2fe5daa74c918b40f9496bef2bf776dd7b0d8e95a47b49>\n4. Select FTP server from the navigation drawer. <ed4ddd149d2da1bda9c6a957048313602988bce3f183bd199efeacece662aeec>\n5. Turn the Status switch on. <8453ee6186ad267c55c0f443ad2d1644911453cf4f005a06837b415345db6be5>\n6. Turn the Status switch off to stop the server. <5f369cd30bd1e5644d294c31e5ff58277cad40b2633f69cc4105944721df8b1b>\n7. Close the app. <944abf1e97748f2436418aea5aa65a35e80ea307f807f0264ae85d2c80188e7c>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "ac9354dd-690f-4035-8191-280c60b8fa4e",
+  "run_metadata": {
+    "bug_id": 10,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-05-06T04:48:45.010456+00:00",
+  "ended_at": "2026-05-06T04:49:11.302825+00:00",
+  "total_wall_clock_seconds": 26.292369,
+  "total_turn_processing_seconds": 26.292369,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 88913,
+    "output_tokens": 1723,
+    "total_tokens": 90636,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}

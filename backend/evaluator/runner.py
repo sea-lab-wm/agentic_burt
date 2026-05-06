@@ -67,7 +67,7 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
 
     This function combines parsed runtime metadata, recomputed information
     elements, and both judge passes into the artifact structure later written to
-    ``Results/<agent_version>/``.
+    ``results/<agent_version>/``.
     """
     context = build_log_context(log_path, ground_truth_rows)
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -164,7 +164,7 @@ def evaluate_log(log_path: Path, model: Any, ground_truth_rows: dict[int, dict[s
 
 
 def write_evaluation_result(result: dict[str, Any]) -> Path:
-    """Persist one evaluation JSON artifact under ``Results/<agent_version>/``."""
+    """Persist one evaluation JSON artifact under ``results/<agent_version>/``."""
     version_dir = RESULTS_ROOT / result["agent_version"]
     version_dir.mkdir(parents=True, exist_ok=True)
     output_path = version_dir / f"{Path(result['log_path']).stem}.evaluation.json"

@@ -12,7 +12,7 @@ from openpyxl.styles import Alignment, PatternFill
 from evaluator.parsing import REPO_ROOT, load_ground_truth_rows
 
 
-RESULTS_ROOT = REPO_ROOT / "Results"
+RESULTS_ROOT = REPO_ROOT / "results"
 MANUAL_REVIEW_WORKBOOK = "manual_review.xlsx"
 SEPARATOR_FILL = PatternFill(fill_type="solid", fgColor="D9D9D9")
 

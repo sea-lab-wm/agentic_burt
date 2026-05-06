@@ -84,7 +84,7 @@ def _get_data_dir(mode: str) -> str:
 
 def build_context(mode: str = "dev") -> None:
     """Build GUI graph context JSON files for the selected bug set."""
-    env_path = Path(__file__).resolve().parent.parent / ".env"
+    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
     load_dotenv(env_path)
 
     screen_description_model = ChatOpenAI(model="gpt-5.4")

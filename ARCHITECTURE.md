@@ -6,12 +6,12 @@ This document is currently scoped to the local quick-development runtime. It doe
 
 ```mermaid
 flowchart LR
-    U[User] --> A[CLI runtime in burt_core/cli.py]
+    U[User] --> A[CLI runtime in backend/burt_core/cli.py]
     A -->|load initial description| CSV[(dev CSV)]
-    A -->|fetch graph + app metadata by bug_id| GC[json_graph_data/<DATASET>/bug<id>/context.json]
+    A -->|fetch graph + app metadata by bug_id| GC[backend/json_graph_data/<DATASET>/bug<id>/context.json]
     GC -->|transitions + app_name + screen_descriptions| A
-    A -->|load active prompt templates| PV[(prompt_versioning.json)]
-    L2 -->|write observability log| LOGS[(logs/<PROMPT_VERSION>/...)]
+    A -->|load active prompt templates| PV[(backend/prompt_versioning/prompt_versioning.json)]
+    L2 -->|write observability log| LOGS[(backend/logs/<PROMPT_VERSION>/...)]
 
     subgraph OBS[Observability]
       L1[log_action decorator]
@@ -28,14 +28,14 @@ flowchart LR
     A -->|flush completed turns + finalize session| L4
 
     LOGS --> E[Evaluator]
-    E --> R[(Results/<agent_version>/...)]
+    E --> R[(backend/results/<agent_version>/...)]
 ```
 
 ### Deeper on Logging
 - Per-action logging is handled by `@log_action` in `observability/logging_runtime.py`, which wraps instrumented runtime functions, measures latency, and records their outputs.
 - `ObservabilityTokenCallback` attaches to the active `ChatOpenAI` model and captures provider token usage for both action-level and conversation-level summaries.
 - `TurnLogger` owns the in-memory turn lifecycle, while `ObservabilitySink` owns persistence.
-- The current local backend is `LocalFileSink`, which appends back-to-back JSON records to `logs/<PROMPT_VERSION>/...`.
+- The current local backend is `LocalFileSink`, which appends back-to-back JSON records to `backend/logs/<PROMPT_VERSION>/...`.
 - CLI runs flush each completed turn to disk, then call `sink.finalize_session(...)` after the graph finishes.
 - Finalization reloads the persisted turn records, aggregates token/timing totals, and appends `final_report` plus `conversation_summary` terminal records.
 - Each turn contains an `actions` list with entries such as `user_description`, `information_element_extraction`, `clarity_check`, `extract_and_update`, `follow_up`, and `generate_report`.
@@ -47,7 +47,7 @@ flowchart LR
 flowchart TD
     A[Start program] --> B[Load env + parse bug_id and description_level]
     B --> C[Load initial description from dev CSV]
-    C --> D[Fetch gui_graph, app_name, and screen_descriptions from json_graph_data/<DATASET>]
+    C --> D[Fetch gui_graph, app_name, and screen_descriptions from backend/json_graph_data/<DATASET>]
     D --> E[Initialize logger, ChatOpenAI callback, and LangGraph workflow]
     E --> F[Log initial user description into BugAgentState]
     F --> G[information_element_extraction]
@@ -67,7 +67,7 @@ flowchart TD
     R --> S[End]
 ```
 
-- The runtime is a LangGraph state machine compiled in `burt_core/burt.py` and driven by `burt_core/cli.py` for local interactive runs.
+- The runtime is a LangGraph state machine compiled in `backend/burt_core/burt.py` and driven by `backend/burt_core/cli.py` for local interactive runs.
 - The first user message is not typed interactively; it is loaded from the description CSV column matching the requested `description_level`.
 - `information_element_extraction` operates in one of three modes: initial description, clarity follow-up, or more-info follow-up.
 - `clarity_check` can request one clarification round before the graph continues to mapping.
@@ -79,29 +79,29 @@ flowchart TD
 
 ## 3. File Responsibilities
 
-- `burt_core/burt.py`: Core runtime graph, graph nodes, runtime context creation, graph context loading, and turn flushing.
-- `burt_core/cli.py`: Local CLI entrypoint. Loads dataset CSV input, drives interactive interrupts, and finalizes CLI observability logs.
-- `burt_core/agent_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
-- `prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
-- `prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.
-- `burt_core/state.py`: Pydantic models for `BugAgentState`, follow-up tracking, extracted information elements, and the structured `BugInfo` slot mapping.
-- `burt_core/llm_schema.py`: Structured-output schemas used by runtime LLM calls for extraction, follow-up generation, clarity decisions, mapping updates, and report generation.
-- `observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
-- `observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
-- `observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
-- `config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATASET`, and `REDIS_URL`.
-- `gui_graph_context_management/loader.py`: Runtime loader for reading `json_graph_data/<DATASET>/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
-- `gui_graph_context_management/build_context.py`: Utility for generating the `context.json` payloads from raw graph data.
-- `gui_graph_context_management/generate_screen_descriptions.py`: LLM-assisted generator for screen description text used in each context payload.
-- `gui_graph_context_management/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.
-- `run_all_burt.py`: Batch runner that discovers runnable `(bug_id, description_level)` pairs from the CSV, executes `burt_core.cli` for each one, and then runs the evaluator on the resulting log directory.
-- `evaluator/runner.py`: Evaluation entrypoint. Reads logs, derives evaluation context, runs the judge passes, writes `*.evaluation.json`, and rebuilds the manual-review workbook.
-- `evaluator/parsing.py`: Parsing helpers for discovering log files, extracting metadata from log paths, decoding JSON records, and joining ground-truth CSV rows.
-- `evaluator/judges.py`: Evaluator-local LLM helpers for extracting information elements from the final generated report and grading info elements and steps to reproduce.
-- `evaluator/generate_review.py`: Workbook builder for `manual_review.xlsx`, including the `S2R Review`, `Info Elements Review`, and `Summary` sheets.
-- `logs/<PROMPT_VERSION>/`: Runtime observability logs grouped by active prompt version.
-- `Results/<agent_version>/`: Evaluator outputs grouped by log directory / prompt version, including `*.evaluation.json` and `manual_review.xlsx`.
-- `tests/`: Automated test suite, currently written with `unittest`, covering evaluator behavior, review generation, observability, state handling, batch running, and related utilities.
+- `backend/burt_core/burt.py`: Core runtime graph, graph nodes, runtime context creation, graph context loading, and turn flushing.
+- `backend/burt_core/cli.py`: Local CLI entrypoint. Loads dataset CSV input, drives interactive interrupts, and finalizes CLI observability logs.
+- `backend/burt_core/agent_utils.py`: Prompt-loading and LLM orchestration utilities for extraction, clarity checks, graph mapping, follow-up generation, bug-info formatting, and final report synthesis.
+- `backend/prompt_versioning/prompt_versioning.json`: Source of truth for prompt-version records. Each record contains an `agent-version-title` plus a `prompts` mapping used by the runtime.
+- `backend/prompt_versioning/prompt_versioning_json.py`: Helper utilities for reading and programmatically updating prompt-version records.
+- `backend/burt_core/state.py`: Pydantic models for `BugAgentState`, follow-up tracking, extracted information elements, and the structured `BugInfo` slot mapping.
+- `backend/burt_core/llm_schema.py`: Structured-output schemas used by runtime LLM calls for extraction, follow-up generation, clarity decisions, mapping updates, and report generation.
+- `backend/observability/observability_models.py`: Shared observability enums and record models used by both runtime logging and sinks.
+- `backend/observability/logging_runtime.py`: Turn lifecycle management, action instrumentation, and token-usage callback capture.
+- `backend/observability/observability_sinks.py`: Sink abstractions plus local file persistence and conversation-summary finalization.
+- `backend/config.py`: Runtime configuration constants such as `MODEL_NAME`, `PROMPT_VERSION`, `DATASET`, and `REDIS_URL`.
+- `backend/gui_graph_context_management/loader.py`: Runtime loader for reading `json_graph_data/<DATASET>/bug<id>/context.json` and reconstructing the text blocks consumed by the runtime.
+- `backend/gui_graph_context_management/build_context.py`: Utility for generating the `context.json` payloads from raw graph data.
+- `backend/gui_graph_context_management/generate_screen_descriptions.py`: LLM-assisted generator for screen description text used in each context payload.
+- `backend/gui_graph_context_management/graph_data_parser.py`: Graph parsing helpers for locating raw graph files, simplifying IDs, filtering graph text, and preparing transition/screen descriptions.
+- `backend/run_all_burt.py`: Batch runner that discovers runnable `(bug_id, description_level)` pairs from the CSV, executes `burt_core.cli` for each one, and then runs the evaluator on the resulting log directory.
+- `backend/evaluator/runner.py`: Evaluation entrypoint. Reads logs, derives evaluation context, runs the judge passes, writes `*.evaluation.json`, and rebuilds the manual-review workbook.
+- `backend/evaluator/parsing.py`: Parsing helpers for discovering log files, extracting metadata from log paths, decoding JSON records, and joining ground-truth CSV rows.
+- `backend/evaluator/judges.py`: Evaluator-local LLM helpers for extracting information elements from the final generated report and grading info elements and steps to reproduce.
+- `backend/evaluator/generate_review.py`: Workbook builder for `manual_review.xlsx`, including the `S2R Review`, `Info Elements Review`, and `Summary` sheets.
+- `backend/logs/<PROMPT_VERSION>/`: Runtime observability logs grouped by active prompt version.
+- `backend/results/<agent_version>/`: Evaluator outputs grouped by log directory / prompt version, including `*.evaluation.json` and `manual_review.xlsx`.
+- `backend/tests/`: Automated test suite, currently written with `unittest`, covering evaluator behavior, review generation, observability, state handling, batch running, and related utilities.
 
 ## 4. Core Dependencies
 

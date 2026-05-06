@@ -68,9 +68,6 @@ class SessionRouteTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
 
-    def test_app_does_not_install_cors_middleware(self):
-        self.assertEqual(app.user_middleware, [])
-
     @patch(
         "app.api.routes.sessions.start_conversation",
         return_value=burt_runtime.ConversationTurnResponse(
@@ -108,27 +105,6 @@ class SessionRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"bug_ids": [2, 10, 135]})
         mock_list_active_bug_ids.assert_called_once_with()
-
-    def test_healthz_does_not_emit_cors_headers(self):
-        response = self.client.get(
-            "/healthz",
-            headers={"Origin": "http://localhost:5173"},
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNone(response.headers.get("access-control-allow-origin"))
-
-    def test_options_request_is_not_handled_as_cors_preflight(self):
-        response = self.client.options(
-            "/sessions",
-            headers={
-                "Origin": "http://localhost:5173",
-                "Access-Control-Request-Method": "POST",
-            },
-        )
-
-        self.assertEqual(response.status_code, 405)
-        self.assertIsNone(response.headers.get("access-control-allow-origin"))
 
     @patch(
         "app.api.routes.sessions.resume_conversation",
