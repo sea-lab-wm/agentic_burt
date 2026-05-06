@@ -123,7 +123,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in root with the OpenAI credentials required by `langchain-openai`. Both [burt.py](burt.py) and [evaluator/runner.py](evaluator/runner.py) load environment variables with `python-dotenv`.
+Create a `.env` file in root with the OpenAI credentials required by `langchain-openai`. Both [burt_core/burt.py](burt_core/burt.py) and [evaluator/runner.py](evaluator/runner.py) load environment variables with `python-dotenv`.
 
 Before running the agent, make sure these inputs exist:
 
@@ -132,10 +132,10 @@ Before running the agent, make sure these inputs exist:
 
 ## Run The Agent Locally
 
-Use [burt.py](burt.py) for a single interactive run:
+Use [burt_core/cli.py](burt_core/cli.py) for a single interactive run:
 
 ```bash
-python burt.py --bug-id 10 --description-level LC_LP
+python -m burt_core.cli --bug-id 10 --description-level LC_LP
 ```
 
 Notes:
@@ -163,7 +163,7 @@ python run_all_burt.py --limit-desc-to "[(10, 'LC_LP'), (135, 'MC_HP')]"
 Behavior:
 
 - the script discovers every CSV column ending in ` Desc`
-- it runs [burt.py](burt.py) once per populated `(bug_id, description_level)` pair
+- it runs [burt_core/cli.py](burt_core/cli.py) once per populated `(bug_id, description_level)` pair
 - after the runs finish, it automatically evaluates the logs in `logs/<PROMPT_VERSION>/`
 
 ## Agent Logging
@@ -289,7 +289,7 @@ Important implementation detail:
 Single run:
 
 ```bash
-python burt.py --bug-id [bug_id] --description-level [desc_level]
+python -m burt_core.cli --bug-id [bug_id] --description-level [desc_level]
 python -m evaluator.runner logs/[agent_version_of_previous_run]/[session_id].log
 ```
 

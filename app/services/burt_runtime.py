@@ -11,7 +11,7 @@ from app.services.session_store import (
     release_session_lock,
     redis_client,
 )
-from burt import (
+from burt_core.burt import (
     BugAgentState,
     _flush_active_turn,
     build_burt_graph,

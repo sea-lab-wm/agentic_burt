@@ -2,7 +2,7 @@ import unittest
 
 from langchain_core.messages import HumanMessage
 
-from agent_utils import (
+from burt_core.agent_utils import (
     find_unknown_or_ambiguous,
     format_bug_info_for_prompt,
     format_extraction_update,
@@ -12,8 +12,8 @@ from agent_utils import (
     llm_more_info_follow_up,
     validate_info_status,
 )
-from llm_schema import ClarityFollowUpSchema, ExtractionSchema, MoreInfoFollowUpSchema
-from state import (
+from burt_core.llm_schema import ClarityFollowUpSchema, ExtractionSchema, MoreInfoFollowUpSchema
+from burt_core.state import (
     ActiveFollowUp,
     BugAgentState,
     CandidateMapping,

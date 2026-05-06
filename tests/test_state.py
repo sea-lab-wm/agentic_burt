@@ -2,8 +2,8 @@ import unittest
 
 from pydantic import ValidationError
 
-from llm_schema import ClarityFollowUpSchema, ExtractionSchema, MoreInfoFollowUpSchema
-from state import ActiveFollowUp, BugAgentState, CandidateMapping, FollowUpKind, Slot, SlotStatus
+from burt_core.llm_schema import ClarityFollowUpSchema, ExtractionSchema, MoreInfoFollowUpSchema
+from burt_core.state import ActiveFollowUp, BugAgentState, CandidateMapping, FollowUpKind, Slot, SlotStatus
 
 
 class StateModelTests(unittest.TestCase):

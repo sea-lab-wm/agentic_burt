@@ -3,13 +3,13 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import burt
+from burt_core import burt
 from observability.observability_sinks import LocalFileSink, RedisThenFileSink
-from state import BugAgentState
+from burt_core.state import BugAgentState
 
 
 class BurtRuntimeContextTests(unittest.TestCase):
-    @patch("burt.ChatOpenAI")
+    @patch("burt_core.burt.ChatOpenAI")
     def test_create_runtime_context_returns_distinct_request_local_objects(
         self,
         mock_chat_openai,
@@ -42,7 +42,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         self.assertIs(context_a.model, model_a)
         self.assertIs(context_b.model, model_b)
 
-    @patch("burt.ChatOpenAI")
+    @patch("burt_core.burt.ChatOpenAI")
     def test_create_runtime_context_builds_redis_then_file_sink(
         self,
         mock_chat_openai,
@@ -65,7 +65,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         )
         self.assertIs(context.logger.sink, context.sink)
 
-    @patch("burt.ChatOpenAI")
+    @patch("burt_core.burt.ChatOpenAI")
     def test_create_runtime_context_redis_then_file_mode_requires_redis_client(
         self,
         mock_chat_openai,
@@ -82,7 +82,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
                 sink_mode="redis_then_file",
             )
 
-    @patch("burt.ChatOpenAI")
+    @patch("burt_core.burt.ChatOpenAI")
     def test_create_runtime_context_rejects_unknown_sink_mode(
         self,
         mock_chat_openai,
@@ -96,7 +96,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
                 sink_mode="invalid",
             )
 
-    @patch("burt.fetch_graph_data", return_value=("app graph", "Test App", "screens"))
+    @patch("burt_core.burt.fetch_graph_data", return_value=("app graph", "Test App", "screens"))
     def test_load_bug_graph_context_only_returns_graph_data(
         self,
         mock_fetch_graph_data,
@@ -107,7 +107,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         mock_fetch_graph_data.assert_called_once_with(bug_id=42)
 
     @patch(
-        "burt.llm_extract",
+        "burt_core.burt.llm_extract",
         return_value=SimpleNamespace(model_dump=lambda *args, **kwargs: {}),
     )
     def test_information_element_extraction_uses_runtime_context_model(
@@ -130,7 +130,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
         self.assertIs(mock_llm_extract.call_args.kwargs["model"], runtime_context.model)
 
     @patch(
-        "burt.generate_report",
+        "burt_core.burt.generate_report",
         return_value={"full_report": {"title": "Final report"}},
     )
     def test_generate_final_report_uses_runtime_context_model(self, mock_generate_report):
@@ -145,7 +145,7 @@ class BurtRuntimeContextTests(unittest.TestCase):
             }
         }
 
-        with patch("burt.find_unknown_or_ambiguous", return_value=set()):
+        with patch("burt_core.burt.find_unknown_or_ambiguous", return_value=set()):
             result = burt.generate_final_report.__wrapped__(state, config)
 
         self.assertEqual(result, {"full_report": {"title": "Final report"}})

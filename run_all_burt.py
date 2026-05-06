@@ -9,7 +9,6 @@ import config
 
 
 DESCRIPTION_SUFFIX = " Desc"
-BURT_SCRIPT_PATH = Path("burt.py")
 REPO_ROOT = Path(__file__).resolve().parent
 DESCRIPTION_CSV_PATH = REPO_ROOT / "gt_and_test_data" / f"{config.DATASET}.csv"
 LOGS_ROOT = Path("logs")
@@ -128,7 +127,8 @@ def parse_args() -> argparse.Namespace:
 def run_burt(python_executable: str, bug_id: int, description_level: str) -> int:
     command = [
         python_executable,
-        str(BURT_SCRIPT_PATH),
+        "-m",
+        "burt_core.cli",
         "--bug-id",
         str(bug_id),
         "--description-level",

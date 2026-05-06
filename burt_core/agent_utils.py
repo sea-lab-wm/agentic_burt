@@ -1,6 +1,6 @@
 """Prompt-loading and LLM helper utilities for the BURT runtime."""
 
-from state import (
+from .state import (
     BugAgentState,
     CandidateMapping,
     InfoSlots,
@@ -8,7 +8,7 @@ from state import (
     Slot,
     SlotStatus,
 )
-from llm_schema import (
+from .llm_schema import (
     ClarityFollowUpSchema,
     ClaritySchema,
     ExtractionSchema,
@@ -23,7 +23,8 @@ import json
 from config import PROMPT_VERSION
 
 
-PROMPT_VERSIONING_JSON = Path(__file__).with_name("prompt_versioning") / "prompt_versioning.json"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PROMPT_VERSIONING_JSON = REPO_ROOT / "prompt_versioning" / "prompt_versioning.json"
 
 
 @lru_cache(maxsize=1)

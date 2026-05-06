@@ -55,7 +55,7 @@ class RunAllBurtTests(unittest.TestCase):
 
         self.assertEqual(return_code, 0)
         mock_run.assert_called_once_with(
-            ["python", "burt.py", "--bug-id", "10", "--description-level", "LC_LP"],
+            ["python", "-m", "burt_core.cli", "--bug-id", "10", "--description-level", "LC_LP"],
             check=False,
         )
 

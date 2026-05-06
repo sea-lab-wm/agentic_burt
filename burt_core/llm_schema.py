@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field, StrictStr
 from typing import List, Optional, Literal
-from state import Slot
+from .state import Slot
 
 class ExtractionSchema(BaseModel):
     """Structured mapping update returned by the graph-grounding step."""
