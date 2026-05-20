@@ -4,10 +4,17 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+
+# from backend import config
+
+BACKEND_ROOT = Path(__file__).resolve().parent.parent
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
 
 import config
 
@@ -18,31 +25,63 @@ except ImportError:  # pragma: no cover - support direct script execution
     from generate_screen_descriptions import generate_screen_descriptions
     from graph_data_parser import filter_graph, get_graph_file_path
 
-
-SELECTED_DATA = {
-    2: "Family_Finance",
-    10: "Material_Files",
-    110: "Vinyl_Music_Player",
-    117: "Open_Food_Facts_Food_Scanner",
-    130: "andOTP_OTP_Authenticator",
-    135: "Wikimedia_Commons",
-    248: "ODK_Collect",
-    1299: "Field_Book",
-    1563: "lrkFM_File_Manager",
-    1568: "lrkFM_File_Manager",
-}
-
 OUTPUT_ROOT = Path(__file__).resolve().parent.parent / "json_graph_data" / config.DATASET
-DEV_DATA_DIR = "/Users/sambennett/desktop/BURT++/bug_reporting_with_llm/graph_data/graphs_json_data_AstroBR"
-TEST_DATA_DIR = ""
+GRAPH_DATA_DIR = f"backend/dataset/graphs_json_data_{config.DATASET}"
+
+
+if config.DATASET == "BugScribe_dev":
+    SELECTED_DATA = {
+        2: "Family_Finance",
+        10: "Material_Files",
+        110: "Vinyl_Music_Player",
+        117: "Open_Food_Facts_Food_Scanner",
+        130: "andOTP_OTP_Authenticator",
+        135: "Wikimedia_Commons",
+        248: "ODK_Collect",
+        1299: "Field_Book",
+        1563: "lrkFM_File_Manager",
+        1568: "lrkFM_File_Manager",
+    }
+elif config.DATASET == "BugScribe_Test":
+    pass
+elif config.DATASET == "BURT":
+    SELECTED_DATA = {
+        1: "APOD",
+        2: "APOD",
+        3: "GNU",
+        4: "GNU",
+        5: "GROW",
+        6: "GROW",
+        7: "TIME",
+        8: "TIME",
+        9: "TOKEN",
+        10: "TOKEN",
+        11: "DROID",
+        12: "DROID",
+    }
+
+
+# def _split_text_block_into_lines(text: str) -> list[str]:
+#     """Return a stable JSON-friendly representation for a text block."""
+#     stripped = text.strip()
+#     if not stripped:
+#         return []
+#     return stripped.splitlines()
 
 
 def _split_text_block_into_lines(text: str) -> list[str]:
-    """Return a stable JSON-friendly representation for a text block."""
+    """Return non-empty stripped lines for JSON serialization."""
+
     stripped = text.strip()
+
     if not stripped:
         return []
-    return stripped.splitlines()
+
+    return [
+        line.strip()
+        for line in stripped.splitlines()
+        if line.strip()
+    ]
 
 
 def _resolve_output_path(bug_id: int) -> Path:
@@ -73,22 +112,23 @@ def _write_context_payload(output_path: Path, payload: dict[str, object]) -> Non
         output_file.write("\n")
 
 
-def _get_data_dir(mode: str) -> str:
-    """Resolve the raw graph dataset location for the requested mode."""
-    if mode == "dev":
-        return DEV_DATA_DIR
-    if mode == "test":
-        return TEST_DATA_DIR
-    raise ValueError("Please set mode to either 'dev' or 'test")
+# def _get_data_dir(mode: str) -> str:
+#     """Resolve the raw graph dataset location for the requested mode."""
+#     if mode == "dev":
+#         return GRAPH_DATA_DIR
+#     if mode == "test":
+#         return TEST_DATA_DIR
+#     raise ValueError("Please set mode to either 'dev' or 'test")
 
 
-def build_context(mode: str = "dev") -> None:
+def build_context() -> None:
     """Build GUI graph context JSON files for the selected bug set."""
     env_path = Path(__file__).resolve().parent.parent.parent / ".env"
     load_dotenv(env_path)
 
     screen_description_model = ChatOpenAI(model="gpt-5.4")
-    data_dir = _get_data_dir(mode)
+    # data_dir = _get_data_dir(mode)
+    data_dir = GRAPH_DATA_DIR
 
     print("Walking Bug Reports")
     if not os.path.isdir(data_dir):
