@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firefox Focus State Graph Viewer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(30, 27, 75, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        
+        .header p { font-size: 13px; color: #94a3b8; }
+        
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .controls button {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            background: rgba(51, 65, 85, 0.5);
+            color: #94a3b8;
+            transition: all 0.2s ease;
+        }
+        
+        .controls button.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: #fff;
+        }
+        
+        .main-container {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .graph-container {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            padding: 10px;
+            position: relative;
+        }
+        
+        #graph-canvas {
+            display: block;
+            border-radius: 8px;
+        }
+        
+        .info-panel {
+            width: 500px;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            padding: 16px;
+            max-height: 850px;
+            overflow-y: auto;
+        }
+        
+        .info-panel h2 {
+            font-size: 14px;
+            color: #a78bfa;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        
+        .image-section {
+            margin-bottom: 16px;
+        }
+        
+        .image-section img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: #1e1b4b;
+        }
+        
+        .image-section .placeholder {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            border: 1px dashed rgba(139, 92, 246, 0.4);
+        }
+        
+        .image-section .placeholder .icon { font-size: 28px; margin-bottom: 8px; }
+        .image-section .placeholder p { font-size: 11px; color: #a78bfa; }
+        .image-section .error { color: #f87171; font-size: 10px; margin-top: 6px; }
+        
+        .image-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .image-card {
+            background: rgba(30, 27, 75, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        
+        .image-card.highlight {
+            border-color: rgba(251, 191, 36, 0.6);
+            background: rgba(251, 191, 36, 0.1);
+        }
+        
+        .image-card label {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .image-card label .badge {
+            background: rgba(139, 92, 246, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+        }
+        
+        .image-card label .badge.source { background: rgba(59, 130, 246, 0.3); }
+        .image-card label .badge.transition { background: rgba(251, 191, 36, 0.3); color: #fbbf24; }
+        .image-card label .badge.target { background: rgba(16, 185, 129, 0.3); }
+        
+        .image-card img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-card img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+        }
+        
+        .image-card .img-error {
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #64748b;
+        }
+        
+        .image-card .img-error .icon { font-size: 20px; margin-bottom: 4px; }
+        
+        .image-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .image-row .image-card {
+            flex: 1;
+        }
+        
+        .image-row .image-card img {
+            max-height: 150px;
+        }
+        
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 18px;
+            padding: 4px 0;
+        }
+        
+        /* Image Modal / Lightbox */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            cursor: zoom-out;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .image-modal.active {
+            display: flex;
+        }
+        
+        .image-modal img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .image-modal .modal-label {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 27, 75, 0.9);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #a78bfa;
+            font-size: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .image-modal .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .image-modal .modal-close:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.1);
+        }
+        
+        .image-modal .modal-nav {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .image-modal .modal-nav button {
+            background: rgba(30, 27, 75, 0.9);
+            color: #94a3b8;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        
+        .image-modal .modal-nav button:hover {
+            background: rgba(139, 92, 246, 0.3);
+            color: #fff;
+        }
+        
+        .image-modal .modal-nav button.active {
+            background: rgba(139, 92, 246, 0.5);
+            color: #fff;
+        }
+        
+        .json-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        
+        .json-section label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .json-section pre {
+            font-size: 11px;
+            color: #94a3b8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        
+        .json-section pre .key { color: #60a5fa; }
+        .json-section pre .string { color: #34d399; }
+        .json-section pre .number { color: #f59e0b; }
+        .json-section pre .null { color: #f87171; }
+        
+        .legend {
+            margin-top: 16px;
+            padding: 12px 20px;
+            background: rgba(30, 27, 75, 0.5);
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+        }
+        
+        .legend-item .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            gap: 6px;
+        }
+        
+        .zoom-controls button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            background: rgba(30, 27, 75, 0.9);
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .zoom-controls button:hover {
+            background: rgba(139, 92, 246, 0.3);
+            color: #fff;
+        }
+        
+        .instructions {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        .instructions strong { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Firefox Focus State Graph</h1>
+        <p id="stats">Loading...</p>
+    </div>
+    
+    <div class="controls" id="filter-controls">
+        <button class="active" data-filter="all">🔗 All</button>
+        <button data-filter="click">👆 Click</button>
+        <button data-filter="type">⌨️ Type</button>
+        <button data-filter="swipe">👉 Swipe</button>
+        <button data-filter="open">📱 Open</button>
+        <button data-filter="long">👇 Long Click</button>
+    </div>
+    
+    <div class="main-container">
+        <div class="graph-container">
+            <canvas id="graph-canvas" width="850" height="600"></canvas>
+            <div class="zoom-controls">
+                <button id="zoom-in">+</button>
+                <button id="zoom-out">−</button>
+                <button id="zoom-reset">⟲</button>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h2 id="panel-title">📊 Select a node or edge</h2>
+            
+            <div class="image-section" id="image-section">
+                <div class="placeholder">
+                    <div class="icon">🖼️</div>
+                    <p>Click a node or edge to view screenshots</p>
+                    <p style="color: #64748b; margin-top: 8px;">States: states/{id}.png | Transitions: transitions/{id}.png</p>
+                </div>
+            </div>
+            
+            <div class="json-section" id="json-section">
+                <label>📋 JSON Data</label>
+                <pre id="json-content" class="instructions">Click on a <strong>node</strong> (state) or <strong>edge</strong> (transition) to see the full JSON data and screenshot.
+
+<strong>Controls:</strong>
+• Click node → View state + image
+• Click edge → View transition + target image  
+• Drag → Pan the graph
+• Scroll → Zoom in/out
+• Filter buttons → Show specific actions</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <span style="color: #64748b;">Actions:</span>
+        <div class="legend-item"><div class="dot" style="background: #10b981;"></div> click</div>
+        <div class="legend-item"><div class="dot" style="background: #f59e0b;"></div> type</div>
+        <div class="legend-item"><div class="dot" style="background: #8b5cf6;"></div> swipe</div>
+        <div class="legend-item"><div class="dot" style="background: #3b82f6;"></div> open app</div>
+        <div class="legend-item"><div class="dot" style="background: #ec4899;"></div> long click</div>
+    </div>
+    
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <div class="modal-label" id="modalLabel">Image</div>
+        <img id="modalImage" src="" alt="Full size">
+        <div class="modal-nav" id="modalNav"></div>
+    </div>
+
+    <script>
+        const STATES_FOLDER = 'states';
+        
+        const actionColors = {
+            'click': '#10b981',
+            'type': '#f59e0b', 
+            'swipe': '#8b5cf6',
+            'open': '#3b82f6',
+            'long': '#ec4899',
+            'default': '#6b7280'
+        };
+        
+        function getActionColor(name) {
+            const n = (name || '').toLowerCase();
+            for (const [k, c] of Object.entries(actionColors)) {
+                if (n.includes(k)) return c;
+            }
+            return actionColors.default;
+        }
+        
+        // Graph state
+        let nodes = [];
+        let edges = [];
+        let rawTransitions = []; // Store original JSON
+        let rawStates = []; // Store original JSON
+        let nodeMap = new Map();
+        let positions = new Map();
+        let selectedItem = null;
+        let currentFilter = 'all';
+        let transform = { x: 0, y: 0, scale: 1 };
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
+        let hoveredItem = null;
+        
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+        const stats = document.getElementById('stats');
+        const panelTitle = document.getElementById('panel-title');
+        const imageSection = document.getElementById('image-section');
+        const jsonContent = document.getElementById('json-content');
+        
+        // Load data
+        async function loadData() {
+            try {
+                const res = await fetch('transitions.json');
+                const data = await res.json();
+                processData(data);
+                calculateLayout();
+                render();
+                setupEvents();
+            } catch (e) {
+                console.error(e);
+                stats.textContent = 'Error: Make sure transitions.json is in the same folder';
+            }
+        }
+        
+        function processData(data) {
+            // Store original JSON data
+            rawTransitions = data.transitions;
+            rawStates = data.states;
+            
+            const nodeSet = new Set();
+            
+            data.transitions.forEach(t => {
+                nodeSet.add(t.source);
+                nodeSet.add(t.target);
+            });
+            
+            nodeSet.forEach(id => {
+                const state = data.states.find(s => s.id === id);
+                const node = {
+                    id,
+                    shortId: id.substring(0, 8),
+                    activity: state?.activity || 'Unknown',
+                    dataSource: state?.data_source || '?',
+                    screenshot: state?.screenshot
+                };
+                nodes.push(node);
+                nodeMap.set(id, node);
+            });
+            
+            edges = data.transitions.map(t => ({
+                ...t,
+                actionName: t.action?.name || 'unknown'
+            }));
+            
+            stats.textContent = `${nodes.length} states • ${edges.length} transitions`;
+        }
+        
+        function calculateLayout() {
+            const W = canvas.width, H = canvas.height;
+            const N = nodes.length;
+            
+            // Initial circular layout
+            nodes.forEach((node, i) => {
+                const angle = (2 * Math.PI * i) / N - Math.PI / 2;
+                const r = Math.min(W, H) * 0.38;
+                positions.set(node.id, {
+                    x: W / 2 + r * Math.cos(angle),
+                    y: H / 2 + r * Math.sin(angle),
+                    vx: 0, vy: 0
+                });
+            });
+            
+            // Force simulation
+            for (let iter = 0; iter < 200; iter++) {
+                // Repulsion
+                for (let i = 0; i < N; i++) {
+                    for (let j = i + 1; j < N; j++) {
+                        const p1 = positions.get(nodes[i].id);
+                        const p2 = positions.get(nodes[j].id);
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                        const f = 6000 / (d * d);
+                        const fx = (dx / d) * f;
+                        const fy = (dy / d) * f;
+                        p1.vx -= fx; p1.vy -= fy;
+                        p2.vx += fx; p2.vy += fy;
+                    }
+                }
+                
+                // Attraction along edges
+                edges.forEach(e => {
+                    const p1 = positions.get(e.source);
+                    const p2 = positions.get(e.target);
+                    if (!p1 || !p2 || e.source === e.target) return;
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const f = (d - 120) * 0.02;
+                    const fx = (dx / d) * f;
+                    const fy = (dy / d) * f;
+                    p1.vx += fx; p1.vy += fy;
+                    p2.vx -= fx; p2.vy -= fy;
+                });
+                
+                // Center gravity
+                positions.forEach(p => {
+                    p.vx += (W / 2 - p.x) * 0.001;
+                    p.vy += (H / 2 - p.y) * 0.001;
+                });
+                
+                // Apply with damping
+                positions.forEach(p => {
+                    p.x += p.vx * 0.1;
+                    p.y += p.vy * 0.1;
+                    p.vx *= 0.85;
+                    p.vy *= 0.85;
+                    p.x = Math.max(40, Math.min(W - 40, p.x));
+                    p.y = Math.max(40, Math.min(H - 40, p.y));
+                });
+            }
+        }
+        
+        function getFilteredEdges() {
+            if (currentFilter === 'all') return edges;
+            return edges.filter(e => e.actionName.toLowerCase().includes(currentFilter));
+        }
+        
+        function screenToWorld(sx, sy) {
+            return {
+                x: (sx - transform.x) / transform.scale,
+                y: (sy - transform.y) / transform.scale
+            };
+        }
+        
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(transform.x, transform.y);
+            ctx.scale(transform.scale, transform.scale);
+            
+            const filteredEdges = getFilteredEdges();
+            
+            // Group edges by ordered source-target pair (keep direction)
+            const edgeGroups = new Map();
+            filteredEdges.forEach(e => {
+                const key = `${e.source}|${e.target}`;
+                if (!edgeGroups.has(key)) edgeGroups.set(key, []);
+                edgeGroups.get(key).push(e);
+            });
+            
+            // Draw edges
+            edgeGroups.forEach((group, key) => {
+                group.forEach((edge, idx) => {
+                    const p1 = positions.get(edge.source);
+                    const p2 = positions.get(edge.target);
+                    if (!p1 || !p2) return;
+                    
+                    const isSelected = selectedItem?.type === 'edge' && selectedItem.id === edge.id;
+                    const isHovered = hoveredItem?.type === 'edge' && hoveredItem.id === edge.id;
+                    const color = getActionColor(edge.actionName);
+                    
+                    ctx.strokeStyle = isSelected || isHovered ? color : 'rgba(100, 116, 139, 0.5)';
+                    ctx.lineWidth = isSelected ? 3 : isHovered ? 2.5 : 1.5;
+                    
+                    if (edge.source === edge.target) {
+                        // Self-loop - draw a loop above the node
+                        const p = p1;
+                        const loopRadius = 30;
+                        const loopOffsetY = -25;
+                        
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y + loopOffsetY - loopRadius, loopRadius, 0.3 * Math.PI, 0.7 * Math.PI, true);
+                        ctx.stroke();
+                        
+                        // Arrow for self-loop
+                        const arrowX = p.x + loopRadius * Math.cos(0.7 * Math.PI);
+                        const arrowY = p.y + loopOffsetY - loopRadius + loopRadius * Math.sin(0.7 * Math.PI);
+                        const arrowAngle = 0.2 * Math.PI;
+                        
+                        ctx.beginPath();
+                        ctx.fillStyle = isSelected || isHovered ? color : 'rgba(100, 116, 139, 0.7)';
+                        const arrowLen = 8;
+                        const arrowAng = 0.4;
+                        ctx.moveTo(arrowX, arrowY);
+                        ctx.lineTo(arrowX - arrowLen * Math.cos(arrowAngle - arrowAng), arrowY - arrowLen * Math.sin(arrowAngle - arrowAng));
+                        ctx.lineTo(arrowX - arrowLen * Math.cos(arrowAngle + arrowAng), arrowY - arrowLen * Math.sin(arrowAngle + arrowAng));
+                        ctx.closePath();
+                        ctx.fill();
+                        return;
+                    }
+                    
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                    
+                    // Check if there are edges in both directions
+                    const reverseKey = `${edge.target}|${edge.source}`;
+                    const hasReverse = edgeGroups.has(reverseKey);
+                    
+                    // Calculate offset for parallel/bidirectional edges
+                    let offset = 0;
+                    if (group.length > 1) {
+                        offset = (idx - (group.length - 1) / 2) * 20;
+                    } else if (hasReverse) {
+                        offset = 15; // Offset when there's a reverse edge
+                    }
+                    
+                    // Control point for quadratic curve
+                    const mx = (p1.x + p2.x) / 2 + (-dy / d) * offset;
+                    const my = (p1.y + p2.y) / 2 + (dx / d) * offset;
+                    
+                    // Draw curve
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.quadraticCurveTo(mx, my, p2.x, p2.y);
+                    ctx.stroke();
+                    
+                    // Arrowhead - calculate position along curve
+                    const nodeRadius = 20;
+                    // Find t where curve is nodeRadius away from p2
+                    let t = 1 - (nodeRadius / d);
+                    t = Math.max(0.7, Math.min(0.95, t));
+                    
+                    const ax = (1-t)*(1-t)*p1.x + 2*(1-t)*t*mx + t*t*p2.x;
+                    const ay = (1-t)*(1-t)*p1.y + 2*(1-t)*t*my + t*t*p2.y;
+                    
+                    // Tangent at point t
+                    const tx = 2*(1-t)*(mx-p1.x) + 2*t*(p2.x-mx);
+                    const ty = 2*(1-t)*(my-p1.y) + 2*t*(p2.y-my);
+                    const angle = Math.atan2(ty, tx);
+                    
+                    // Draw arrow
+                    ctx.beginPath();
+                    ctx.fillStyle = isSelected || isHovered ? color : 'rgba(100, 116, 139, 0.7)';
+                    const arrowLen = 10;
+                    const arrowAng = 0.4;
+                    ctx.moveTo(ax + arrowLen * Math.cos(angle), ay + arrowLen * Math.sin(angle));
+                    ctx.lineTo(ax - arrowLen * Math.cos(angle - arrowAng), ay - arrowLen * Math.sin(angle - arrowAng));
+                    ctx.lineTo(ax - arrowLen * Math.cos(angle + arrowAng), ay - arrowLen * Math.sin(angle + arrowAng));
+                    ctx.closePath();
+                    ctx.fill();
+                });
+            });
+            
+            // Draw nodes
+            nodes.forEach(node => {
+                const p = positions.get(node.id);
+                if (!p) return;
+                
+                const isSelected = selectedItem?.type === 'node' && selectedItem.id === node.id;
+                const isHovered = hoveredItem?.type === 'node' && hoveredItem.id === node.id;
+                const r = isSelected ? 24 : isHovered ? 22 : 20;
+                
+                // Glow for selected
+                if (isSelected) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, r + 8, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(167, 139, 250, 0.2)';
+                    ctx.fill();
+                }
+                
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = isSelected ? '#6366f1' : isHovered ? '#7c3aed' : '#4f46e5';
+                ctx.fill();
+                ctx.strokeStyle = isSelected ? '#a78bfa' : '#64748b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Label
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '9px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.shortId, p.x, p.y + r + 12);
+            });
+            
+            ctx.restore();
+        }
+        
+        function hitTest(x, y) {
+            const w = screenToWorld(x, y);
+            
+            // Check nodes first
+            for (const node of nodes) {
+                const p = positions.get(node.id);
+                if (!p) continue;
+                const dx = w.x - p.x, dy = w.y - p.y;
+                if (dx * dx + dy * dy < 25 * 25) {
+                    return { type: 'node', id: node.id, data: node };
+                }
+            }
+            
+            // Check edges
+            const filteredEdges = getFilteredEdges();
+            const edgeGroups = new Map();
+            filteredEdges.forEach(e => {
+                const key = `${e.source}|${e.target}`;
+                if (!edgeGroups.has(key)) edgeGroups.set(key, []);
+                edgeGroups.get(key).push(e);
+            });
+            
+            for (const edge of filteredEdges) {
+                const p1 = positions.get(edge.source);
+                const p2 = positions.get(edge.target);
+                if (!p1 || !p2) continue;
+                
+                // Self-loop hit detection
+                if (edge.source === edge.target) {
+                    const p = p1;
+                    const loopRadius = 30;
+                    const loopOffsetY = -25;
+                    const loopCenterX = p.x;
+                    const loopCenterY = p.y + loopOffsetY - loopRadius;
+                    
+                    // Check if click is near the loop arc
+                    const dxLoop = w.x - loopCenterX;
+                    const dyLoop = w.y - loopCenterY;
+                    const distToCenter = Math.sqrt(dxLoop * dxLoop + dyLoop * dyLoop);
+                    
+                    // Click is on the loop if distance to center is close to loopRadius
+                    if (Math.abs(distToCenter - loopRadius) < 15) {
+                        return { type: 'edge', id: edge.id, data: edge };
+                    }
+                    continue;
+                }
+                
+                const dx = p2.x - p1.x, dy = p2.y - p1.y;
+                const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                
+                const key = `${edge.source}|${edge.target}`;
+                const group = edgeGroups.get(key) || [];
+                const idx = group.indexOf(edge);
+                const reverseKey = `${edge.target}|${edge.source}`;
+                const hasReverse = edgeGroups.has(reverseKey);
+                
+                let offset = 0;
+                if (group.length > 1) {
+                    offset = (idx - (group.length - 1) / 2) * 20;
+                } else if (hasReverse) {
+                    offset = 15;
+                }
+                
+                const mx = (p1.x + p2.x) / 2 + (-dy / d) * offset;
+                const my = (p1.y + p2.y) / 2 + (dx / d) * offset;
+                
+                // Check distance to curve at multiple points
+                for (let t = 0.1; t <= 0.9; t += 0.05) {
+                    const cx = (1-t)*(1-t)*p1.x + 2*(1-t)*t*mx + t*t*p2.x;
+                    const cy = (1-t)*(1-t)*p1.y + 2*(1-t)*t*my + t*t*p2.y;
+                    const cdx = w.x - cx, cdy = w.y - cy;
+                    if (cdx * cdx + cdy * cdy < 12 * 12) {
+                        return { type: 'edge', id: edge.id, data: edge };
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        function selectItem(item) {
+            selectedItem = item;
+            
+            if (!item) {
+                panelTitle.textContent = '📊 Select a node or edge';
+                imageSection.innerHTML = `<div class="placeholder"><div class="icon">🖼️</div><p>Click a node or edge to view screenshots</p></div>`;
+                jsonContent.textContent = 'No selection';
+                render();
+                return;
+            }
+            
+            if (item.type === 'node') {
+                panelTitle.textContent = `🔘 State: ${item.data.activity}`;
+                showNodeImages(item.id);
+                // Find original state JSON
+                const rawState = rawStates.find(s => s.id === item.id);
+                showJson(rawState || item.data);
+            } else {
+                const srcNode = nodeMap.get(item.data.source);
+                const tgtNode = nodeMap.get(item.data.target);
+                panelTitle.textContent = `➡️ ${item.data.actionName}: ${srcNode?.shortId} → ${tgtNode?.shortId}`;
+                showTransitionImages(item.data);
+                // Find original transition JSON
+                const rawTransition = rawTransitions.find(t => t.id === item.data.id);
+                showJson(rawTransition || item.data);
+            }
+            
+            render();
+        }
+        
+        function showNodeImages(nodeId) {
+            const imgPath = `${STATES_FOLDER}/${nodeId}.png`;
+            currentImages = [{ path: imgPath, label: 'State', id: nodeId }];
+            
+            imageSection.innerHTML = `
+                <div class="image-group">
+                    <div class="image-card">
+                        <label><span class="badge">STATE</span> ${nodeId.substring(0, 16)}...</label>
+                        <img src="${imgPath}" alt="State screenshot" 
+                             onclick="openModal(0)"
+                             onerror="this.onerror=null; this.outerHTML='<div class=\\'img-error\\'><div class=\\'icon\\'>🖼️</div>Image not found<br><small>${imgPath}</small></div>'"/>
+                    </div>
+                </div>
+            `;
+        }
+        
+        let currentImages = [];
+        let currentModalIndex = 0;
+        
+        function showTransitionImages(edge) {
+            const sourceId = edge.source;
+            const targetId = edge.target;
+            const transitionId = edge.id;
+            
+            const sourcePath = `${STATES_FOLDER}/${sourceId}.png`;
+            const transitionPath = `transitions/${transitionId}.png`;
+            const targetPath = `${STATES_FOLDER}/${targetId}.png`;
+            
+            const isSelfLoop = sourceId === targetId;
+            
+            // Store images for modal navigation
+            if (isSelfLoop) {
+                currentImages = [
+                    { path: sourcePath, label: 'Source State', id: sourceId },
+                    { path: transitionPath, label: 'Transition (Annotated)', id: transitionId }
+                ];
+            } else {
+                currentImages = [
+                    { path: sourcePath, label: 'Source State', id: sourceId },
+                    { path: transitionPath, label: 'Transition (Annotated)', id: transitionId },
+                    { path: targetPath, label: 'Target State', id: targetId }
+                ];
+            }
+            
+            imageSection.innerHTML = `
+                <div class="image-group">
+                    <div class="image-row">
+                        <div class="image-card">
+                            <label><span class="badge source">SOURCE</span></label>
+                            <img src="${sourcePath}" alt="Source state" 
+                                 onclick="openModal(0)"
+                                 onerror="this.onerror=null; this.outerHTML='<div class=\\'img-error\\'><div class=\\'icon\\'>🖼️</div>${sourceId.substring(0,8)}...</div>'"/>
+                        </div>
+                        ${!isSelfLoop ? `
+                        <div class="image-card">
+                            <label><span class="badge target">TARGET</span></label>
+                            <img src="${targetPath}" alt="Target state" 
+                                 onclick="openModal(2)"
+                                 onerror="this.onerror=null; this.outerHTML='<div class=\\'img-error\\'><div class=\\'icon\\'>🖼️</div>${targetId.substring(0,8)}...</div>'"/>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="flow-arrow">▼ Action: ${edge.actionName} ▼</div>
+                    <div class="image-card highlight">
+                        <label><span class="badge transition">TRANSITION (Annotated)</span></label>
+                        <img src="${transitionPath}" alt="Transition annotation" 
+                             onclick="openModal(1)"
+                             onerror="this.onerror=null; this.outerHTML='<div class=\\'img-error\\'><div class=\\'icon\\'>🖼️</div>Transition image not found<br><small>transitions/${transitionId.substring(0,16)}...</small></div>'"/>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function openModal(index) {
+            currentModalIndex = index;
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalLabel = document.getElementById('modalLabel');
+            const modalNav = document.getElementById('modalNav');
+            
+            const img = currentImages[index];
+            modalImage.src = img.path;
+            modalLabel.textContent = `${img.label} - ${img.id.substring(0, 20)}...`;
+            
+            // Build navigation buttons
+            modalNav.innerHTML = currentImages.map((img, i) => `
+                <button class="${i === index ? 'active' : ''}" onclick="openModal(${i}); event.stopPropagation();">
+                    ${img.label}
+                </button>
+            `).join('');
+            
+            modal.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+        
+        // Close modal on background click
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        
+        // Keyboard navigation for modal
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('imageModal');
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft' && currentModalIndex > 0) openModal(currentModalIndex - 1);
+            if (e.key === 'ArrowRight' && currentModalIndex < currentImages.length - 1) openModal(currentModalIndex + 1);
+        });
+        
+        function showJson(data) {
+            const json = JSON.stringify(data, null, 2);
+            // Syntax highlighting
+            const highlighted = json
+                .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
+                .replace(/: "([^"]*)"/g, ': <span class="string">"$1"</span>')
+                .replace(/: (\d+\.?\d*)/g, ': <span class="number">$1</span>')
+                .replace(/: null/g, ': <span class="null">null</span>');
+            
+            jsonContent.innerHTML = highlighted;
+        }
+        
+        function setupEvents() {
+            // Filter buttons
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    render();
+                });
+            });
+            
+            // Zoom
+            document.getElementById('zoom-in').onclick = () => { transform.scale *= 1.2; render(); };
+            document.getElementById('zoom-out').onclick = () => { transform.scale /= 1.2; render(); };
+            document.getElementById('zoom-reset').onclick = () => { transform = { x: 0, y: 0, scale: 1 }; render(); };
+            
+            canvas.addEventListener('wheel', e => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                
+                const wx = (mx - transform.x) / transform.scale;
+                const wy = (my - transform.y) / transform.scale;
+                
+                transform.scale *= delta;
+                transform.scale = Math.max(0.3, Math.min(3, transform.scale));
+                
+                transform.x = mx - wx * transform.scale;
+                transform.y = my - wy * transform.scale;
+                
+                render();
+            });
+            
+            canvas.addEventListener('mousedown', e => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const hit = hitTest(x, y);
+                if (hit) {
+                    selectItem(hit);
+                } else {
+                    isDragging = true;
+                    dragStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+                    canvas.style.cursor = 'grabbing';
+                }
+            });
+            
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (isDragging) {
+                    transform.x = e.clientX - dragStart.x;
+                    transform.y = e.clientY - dragStart.y;
+                    render();
+                } else {
+                    const hit = hitTest(x, y);
+                    if (hit?.id !== hoveredItem?.id) {
+                        hoveredItem = hit;
+                        canvas.style.cursor = hit ? 'pointer' : 'grab';
+                        render();
+                    }
+                }
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+                canvas.style.cursor = hoveredItem ? 'pointer' : 'grab';
+            });
+            
+            canvas.addEventListener('mouseleave', () => {
+                isDragging = false;
+                hoveredItem = null;
+                render();
+            });
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>
