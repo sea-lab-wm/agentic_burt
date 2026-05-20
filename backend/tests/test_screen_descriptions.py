@@ -112,7 +112,7 @@ class ScreenDescriptionTests(unittest.TestCase):
         )
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_root = Path(temp_dir) / "json_graph_data" / "AstroBR"
+            output_root = Path(temp_dir) / "json_graph_data" / "BugScribe_dev"
 
             with (
                 patch.object(build_context_module, "SELECTED_DATA", {2: "Family_Finance"}),
@@ -144,7 +144,7 @@ class ScreenDescriptionTests(unittest.TestCase):
 
     def test_build_context_uses_empty_array_for_blank_screen_descriptions(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_root = Path(temp_dir) / "json_graph_data" / "AstroBR"
+            output_root = Path(temp_dir) / "json_graph_data" / "BugScribe_dev"
 
             with (
                 patch.object(build_context_module, "SELECTED_DATA", {2: "Family_Finance"}),
@@ -167,7 +167,7 @@ class ScreenDescriptionTests(unittest.TestCase):
 
     def test_build_context_skips_missing_bug_folder_and_continues(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_root = Path(temp_dir) / "json_graph_data" / "AstroBR"
+            output_root = Path(temp_dir) / "json_graph_data" / "BugScribe_dev"
 
             def fake_get_graph_file_path(_data_dir, bug_id):
                 if bug_id == 2:
@@ -219,7 +219,7 @@ class ScreenDescriptionTests(unittest.TestCase):
 
     def test_build_context_overwrites_existing_output_file(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_root = Path(temp_dir) / "json_graph_data" / "AstroBR"
+            output_root = Path(temp_dir) / "json_graph_data" / "BugScribe_dev"
             output_path = output_root / "bug2" / "context.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text('{"stale": true}\n', encoding="utf-8")
