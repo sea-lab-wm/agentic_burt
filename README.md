@@ -30,6 +30,16 @@ Before starting the containers, make sure these inputs exist:
 - a root `.env` file with the OpenAI credentials required by `langchain-openai`
 - a GUI graph context dataset directory at `backend/json_graph_data/[dataset]`
 
+### Add `.env` file to root:
+1. Create a `.env` file in root with the OpenAI credentials required by `langchain-openai`.
+    * Add your OpenAI API key: `OPENAI_API_KEY=<your-key>`
+
+### Install Docker (if not installed already):
+1. Download from: https://www.docker.com/products/docker-desktop
+2. Install and open it
+3. Keep the Docker Desktop app running
+4. Verify the installation: ```docker --version```
+
 ### Frontend + Container Backend Startup Path
 
 The current UI workflow is:
