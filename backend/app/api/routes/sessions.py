@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
 from redis.exceptions import RedisError
 
@@ -19,6 +21,7 @@ from app.services.session_store import get_session, ping
 from gui_graph_context_management.loader import list_active_bug_ids
 
 sessions_router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @sessions_router.get("/healthz")
@@ -44,10 +47,20 @@ def active_bugs() -> ActiveBugIdsResponse:
 @sessions_router.post("/sessions", response_model=ConversationTurnResponse)
 def create_session(create_session_request: CreateSessionRequest) -> ConversationTurnResponse:
     """Start a new agent conversation for the requested bug and initial user description."""
-    return start_conversation(
-        bug_id=create_session_request.bug_id,
-        user_description=create_session_request.user_description,
-    )
+    try:
+        return start_conversation(
+            bug_id=create_session_request.bug_id,
+            user_description=create_session_request.user_description,
+        )
+    except Exception as exc:
+        logger.exception(
+            "Failed to start conversation for bug_id=%s.",
+            create_session_request.bug_id,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to start BURT++ conversation: {type(exc).__name__}",
+        ) from exc
 
 
 @sessions_router.get("/sessions/{session_id}", response_model=ConversationTurnResponse)
