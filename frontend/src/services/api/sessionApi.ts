@@ -5,6 +5,8 @@ import type {
   ResumeConversationRequest,
 } from "../../features/chat/types/api";
 
+const API_BASE_PATH = (import.meta.env.VITE_API_BASE_PATH ?? "/api").replace(/\/$/, "");
+
 export class ApiError extends Error {
   status: number;
 
@@ -13,6 +15,10 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
   }
+}
+
+function apiPath(path: string): string {
+  return `${API_BASE_PATH}${path}`;
 }
 
 async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -35,14 +41,14 @@ async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T
 export function createSession(
   payload: CreateSessionRequest,
 ): Promise<ConversationTurnResponse> {
-  return requestJson<ConversationTurnResponse>("/api/sessions", {
+  return requestJson<ConversationTurnResponse>(apiPath("/sessions"), {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
 export function fetchActiveBugIds(): Promise<ActiveBugIdsResponse> {
-  return requestJson<ActiveBugIdsResponse>("/api/bugs/active");
+  return requestJson<ActiveBugIdsResponse>(apiPath("/bugs/active"));
 }
 
 export function resumeSession(
@@ -50,7 +56,7 @@ export function resumeSession(
   payload: ResumeConversationRequest,
 ): Promise<ConversationTurnResponse> {
   return requestJson<ConversationTurnResponse>(
-    `/api/sessions/${sessionId}/messages`,
+    apiPath(`/sessions/${sessionId}/messages`),
     {
       method: "POST",
       body: JSON.stringify(payload),

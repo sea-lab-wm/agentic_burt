@@ -52,8 +52,8 @@ docker compose up --build
 
 This starts:
 
-- the frontend nginx service on `http://localhost:8080`
-- the FastAPI service inside the Compose network as `http://api:8000`
+- the frontend nginx service on `http://localhost:3000`
+- the FastAPI service inside the Compose network as `http://api:3000`
 - the Redis service used for session storage and LangGraph checkpointing
 - the session API consumed by the frontend, including:
   - `GET /healthz`
@@ -62,12 +62,12 @@ This starts:
   - `GET /sessions/{session_id}`
   - `POST /sessions/{session_id}/messages`
 
-2. Open the frontend at `http://localhost:8080`.
+2. Open the frontend at `http://localhost:3000`.
 
 Notes:
 
 - The backend API is not exposed directly on the host.
-- Browser API calls go through nginx at `/api/...`, which proxies to the internal `api:8000` service.
+- Browser API calls go through nginx at `/api/...`, which proxies to the internal `api:3000` service.
 
 Stop the deployment with:
 
