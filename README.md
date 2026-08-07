@@ -13,15 +13,15 @@ The current workflow is:
 The active backend defaults live in [backend/config.py](backend/config.py). Below you can see what each default affects:
 
 1. `MODEL_NAME = ...`
-    - What gpt model the agent uses
+   - What gpt model the agent uses
 2. `PROMPT_VERSION = ...`
-    - what set of prompts stored in prompt_versioning is active
-    - where BURT writes logs: `logs/<PROMPT_VERSION>/`
-    - where the evaluator writes results: `results/<agent_version>/`
+   - what set of prompts stored in prompt_versioning is active
+   - where BURT writes logs: `logs/<PROMPT_VERSION>/`
+   - where the evaluator writes results: `results/<agent_version>/`
 3. `DATASET = ...`
-    - which dataset BURT uses for CSV input/ground truth and JSON graph context
-    - CSV path convention: `gt_and_test_data/<DATASET>.csv`
-    - graph context path convention: `json_graph_data/<DATASET>/`
+   - which dataset BURT uses for CSV input/ground truth and JSON graph context
+   - CSV path convention: `gt_and_test_data/<DATASET>.csv`
+   - graph context path convention: `json_graph_data/<DATASET>/`
 
 ## Run The Containerized Deployment
 
@@ -31,14 +31,16 @@ Before starting the containers, make sure these inputs exist:
 - a GUI graph context dataset directory at `backend/json_graph_data/[dataset]`
 
 ### Add `.env` file to root:
+
 1. Create a `.env` file in root with the OpenAI credentials required by `langchain-openai`.
-    * Add your OpenAI API key: `OPENAI_API_KEY=<your-key>`
+   * Add your OpenAI API key: `OPENAI_API_KEY=<your-key>`
 
 ### Install Docker (if not installed already):
+
 1. Download from: https://www.docker.com/products/docker-desktop
 2. Install and open it
 3. Keep the Docker Desktop app running
-4. Verify the installation: ```docker --version```
+4. Verify the installation: ``docker --version``
 
 ### Frontend + Container Backend Startup Path
 
@@ -62,9 +64,9 @@ This starts:
   - `GET /sessions/{session_id}`
   - `POST /sessions/{session_id}/messages`
 
-2. Open the frontend at: 
-    * Local machine: `http://localhost:3000`
-    * SEA-Lab server: `http://rocco.cs.wm.edu:21202`
+2. Open the frontend at:
+   * Local machine: `http://localhost:3000`
+   * SEA-Lab server: `http://rocco.cs.wm.edu:21202`
 
 Notes:
 

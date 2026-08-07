@@ -200,29 +200,13 @@ describe("App", () => {
     expect(screen.queryByText(/<abc-123>|<def-456>/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
-    const editor = screen.getByLabelText("Bug report JSON");
-    expect(editor).toHaveValue(
-      JSON.stringify(
-        {
-          title: "Crash on save",
-          steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
-        },
-        null,
-        2,
-      ),
+    expect(screen.getByLabelText("Title")).toHaveValue("Crash on save");
+    expect(screen.getByLabelText("Steps To Reproduce")).toHaveValue(
+      "1. Open the app.\n2. Tap Save.",
     );
 
-    fireEvent.change(editor, {
-      target: {
-        value: JSON.stringify(
-          {
-            title: "Edited crash on save",
-            steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
-          },
-          null,
-          2,
-        ),
-      },
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Edited crash on save" },
     });
     await user.click(screen.getByRole("button", { name: "Save" }));
 

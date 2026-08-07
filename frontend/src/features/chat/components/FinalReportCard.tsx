@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 type FinalReportCardProps = {
   report: Record<string, unknown>;
   heading?: string;
   onSave?: (report: Record<string, unknown>) => Promise<void>;
+};
+
+type EditableField = {
+  key: string;
+  label: string;
+  text: string;
+  originalValue: unknown;
 };
 
 function formatLabel(label: string): string {
@@ -64,6 +71,87 @@ function renderValue(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
+function isPrimitiveValue(value: unknown): boolean {
+  return (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  );
+}
+
+function isPrimitiveList(value: unknown): value is unknown[] {
+  return Array.isArray(value) && value.every(isPrimitiveValue);
+}
+
+function toEditableText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (isPrimitiveList(value)) {
+    return value.map(String).join("\n");
+  }
+
+  return JSON.stringify(value, null, 2);
+}
+
+export function buildEditableFields(
+  report: Record<string, unknown>,
+): EditableField[] {
+  return Object.entries(report).map(([key, value]) => ({
+    key,
+    label: formatLabel(key),
+    text: toEditableText(value),
+    originalValue: value,
+  }));
+}
+
+function parseFieldText(field: EditableField): unknown {
+  const { originalValue, text } = field;
+
+  if (typeof originalValue === "number") {
+    const parsed = Number(text.trim());
+    return text.trim() !== "" && Number.isFinite(parsed) ? parsed : text;
+  }
+
+  if (typeof originalValue === "boolean") {
+    const normalized = text.trim().toLowerCase();
+    if (normalized === "true" || normalized === "false") {
+      return normalized === "true";
+    }
+    return text;
+  }
+
+  if (isPrimitiveList(originalValue)) {
+    return text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+  }
+
+  if (originalValue !== null && typeof originalValue === "object") {
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error(`Enter valid JSON for ${field.label}.`);
+    }
+  }
+
+  return text;
+}
+
+export function buildReportFromFields(
+  fields: EditableField[],
+): Record<string, unknown> {
+  return Object.fromEntries(
+    fields.map((field) => [field.key, parseFieldText(field)]),
+  );
+}
+
 export function FinalReportCard({
   report,
   heading = "Draft report",
@@ -71,35 +159,37 @@ export function FinalReportCard({
 }: FinalReportCardProps) {
   const displayReport = sanitizeReportForDisplay(report);
   const entries = Object.entries(displayReport);
+  const fieldIdPrefix = useId();
   const [isEditing, setIsEditing] = useState(false);
-  const [editorValue, setEditorValue] = useState(() =>
-    JSON.stringify(displayReport, null, 2),
+  const [fields, setFields] = useState<EditableField[]>(() =>
+    buildEditableFields(displayReport),
   );
   const [editorError, setEditorError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   function openEditor(): void {
-    setEditorValue(JSON.stringify(displayReport, null, 2));
+    setFields(buildEditableFields(displayReport));
     setEditorError(null);
     setIsEditing(true);
   }
 
+  function updateField(key: string, text: string): void {
+    setFields((currentFields) =>
+      currentFields.map((field) =>
+        field.key === key ? { ...field, text } : field,
+      ),
+    );
+  }
+
   async function saveEditedReport(): Promise<void> {
-    let parsedReport: unknown;
+    let editedReport: Record<string, unknown>;
 
     try {
-      parsedReport = JSON.parse(editorValue);
-    } catch {
-      setEditorError("Enter a valid JSON object before saving.");
-      return;
-    }
-
-    if (
-      parsedReport === null ||
-      typeof parsedReport !== "object" ||
-      Array.isArray(parsedReport)
-    ) {
-      setEditorError("The report must be a JSON object.");
+      editedReport = buildReportFromFields(fields);
+    } catch (error) {
+      setEditorError(
+        error instanceof Error ? error.message : "Unable to read the edited report.",
+      );
       return;
     }
 
@@ -107,7 +197,7 @@ export function FinalReportCard({
     setEditorError(null);
 
     try {
-      await onSave?.(parsedReport as Record<string, unknown>);
+      await onSave?.(editedReport);
       setIsEditing(false);
     } catch (error) {
       setEditorError(error instanceof Error ? error.message : "Unable to save report.");
@@ -155,13 +245,30 @@ export function FinalReportCard({
                 X
               </button>
             </div>
-            <textarea
-              className="report-editor__textarea"
-              aria-label="Bug report JSON"
-              value={editorValue}
-              onChange={(event) => setEditorValue(event.target.value)}
-              spellCheck={false}
-            />
+            <div className="report-editor__fields">
+              {fields.map((field) => (
+                <div key={field.key} className="report-editor__field">
+                  <label
+                    className="report-editor__label"
+                    htmlFor={`${fieldIdPrefix}-${field.key}`}
+                  >
+                    {field.label}
+                  </label>
+                  <div
+                    className="report-editor__autogrow"
+                    data-replicated-value={field.text}
+                  >
+                    <textarea
+                      id={`${fieldIdPrefix}-${field.key}`}
+                      className="report-editor__input"
+                      rows={1}
+                      value={field.text}
+                      onChange={(event) => updateField(field.key, event.target.value)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
             {editorError ? <p className="report-editor__error">{editorError}</p> : null}
             <div className="report-editor__actions">
               <button

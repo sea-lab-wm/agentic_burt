@@ -236,20 +236,22 @@ textarea {
   position: fixed;
   inset: 0;
   z-index: 30;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 1.5rem 1rem;
   background: rgba(19, 35, 31, 0.42);
 }
 
 .report-editor__panel {
   display: grid;
-  gap: 1rem;
-  width: min(100%, 46rem);
-  max-height: min(90vh, 46rem);
-  padding: 1rem;
+  gap: 1.25rem;
+  align-content: start;
+  width: min(100%, 64rem);
+  margin: auto;
+  padding: 1.5rem;
   border: 1px solid rgba(19, 35, 31, 0.12);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   background: #fffbf3;
   box-shadow: 0 24px 70px rgba(19, 35, 31, 0.24);
 }
@@ -271,20 +273,58 @@ textarea {
   cursor: pointer;
 }
 
-.report-editor__textarea {
+.report-editor__fields {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.report-editor__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.report-editor__label {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #445048;
+}
+
+/* The pseudo-element mirrors the textarea value so the field grows with its
+   content instead of scrolling. Both boxes must render identically. */
+.report-editor__autogrow {
+  display: grid;
+}
+
+.report-editor__autogrow::after {
+  content: attr(data-replicated-value) " ";
+  visibility: hidden;
+}
+
+.report-editor__autogrow > textarea {
+  resize: none;
+  overflow: hidden;
+}
+
+.report-editor__autogrow > textarea,
+.report-editor__autogrow::after {
+  grid-area: 1 / 1 / 2 / 2;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 22rem;
-  resize: vertical;
-  padding: 0.85rem;
+  min-height: 2.9rem;
+  padding: 0.7rem 0.85rem;
   border: 1px solid rgba(19, 35, 31, 0.16);
   border-radius: 0.5rem;
   background: #fffdf8;
   color: #13231f;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 0.9rem;
+  font: inherit;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
-.report-editor__textarea:focus {
+.report-editor__input:focus {
   outline: 2px solid rgba(43, 74, 64, 0.28);
   outline-offset: 2px;
 }
@@ -405,5 +445,13 @@ textarea {
 
   .message-bubble {
     max-width: 100%;
+  }
+
+  .report-editor {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .report-editor__panel {
+    padding: 1rem;
   }
 }
