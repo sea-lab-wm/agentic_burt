@@ -381,6 +381,7 @@ textarea {
   box-shadow: 0 16px 45px rgba(47, 41, 30, 0.1);
 }
 
+/* Height is set from JS as the draft grows, capped at 40% of the viewport. */
 .composer__input {
   width: 100%;
   resize: none;
@@ -397,17 +398,27 @@ textarea {
 
 .composer__submit {
   align-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 0;
-  border-radius: 999px;
-  padding: 0.8rem 1.2rem;
+  border-radius: 0.9rem;
+  padding: 0;
   background: #2b4a40;
   color: #fcfbf7;
   cursor: pointer;
 }
 
-.composer__submit:disabled,
 .composer__input:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.composer__submit:disabled {
+  background: rgba(19, 35, 31, 0.14);
+  color: rgba(19, 35, 31, 0.42);
   cursor: not-allowed;
 }
 
@@ -433,14 +444,6 @@ textarea {
 
   .bug-selector {
     justify-content: space-between;
-  }
-
-  .composer {
-    grid-template-columns: 1fr;
-  }
-
-  .composer__submit {
-    width: 100%;
   }
 
   .message-bubble {
