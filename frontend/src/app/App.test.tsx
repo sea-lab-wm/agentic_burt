@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -156,6 +156,90 @@ describe("App", () => {
     expect(await screen.findByText("Draft report")).toBeInTheDocument();
     expect(screen.getByLabelText("Message BURT")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+  });
+
+  it("hides step identifiers and appends an edited final report after save", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [2, 10, 135] }));
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        session_id: "session-456",
+        status: "completed",
+        question: null,
+        final_report: {
+          title: "Crash on save",
+          steps_to_reproduce: "1. Open the app. <abc-123>\n2. Tap Save. <def-456>",
+        },
+      }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        session_id: "session-456",
+        status: "completed",
+        question: null,
+        final_report: {
+          title: "Edited crash on save",
+          steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
+        },
+      }),
+    );
+
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText("I’m BURT++, your bug reporting assistant.");
+
+    await user.type(screen.getByLabelText("Message BURT"), "The app crashed.");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+
+    expect(await screen.findByText("Draft report")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) =>
+        element?.tagName.toLowerCase() === "p" &&
+        element.textContent === "1. Open the app.\n2. Tap Save.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/<abc-123>|<def-456>/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    const editor = screen.getByLabelText("Bug report JSON");
+    expect(editor).toHaveValue(
+      JSON.stringify(
+        {
+          title: "Crash on save",
+          steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
+        },
+        null,
+        2,
+      ),
+    );
+
+    fireEvent.change(editor, {
+      target: {
+        value: JSON.stringify(
+          {
+            title: "Edited crash on save",
+            steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
+          },
+          null,
+          2,
+        ),
+      },
+    });
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Final Report")).toBeInTheDocument();
+    expect(screen.getByText("Edited crash on save")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/sessions/session-456/report",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          modified_report: {
+            title: "Edited crash on save",
+            steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
+          },
+        }),
+      }),
+    );
   });
 
   it("keeps the selector and composer disabled when active bug discovery fails", async () => {

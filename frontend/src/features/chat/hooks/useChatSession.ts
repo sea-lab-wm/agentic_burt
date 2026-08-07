@@ -5,6 +5,7 @@ import {
   createSession,
   fetchActiveBugIds,
   resumeSession,
+  saveModifiedReport,
 } from "../../../services/api/sessionApi";
 import {
   buildDefaultState,
@@ -23,6 +24,7 @@ type ActiveConversationState = {
   draft: string;
   setDraft: (value: string) => void;
   submitDraft: () => Promise<void>;
+  submitModifiedReport: (report: Record<string, unknown>) => Promise<void>;
   changeBug: (bugId: number) => void;
   activeConversation: ConversationSnapshot;
 };
@@ -74,6 +76,7 @@ export function responseToMessages(
         id: makeMessageId("report"),
         kind: "final_report",
         report: response.final_report,
+        heading: "Draft report",
       },
     ];
   }
@@ -266,6 +269,37 @@ export function useChatSession(): ActiveConversationState {
     }
   }
 
+  async function submitModifiedReport(report: Record<string, unknown>): Promise<void> {
+    if (
+      appState.selectedBugId === null ||
+      activeConversation.sessionId === null ||
+      activeConversation.status !== "completed"
+    ) {
+      throw new Error("The completed report is no longer available to edit.");
+    }
+
+    const response = await saveModifiedReport(activeConversation.sessionId, {
+      modified_report: report,
+    });
+
+    if (response.status !== "completed" || !response.final_report) {
+      throw new Error("BURT++ did not return the saved report.");
+    }
+
+    setActiveConversation({
+      ...activeConversation,
+      messages: [
+        ...activeConversation.messages,
+        {
+          id: makeMessageId("report"),
+          kind: "final_report",
+          report: response.final_report,
+          heading: "Final Report",
+        },
+      ],
+    });
+  }
+
   return {
     appState,
     availableBugIds,
@@ -273,6 +307,7 @@ export function useChatSession(): ActiveConversationState {
     draft,
     setDraft,
     submitDraft,
+    submitModifiedReport,
     changeBug,
     activeConversation,
   };

@@ -11,6 +11,10 @@ export type ResumeConversationRequest = {
   user_description: string;
 };
 
+export type ModifyReportRequest = {
+  modified_report: Record<string, unknown>;
+};
+
 export type ConversationTurnResponse = {
   session_id: string;
   status: "awaiting_user" | "completed";

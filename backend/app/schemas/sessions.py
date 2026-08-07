@@ -16,6 +16,12 @@ class ResumeConversationRequest(BaseModel):
     user_description: str
 
 
+class ModifyReportRequest(BaseModel):
+    """Input payload containing the user's edited final report."""
+
+    modified_report: dict[str, Any]
+
+
 class ConversationTurnResponse(BaseModel):
     """API response describing the current question or final report for an agent conversation session.
     This is returned following an agent acting upon a user description both initially and on resume of session

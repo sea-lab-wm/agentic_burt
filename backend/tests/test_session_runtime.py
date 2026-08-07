@@ -1,4 +1,5 @@
 import unittest
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch, sentinel
@@ -579,6 +580,64 @@ class ResumeConversationTests(unittest.TestCase):
         )
         mock_flush_active_turn.assert_called_once_with(runtime_context)
         mock_release_session_lock.assert_called_once_with("session-123", "owner-token")
+
+
+class SaveModifiedReportTests(unittest.TestCase):
+    @patch("app.services.burt_runtime.create_session_record")
+    @patch(
+        "app.services.burt_runtime.get_session",
+        return_value={
+            "session_id": "session-123",
+            "bug_id": 42,
+            "status": "completed",
+            "question": None,
+            "final_report": {"title": "Draft report"},
+        },
+    )
+    def test_save_modified_report_appends_log_record_and_updates_session(
+        self,
+        mock_get_session,
+        mock_create_session_record,
+    ):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "session-123.log"
+
+            with patch(
+                "app.services.burt_runtime._build_api_log_path",
+                return_value=log_path,
+            ):
+                response = burt_runtime.save_modified_report(
+                    session_id="session-123",
+                    modified_report={"title": "Edited report"},
+                )
+
+            self.assertEqual(response.session_id, "session-123")
+            self.assertEqual(response.status, "completed")
+            self.assertIsNone(response.question)
+            self.assertEqual(response.final_report, {"title": "Edited report"})
+            self.assertIn('"record_type": "modified_report"', log_path.read_text())
+            self.assertIn('"modified_report": {', log_path.read_text())
+            mock_get_session.assert_called_once_with("session-123")
+            mock_create_session_record.assert_called_once_with(
+                {
+                    "session_id": "session-123",
+                    "bug_id": 42,
+                    "status": "completed",
+                    "question": None,
+                    "final_report": {"title": "Edited report"},
+                    "modified_report": {"title": "Edited report"},
+                }
+            )
+
+    @patch("app.services.burt_runtime.get_session", return_value=None)
+    def test_save_modified_report_raises_when_session_missing(self, mock_get_session):
+        with self.assertRaises(burt_runtime.SessionNotFoundError):
+            burt_runtime.save_modified_report(
+                session_id="missing-session",
+                modified_report={"title": "Edited report"},
+            )
+
+        mock_get_session.assert_called_once_with("missing-session")
 
 
 if __name__ == "__main__":

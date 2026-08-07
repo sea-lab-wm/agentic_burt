@@ -7,6 +7,7 @@ from app.schemas.sessions import (
     ActiveBugIdsResponse,
     ConversationTurnResponse,
     CreateSessionRequest,
+    ModifyReportRequest,
     ResumeConversationRequest,
 )
 from app.services.burt_runtime import (
@@ -15,6 +16,7 @@ from app.services.burt_runtime import (
     SessionLockedError,
     SessionNotFoundError,
     resume_conversation,
+    save_modified_report,
     start_conversation,
 )
 from app.services.session_store import get_session, ping
@@ -92,6 +94,25 @@ def resume_session(
     except SessionCompletedError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except SessionLockedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except InvalidSessionError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@sessions_router.post("/sessions/{session_id}/report", response_model=ConversationTurnResponse)
+def modify_report(
+    session_id: str,
+    modify_request: ModifyReportRequest,
+) -> ConversationTurnResponse:
+    """Persist a user-edited final report for a completed conversation."""
+    try:
+        return save_modified_report(
+            session_id=session_id,
+            modified_report=modify_request.modified_report,
+        )
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SessionCompletedError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except InvalidSessionError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

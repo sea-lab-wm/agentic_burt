@@ -2,6 +2,7 @@ import type {
   ActiveBugIdsResponse,
   ConversationTurnResponse,
   CreateSessionRequest,
+  ModifyReportRequest,
   ResumeConversationRequest,
 } from "../../features/chat/types/api";
 
@@ -57,6 +58,19 @@ export function resumeSession(
 ): Promise<ConversationTurnResponse> {
   return requestJson<ConversationTurnResponse>(
     apiPath(`/sessions/${sessionId}/messages`),
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function saveModifiedReport(
+  sessionId: string,
+  payload: ModifyReportRequest,
+): Promise<ConversationTurnResponse> {
+  return requestJson<ConversationTurnResponse>(
+    apiPath(`/sessions/${sessionId}/report`),
     {
       method: "POST",
       body: JSON.stringify(payload),

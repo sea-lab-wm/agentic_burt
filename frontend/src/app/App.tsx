@@ -11,6 +11,7 @@ export function App() {
     draft,
     setDraft,
     submitDraft,
+    submitModifiedReport,
     changeBug,
     activeConversation,
   } = useChatSession();
@@ -28,7 +29,10 @@ export function App() {
         selectedBugId={appState.selectedBugId}
         onBugChange={changeBug}
       />
-      <ChatTranscript messages={activeConversation.messages} />
+      <ChatTranscript
+        messages={activeConversation.messages}
+        onSaveReport={submitModifiedReport}
+      />
       <div className="composer-shell">
         <Composer
           disabled={composerDisabled}

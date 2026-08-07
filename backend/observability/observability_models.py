@@ -136,6 +136,14 @@ class FinalReportRecord(BaseModel):
     final_report: dict[str, Any]
 
 
+class ModifiedReportRecord(BaseModel):
+    """Post-terminal record that stores a user-edited report payload."""
+
+    record_type: str = "modified_report"
+    session_id: str
+    modified_report: dict[str, Any]
+
+
 class ConversationSummaryRecord(BaseModel):
     """Final session-level summary appended to each log file."""
 

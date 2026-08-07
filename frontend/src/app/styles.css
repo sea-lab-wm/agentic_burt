@@ -163,6 +163,8 @@ textarea {
 .final-report-card__header h2,
 .final-report-card__row h3,
 .final-report-card__row p,
+.report-editor__header h2,
+.report-editor__error,
 .final-report-card__raw pre {
   margin: 0;
 }
@@ -172,12 +174,28 @@ textarea {
   gap: 1rem;
 }
 
+.final-report-card__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .final-report-card__eyebrow {
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #6b6257;
+}
+
+.final-report-card__edit {
+  border: 1px solid rgba(19, 35, 31, 0.16);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  background: #fffdf8;
+  color: #213a32;
+  cursor: pointer;
 }
 
 .final-report-card__body {
@@ -212,6 +230,95 @@ textarea {
   padding-top: 0.75rem;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.85rem;
+}
+
+.report-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(19, 35, 31, 0.42);
+}
+
+.report-editor__panel {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 46rem);
+  max-height: min(90vh, 46rem);
+  padding: 1rem;
+  border: 1px solid rgba(19, 35, 31, 0.12);
+  border-radius: 0.5rem;
+  background: #fffbf3;
+  box-shadow: 0 24px 70px rgba(19, 35, 31, 0.24);
+}
+
+.report-editor__header,
+.report-editor__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.report-editor__close {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(19, 35, 31, 0.14);
+  border-radius: 999px;
+  background: #fffdf8;
+  cursor: pointer;
+}
+
+.report-editor__textarea {
+  width: 100%;
+  min-height: 22rem;
+  resize: vertical;
+  padding: 0.85rem;
+  border: 1px solid rgba(19, 35, 31, 0.16);
+  border-radius: 0.5rem;
+  background: #fffdf8;
+  color: #13231f;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+}
+
+.report-editor__textarea:focus {
+  outline: 2px solid rgba(43, 74, 64, 0.28);
+  outline-offset: 2px;
+}
+
+.report-editor__error {
+  color: #7f2f16;
+}
+
+.report-editor__actions {
+  justify-content: flex-end;
+}
+
+.report-editor__secondary,
+.report-editor__save {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+
+.report-editor__secondary {
+  background: transparent;
+  color: #213a32;
+}
+
+.report-editor__save {
+  background: #2b4a40;
+  color: #fcfbf7;
+}
+
+.report-editor__secondary:disabled,
+.report-editor__save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .composer-shell {

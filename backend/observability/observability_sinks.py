@@ -15,6 +15,7 @@ from observability.observability_models import (
     ConversationSummaryRecord,
     ConversationTurn,
     FinalReportRecord,
+    ModifiedReportRecord,
     RunMetadata,
     TokenConsumptionSummary,
 )
@@ -165,6 +166,21 @@ class LocalFileSink(ObservabilitySink):
     def append_turn(self, turn_record: ConversationTurn) -> None:
         """Persist one completed turn record as the next JSON object in the log."""
         self._append_record(turn_record, self.filepath)
+
+    def append_modified_report(
+        self,
+        *,
+        session_id: str,
+        modified_report: dict[str, Any],
+    ) -> None:
+        """Append a user-edited final report record to an existing session log."""
+        self._append_record(
+            ModifiedReportRecord(
+                session_id=session_id,
+                modified_report=modified_report,
+            ),
+            self.filepath,
+        )
 
     def _parse_json_records(self, filepath: Path) -> list[dict[str, Any]]:
         """Parse the log file's back-to-back JSON records."""

@@ -21,6 +21,7 @@ from burt_core.burt import (
 )
 from langgraph.types import Command
 from langgraph.checkpoint.redis import RedisSaver
+from observability.observability_sinks import LocalFileSink
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +137,50 @@ def _persist_and_build_response(
 def _build_api_log_path(session_id: str) -> Path:
     """Build the log path used for one containerized API session."""
     return Path("logs") / str(config.PROMPT_VERSION) / f"{session_id}.log"
+
+
+def save_modified_report(
+    *,
+    session_id: str,
+    modified_report: dict,
+) -> ConversationTurnResponse:
+    """Persist a user-edited report to the session log and latest session record."""
+    session_record = get_session(session_id)
+    if session_record is None:
+        raise SessionNotFoundError(f"Session {session_id} was not found.")
+
+    if session_record.get("status") != "completed":
+        raise SessionCompletedError(
+            f"Session {session_id} must be completed before editing its report."
+        )
+
+    bug_id = session_record.get("bug_id")
+    if not isinstance(bug_id, int):
+        raise InvalidSessionError(
+            f"Session {session_id} is missing required report metadata."
+        )
+
+    LocalFileSink(filepath=_build_api_log_path(session_id)).append_modified_report(
+        session_id=session_id,
+        modified_report=modified_report,
+    )
+
+    response = ConversationTurnResponse(
+        session_id=session_id,
+        status="completed",
+        question=None,
+        final_report=modified_report,
+    )
+    create_session_record(
+        {
+            **session_record,
+            "bug_id": bug_id,
+            **response.model_dump(mode="json"),
+            "modified_report": modified_report,
+        }
+    )
+
+    return response
 
 
 def start_conversation(bug_id: int, user_description: str) -> ConversationTurnResponse:

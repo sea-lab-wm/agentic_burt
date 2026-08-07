@@ -62,7 +62,9 @@ This starts:
   - `GET /sessions/{session_id}`
   - `POST /sessions/{session_id}/messages`
 
-2. Open the frontend at `http://localhost:3000`.
+2. Open the frontend at: 
+    * Local machine: `http://localhost:3000`
+    * SEA-Lab server: `http://rocco.cs.wm.edu:21202`
 
 Notes:
 

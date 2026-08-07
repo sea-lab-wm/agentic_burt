@@ -360,6 +360,21 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[3]["token_consumption"]["llm_calls_with_usage"], 2)
             self.assertEqual(records[3]["token_consumption"]["llm_calls_missing_usage"], 0)
 
+    def test_local_file_sink_appends_modified_report_record(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "test.log"
+            sink = LocalFileSink(filepath=log_path)
+
+            sink.append_modified_report(
+                session_id="sess-edited",
+                modified_report={"title": "Edited report"},
+            )
+
+            records = self._parse_json_stream(log_path.read_text())
+            self.assertEqual(records[0]["record_type"], "modified_report")
+            self.assertEqual(records[0]["session_id"], "sess-edited")
+            self.assertEqual(records[0]["modified_report"]["title"], "Edited report")
+
     def test_redis_then_file_sink_append_turn_pushes_json_to_session_list(self):
         redis_client = MagicMock()
         sink = RedisThenFileSink(redis_client=redis_client, filepath=Path("ignored.log"))

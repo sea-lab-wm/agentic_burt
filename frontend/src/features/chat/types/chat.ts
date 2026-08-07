@@ -19,6 +19,7 @@ export type FinalReportMessage = {
   id: string;
   kind: "final_report";
   report: Record<string, unknown>;
+  heading?: string;
 };
 
 export type ErrorMessage = {

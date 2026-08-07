@@ -4,9 +4,10 @@ import { ThinkingBubble } from "./ThinkingBubble";
 
 type MessageBubbleProps = {
   message: ChatMessage;
+  onSaveReport?: (report: Record<string, unknown>) => Promise<void>;
 };
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, onSaveReport }: MessageBubbleProps) {
   if (message.kind === "thinking") {
     return (
       <div className="message-row message-row--agent">
@@ -21,7 +22,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     return (
       <div className="message-row message-row--agent">
         <div className="message-bubble message-bubble--report">
-          <FinalReportCard report={message.report} />
+          <FinalReportCard
+            heading={message.heading}
+            report={message.report}
+            onSave={onSaveReport}
+          />
         </div>
       </div>
     );
