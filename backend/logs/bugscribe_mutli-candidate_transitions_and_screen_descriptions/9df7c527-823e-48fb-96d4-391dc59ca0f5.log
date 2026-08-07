@@ -1,0 +1,319 @@
+{
+  "session_id": "9df7c527-823e-48fb-96d4-391dc59ca0f5",
+  "turn": 1,
+  "started_at": "2026-05-22T02:20:49.016509+00:00",
+  "ended_at": "2026-05-22T02:20:54.666496+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Hi",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "c3ee0a0e-1a3b-4ff0-95b3-a0b004ac176a"
+        }
+      },
+      "meta_data": {
+        "latency": "0.00012554810382425785 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.3967994970735162 s",
+        "node_token_consumption": {
+          "input_tokens": 878,
+          "output_tokens": 42,
+          "total_tokens": 920,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "No information elements provided"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.446838271105662 s",
+        "node_token_consumption": {
+          "input_tokens": 394,
+          "output_tokens": 29,
+          "total_tokens": 423,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "clarity",
+          "question": "Could you describe the issue you’re experiencing in TOKEN, including what you were trying to do, what happened, and what you expected to happen?",
+          "target_info_elements": []
+        },
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.7494421692099422 s",
+        "node_token_consumption": {
+          "input_tokens": 230,
+          "output_tokens": 45,
+          "total_tokens": 275,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "9df7c527-823e-48fb-96d4-391dc59ca0f5",
+  "turn": 1,
+  "started_at": "2026-05-22T02:21:14.354500+00:00",
+  "ended_at": "2026-05-22T02:21:24.864534+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "It just hang sip when I open the app",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "96a2a6c1-8ef2-4e4e-ba0a-adb16a1038f9"
+        }
+      },
+      "meta_data": {
+        "latency": "3.1566014513373375e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "open the app",
+            "evidence": [
+              "when I open the app"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "It just hang sip",
+            "evidence": [
+              "It just hang sip"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.5969584039412439 s",
+        "node_token_consumption": {
+          "input_tokens": 924,
+          "output_tokens": 70,
+          "total_tokens": 994,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Buggy Behavior is unclear: 'It' is unresolved and 'hang sip' is ambiguous/possibly mistyped."
+        ]
+      },
+      "meta_data": {
+        "latency": "1.3116998979821801 s",
+        "node_token_consumption": {
+          "input_tokens": 439,
+          "output_tokens": 48,
+          "total_tokens": 487,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-1865291420",
+                "evidence": "The user says the bug happens 'when I open the app' and reports 'It just hang sip.' The first visible screen reached after app launch in the graph is TokenList (-1865291420), so this is the most plausible screen where the hang is observed."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-887213525",
+                  "evidence": "Directly supported by the user statement 'when I open the app,' which matches the app-open transition from the start state."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "It just hang sip",
+                "evidence": "Direct user report: 'It just hang sip'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should open normally and display the main TokenList screen instead of hanging.",
+                "evidence": "Inferred from the user report 'when I open the app' and 'It just hang sip'; the expected behavior after opening is that the app loads normally rather than becoming unresponsive."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-887213525",
+                  "evidence": "The only stated reproduction action is 'when I open the app,' which maps directly to the open app transition."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "5.587102893041447 s",
+        "node_token_consumption": {
+          "input_tokens": 8356,
+          "output_tokens": 301,
+          "total_tokens": 8657,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "3.775092773139477e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "App hangs when opened",
+          "observed_behavior": "On the main TokenList screen, if the user opens the app, the app just hangs.",
+          "expected_behavior": "The app should open normally and display the main TokenList screen instead of hanging.",
+          "steps_to_reproduce": "1. Open the app. <-887213525>"
+        }
+      },
+      "meta_data": {
+        "latency": "1.9951680770609528 s",
+        "node_token_consumption": {
+          "input_tokens": 7070,
+          "output_tokens": 75,
+          "total_tokens": 7145,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "9df7c527-823e-48fb-96d4-391dc59ca0f5",
+  "final_report": {
+    "title": "App hangs when opened",
+    "observed_behavior": "On the main TokenList screen, if the user opens the app, the app just hangs.",
+    "expected_behavior": "The app should open normally and display the main TokenList screen instead of hanging.",
+    "steps_to_reproduce": "1. Open the app. <-887213525>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "9df7c527-823e-48fb-96d4-391dc59ca0f5",
+  "run_metadata": {
+    "bug_id": 10,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-05-22T02:20:49.016509+00:00",
+  "ended_at": "2026-05-22T02:21:24.864534+00:00",
+  "total_wall_clock_seconds": 35.848025,
+  "total_turn_processing_seconds": 16.160021,
+  "total_conversation_turns": 2,
+  "token_consumption": {
+    "input_tokens": 18291,
+    "output_tokens": 610,
+    "total_tokens": 18901,
+    "llm_calls": 7,
+    "llm_calls_with_usage": 7,
+    "llm_calls_missing_usage": 0
+  }
+}

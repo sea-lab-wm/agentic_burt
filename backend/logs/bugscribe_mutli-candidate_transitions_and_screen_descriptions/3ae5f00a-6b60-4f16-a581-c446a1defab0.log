@@ -1,0 +1,295 @@
+{
+  "session_id": "3ae5f00a-6b60-4f16-a581-c446a1defab0",
+  "turn": 1,
+  "started_at": "2026-06-02T02:29:06.680946+00:00",
+  "ended_at": "2026-06-02T02:29:24.859480+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "App crashes when trying to duplicate an existing plant entry",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "0971ff59-0bc3-4b0a-a659-b57a606aad7a"
+        }
+      },
+      "meta_data": {
+        "latency": "0.00011670298408716917 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "trying to duplicate an existing plant entry",
+            "evidence": [
+              "trying to duplicate an existing plant entry"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "App crashes",
+            "evidence": [
+              "App crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.4703266139840707 s",
+        "node_token_consumption": {
+          "input_tokens": 887,
+          "output_tokens": 72,
+          "total_tokens": 959,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "2.6294110430171713 s",
+        "node_token_consumption": {
+          "input_tokens": 441,
+          "output_tokens": 21,
+          "total_tokens": 462,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-878131199",
+                "evidence": "The user reports the crash when 'trying to duplicate an existing plant entry'. In the GUI graph, the Duplicate action is available from the Plant details popup menu screen (-878131199), which is the most specific triggering screen for attempting duplication."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "The user states they were 'trying to duplicate an existing plant entry'. In the GUI graph, transition 2104660620 is the tap on 'Duplicate' from the Plant details popup menu."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crashes",
+                "evidence": "User explicitly reported: 'App crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should duplicate the existing plant entry instead of crashing.",
+                "evidence": "From the user's report that the app crashes when 'trying to duplicate an existing plant entry', the expected behavior is that duplication completes successfully without a crash."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-985609370",
+                  "evidence": "Reproduction must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "209336389",
+                  "evidence": "From app launch, allowing the permission dialog leads into the app main screen in the observed graph path."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "To reach an existing plant entry flow in the graph, the user adds a plant from the main screen using the add button."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1972602105",
+                  "evidence": "After entering plant data on Add new plant, navigating up returns to the plant list where the created plant exists."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2136516104",
+                  "evidence": "The graph path continues by opening the plant's Feed quick action from the filtered main screen, which leads toward a plant details-related flow containing the existing entry context."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1397753701",
+                  "evidence": "Completing the watering entry returns to the main/plant context in the recorded graph path."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "667923578",
+                  "evidence": "From the main screen with a visible plant card, tapping the plant entry opens Plant details."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1326171146",
+                  "evidence": "From Plant details, tapping More options opens the popup menu that contains Duplicate."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "This is the triggering interaction: tapping 'Duplicate' on the plant options menu while trying to duplicate an existing plant entry."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "8.74826003506314 s",
+        "node_token_consumption": {
+          "input_tokens": 15083,
+          "output_tokens": 621,
+          "total_tokens": 15704,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "6.618699990212917e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Tapping Duplicate for an existing plant entry crashes the app",
+          "observed_behavior": "On the plant details options menu, if the user taps Duplicate for an existing plant entry, the app crashes.",
+          "expected_behavior": "The app should duplicate the existing plant entry instead of crashing.",
+          "steps_to_reproduce": "1. Open the app. <-985609370>\n2. On the permission dialog, tap ALLOW. <209336389>\n3. On the main screen, tap the add button to add a plant. <515114713>\n4. On the Add new plant screen, navigate up to return after creating the plant entry. <1972602105>\n5. On the next screen, tap Feed for the plant entry. <2136516104>\n6. Complete the watering/feed flow and return to the plant context. <1397753701>\n7. Tap the existing plant entry to open Plant details. <667923578>\n8. On Plant details, tap More options. <1326171146>\n9. Tap Duplicate. <2104660620>"
+        }
+      },
+      "meta_data": {
+        "latency": "4.25598001095932 s",
+        "node_token_consumption": {
+          "input_tokens": 12606,
+          "output_tokens": 235,
+          "total_tokens": 12841,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "3ae5f00a-6b60-4f16-a581-c446a1defab0",
+  "final_report": {
+    "title": "Tapping Duplicate for an existing plant entry crashes the app",
+    "observed_behavior": "On the plant details options menu, if the user taps Duplicate for an existing plant entry, the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry instead of crashing.",
+    "steps_to_reproduce": "1. Open the app. <-985609370>\n2. On the permission dialog, tap ALLOW. <209336389>\n3. On the main screen, tap the add button to add a plant. <515114713>\n4. On the Add new plant screen, navigate up to return after creating the plant entry. <1972602105>\n5. On the next screen, tap Feed for the plant entry. <2136516104>\n6. Complete the watering/feed flow and return to the plant context. <1397753701>\n7. Tap the existing plant entry to open Plant details. <667923578>\n8. On Plant details, tap More options. <1326171146>\n9. Tap Duplicate. <2104660620>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "3ae5f00a-6b60-4f16-a581-c446a1defab0",
+  "run_metadata": {
+    "bug_id": 5,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-02T02:29:06.680946+00:00",
+  "ended_at": "2026-06-02T02:29:24.859480+00:00",
+  "total_wall_clock_seconds": 18.178534,
+  "total_turn_processing_seconds": 18.178534,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 29017,
+    "output_tokens": 949,
+    "total_tokens": 29966,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}

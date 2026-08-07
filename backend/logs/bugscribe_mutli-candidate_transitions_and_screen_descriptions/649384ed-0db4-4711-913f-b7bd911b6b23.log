@@ -1,0 +1,250 @@
+{
+  "session_id": "649384ed-0db4-4711-913f-b7bd911b6b23",
+  "turn": 1,
+  "started_at": "2026-06-04T20:31:06.242036+00:00",
+  "ended_at": "2026-06-04T20:31:19.157477+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "app crashes when I tried to add a comment",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "2a60e260-f6b2-4b58-8a16-589395ff8efe"
+        }
+      },
+      "meta_data": {
+        "latency": "0.000323364045470953 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "tried to add a comment",
+            "evidence": [
+              "tried to add a comment"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "app crashes",
+            "evidence": [
+              "app crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.8858831550460309 s",
+        "node_token_consumption": {
+          "input_tokens": 886,
+          "output_tokens": 70,
+          "total_tokens": 956,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.9555137078277767 s",
+        "node_token_consumption": {
+          "input_tokens": 437,
+          "output_tokens": 21,
+          "total_tokens": 458,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-1415464106",
+                "evidence": "The user said they 'tried to add a comment' and then 'app crashes'. In the graph, adding a comment is done from the Edit Weight screen via the comment field on screen -1415464106."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "639040415",
+                  "evidence": "The user said they 'tried to add a comment'. Transition 639040415 is typing into the comment field on the Edit Weight screen, which is the direct graph-grounded interaction for adding a comment."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "app crashes",
+                "evidence": "User explicitly reported: 'app crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should allow the user to add a comment without crashing.",
+                "evidence": "Inferred from the reported bug: when the user 'tried to add a comment', the reported buggy behavior was 'app crashes'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-707067098",
+                  "evidence": "Required app-open step from the start state."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-888680512",
+                  "evidence": "A plausible path to an existing measurement that can then be edited for adding a comment starts from Tracking by clicking 'Set Current Weight in kg'."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "576930031",
+                  "evidence": "From the tracking list screen, clicking a measurement entry opens the Edit Weight screen where a comment can be added."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "639040415",
+                  "evidence": "User reported they 'tried to add a comment'; this transition is typing into the comment field on the Edit Weight screen."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "7.114933015080169 s",
+        "node_token_consumption": {
+          "input_tokens": 9852,
+          "output_tokens": 416,
+          "total_tokens": 10268,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "3.990507684648037e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Adding a comment on the Edit Weight screen crashes the app",
+          "observed_behavior": "On the Edit Weight screen, if the user types in the comment field to add a comment, the app crashes.",
+          "expected_behavior": "The app should allow the user to add a comment without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-707067098>\n2. On the main tracking screen, tap \"Set Current Weight in kg.\" <-888680512>\n3. Select a weight entry from the list to open its edit screen. <576930031>\n4. Type in the comment field. <639040415>"
+        }
+      },
+      "meta_data": {
+        "latency": "2.8832624130882323 s",
+        "node_token_consumption": {
+          "input_tokens": 8317,
+          "output_tokens": 140,
+          "total_tokens": 8457,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "649384ed-0db4-4711-913f-b7bd911b6b23",
+  "final_report": {
+    "title": "Adding a comment on the Edit Weight screen crashes the app",
+    "observed_behavior": "On the Edit Weight screen, if the user types in the comment field to add a comment, the app crashes.",
+    "expected_behavior": "The app should allow the user to add a comment without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-707067098>\n2. On the main tracking screen, tap \"Set Current Weight in kg.\" <-888680512>\n3. Select a weight entry from the list to open its edit screen. <576930031>\n4. Type in the comment field. <639040415>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "649384ed-0db4-4711-913f-b7bd911b6b23",
+  "run_metadata": {
+    "bug_id": 12,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-04T20:31:06.242036+00:00",
+  "ended_at": "2026-06-04T20:31:19.157477+00:00",
+  "total_wall_clock_seconds": 12.915441,
+  "total_turn_processing_seconds": 12.915441,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 19492,
+    "output_tokens": 647,
+    "total_tokens": 20139,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}

@@ -1,0 +1,448 @@
+{
+  "session_id": "10da0e3e-3288-47ce-a455-0403dbd63fa2",
+  "turn": 1,
+  "started_at": "2026-06-04T20:31:56.041066+00:00",
+  "ended_at": "2026-06-04T20:32:08.325038+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "app crashes",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "b531a515-ceb8-455f-a09b-e473b26ac6db"
+        }
+      },
+      "meta_data": {
+        "latency": "3.892485983669758e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": {
+            "value": "app crashes",
+            "evidence": [
+              "app crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.4319246530067176 s",
+        "node_token_consumption": {
+          "input_tokens": 879,
+          "output_tokens": 52,
+          "total_tokens": 931,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.7480620890855789 s",
+        "node_token_consumption": {
+          "input_tokens": 411,
+          "output_tokens": 21,
+          "total_tokens": 432,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "unknown",
+            "candidates": []
+          },
+          "triggering_GUI_interactions": [],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "app crashes",
+                "evidence": "User explicitly reported: 'app crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "the app should not crash and should remain open while completing the requested action",
+                "evidence": "Inferred directly from the confirmed buggy behavior 'app crashes'."
+              }
+            ]
+          },
+          "steps_to_reproduce": []
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "6.479153491090983 s",
+        "node_token_consumption": {
+          "input_tokens": 9826,
+          "output_tokens": 115,
+          "total_tokens": 9941,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_screen_reference",
+          "triggering_GUI_interactions",
+          "steps_to_reproduce"
+        ]
+      },
+      "meta_data": {
+        "latency": "3.14291100949049e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "Can you describe the exact path that led to the crash, starting from when you opened the app? Please list each screen you visited and what you tapped or entered, and tell me on which screen the crash happened—for example, was it on the Tracking tab, the Statistics tab, the BMI Calculator screen, the weight-entry dialog, the Edit Weight screen, or a measurement popup menu? Also, what was the last thing you did right before the app crashed?",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions",
+            "triggering_screen_reference"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "3.561266636941582 s",
+        "node_token_consumption": {
+          "input_tokens": 9249,
+          "output_tokens": 131,
+          "total_tokens": 9380,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "10da0e3e-3288-47ce-a455-0403dbd63fa2",
+  "turn": 1,
+  "started_at": "2026-06-04T20:32:35.442426+00:00",
+  "ended_at": "2026-06-04T20:32:51.759040+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I tried to add a comment to a previous record",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "293b04f7-bce3-49cf-91b2-81a751da8fd8"
+        }
+      },
+      "meta_data": {
+        "latency": "3.564683720469475e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "tried to add a comment to a previous record",
+            "evidence": [
+              "I tried to add a comment to a previous record"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.9163860741537064 s",
+        "node_token_consumption": {
+          "input_tokens": 1004,
+          "output_tokens": 68,
+          "total_tokens": 1072,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.0827149481046945 s",
+        "node_token_consumption": {
+          "input_tokens": 428,
+          "output_tokens": 21,
+          "total_tokens": 449,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "739537420",
+                "evidence": "The user said they 'tried to add a comment to a previous record'. In the graph, the action 'Add previous comment' is available from popup menu screen 739537420, making it the most plausible screen where the triggering interaction occurs before the crash."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1634204121",
+                  "evidence": "The user said they 'tried to add a comment to a previous record'. Transition 1634204121 is the click on 'Add previous comment' from the measurement entry popup menu, which directly matches that action."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "app crashes",
+                "evidence": "User explicitly reported: 'app crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "the app should open Add previous comment for the selected previous record without crashing",
+                "evidence": "Based on the confirmed crash and the reported action 'tried to add a comment to a previous record', the expected behavior is that selecting 'Add previous comment' should proceed normally instead of crashing."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-707067098",
+                  "evidence": "Required app-open step from the graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-888680512",
+                  "evidence": "A plausible path from app launch toward an existing record begins by tapping 'Set Current Weight in kg' on the Tracking screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "576930031",
+                  "evidence": "To act on a previous record, the user must open an existing measurement entry; transition 576930031 opens a recorded measure from the Tracking list."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "639040415",
+                  "evidence": "This transition types into the comment field while editing a measurement, consistent with working toward comments on a previous record and leading to the populated-record flow used by the menu interaction trace."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-298300185",
+                  "evidence": "This saves the edited record and returns to the Tracking list with existing entries, matching the prerequisite of having a previous record."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "293850380",
+                  "evidence": "This opens the previous recorded entry from the list, which is necessary before invoking actions on that record."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1427014792",
+                  "evidence": "Long-clicking the BMI field on the selected previous record opens the popup menu containing 'Add previous comment'."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1634204121",
+                  "evidence": "This is the reported triggering interaction: tapping 'Add previous comment' for a previous record."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "9.443831119919196 s",
+        "node_token_consumption": {
+          "input_tokens": 9902,
+          "output_tokens": 619,
+          "total_tokens": 10521,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "4.988303408026695e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Selecting Add previous comment for a previous record crashes the app",
+          "observed_behavior": "On the previous record popup menu, if the user taps \"Add previous comment\", the app crashes.",
+          "expected_behavior": "The app should open Add previous comment for the selected previous record without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-707067098>\n2. On the Tracking screen, tap \"Set Current Weight in kg\". <-888680512>\n3. Open an existing recorded measurement from the list. <576930031>\n4. Type in the comment field for the measurement entry. <639040415>\n5. Tap \"Go\" to save the edited record. <-298300185>\n6. Open the previous recorded entry from the list. <293850380>\n7. Long-press the BMI field to open the popup menu for that record. <1427014792>\n8. Tap \"Add previous comment\". <1634204121>"
+        }
+      },
+      "meta_data": {
+        "latency": "3.854148228187114 s",
+        "node_token_consumption": {
+          "input_tokens": 8560,
+          "output_tokens": 214,
+          "total_tokens": 8774,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "10da0e3e-3288-47ce-a455-0403dbd63fa2",
+  "final_report": {
+    "title": "Selecting Add previous comment for a previous record crashes the app",
+    "observed_behavior": "On the previous record popup menu, if the user taps \"Add previous comment\", the app crashes.",
+    "expected_behavior": "The app should open Add previous comment for the selected previous record without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-707067098>\n2. On the Tracking screen, tap \"Set Current Weight in kg\". <-888680512>\n3. Open an existing recorded measurement from the list. <576930031>\n4. Type in the comment field for the measurement entry. <639040415>\n5. Tap \"Go\" to save the edited record. <-298300185>\n6. Open the previous recorded entry from the list. <293850380>\n7. Long-press the BMI field to open the popup menu for that record. <1427014792>\n8. Tap \"Add previous comment\". <1634204121>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "10da0e3e-3288-47ce-a455-0403dbd63fa2",
+  "run_metadata": {
+    "bug_id": 12,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-04T20:31:56.041066+00:00",
+  "ended_at": "2026-06-04T20:32:51.759040+00:00",
+  "total_wall_clock_seconds": 55.717974,
+  "total_turn_processing_seconds": 28.600586,
+  "total_conversation_turns": 2,
+  "token_consumption": {
+    "input_tokens": 40259,
+    "output_tokens": 1241,
+    "total_tokens": 41500,
+    "llm_calls": 8,
+    "llm_calls_with_usage": 8,
+    "llm_calls_missing_usage": 0
+  }
+}

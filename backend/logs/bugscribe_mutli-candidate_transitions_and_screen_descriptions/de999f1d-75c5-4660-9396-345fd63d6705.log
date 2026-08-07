@@ -1,0 +1,250 @@
+{
+  "session_id": "de999f1d-75c5-4660-9396-345fd63d6705",
+  "turn": 1,
+  "started_at": "2026-06-02T02:35:21.149372+00:00",
+  "ended_at": "2026-06-02T02:35:34.320802+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "App crashes when I created an account name with an apostrophe",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "1d46cfb9-36fe-4ad0-a482-7f6d1f836b4e"
+        }
+      },
+      "meta_data": {
+        "latency": "3.483891487121582e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "creating an account name with an apostrophe",
+            "evidence": [
+              "created an account name with an apostrophe"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "App crashes",
+            "evidence": [
+              "App crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.7206599890487269 s",
+        "node_token_consumption": {
+          "input_tokens": 889,
+          "output_tokens": 74,
+          "total_tokens": 963,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.9654981970088556 s",
+        "node_token_consumption": {
+          "input_tokens": 443,
+          "output_tokens": 21,
+          "total_tokens": 464,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-1489414740",
+                "evidence": "The triggering interaction is \"creating an account name with an apostrophe\" and the graph shows account name entry occurs on screen -1489414740 (androidCreate: Create Account dialog) via the account name input field."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "920809737",
+                  "evidence": "User said \"created an account name with an apostrophe\". Transition 920809737 is the type action on the account name field in the Create Account dialog, matching that interaction."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crashes",
+                "evidence": "User explicitly reported: \"App crashes\"."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should allow creating an account name with an apostrophe without crashing.",
+                "evidence": "Given the confirmed buggy behavior \"App crashes\" after \"creating an account name with an apostrophe\", the expected behavior is that the app handles that valid input and does not crash."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "846193342",
+                  "evidence": "Reproduction must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2039393157",
+                  "evidence": "From the initial account selection dialog, creating accounts is the plausible path into the main Accounts screen needed before creating a new account."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-80703439",
+                  "evidence": "From the Accounts screen, the user must open the Create Account dialog to create an account name."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "920809737",
+                  "evidence": "User explicitly described the triggering action as creating an account name with an apostrophe; this is the account name typing step on the Create Account dialog."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "7.76977785397321 s",
+        "node_token_consumption": {
+          "input_tokens": 14868,
+          "output_tokens": 419,
+          "total_tokens": 15287,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "3.377103712409735e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Creating an account name with an apostrophe crashes the app",
+          "observed_behavior": "On the Create Account dialog, if the user types an account name with an apostrophe, the app crashes.",
+          "expected_behavior": "The app should allow creating an account name with an apostrophe without crashing.",
+          "steps_to_reproduce": "1. Open the app. <846193342>\n2. On the initial account selection dialog, tap \"Create Accounts.\" <2039393157>\n3. On the Accounts screen, tap \"Create Account.\" <-80703439>\n4. In the Create Account dialog, type an account name with an apostrophe. <920809737>"
+        }
+      },
+      "meta_data": {
+        "latency": "2.6627945449436083 s",
+        "node_token_consumption": {
+          "input_tokens": 12548,
+          "output_tokens": 146,
+          "total_tokens": 12694,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "de999f1d-75c5-4660-9396-345fd63d6705",
+  "final_report": {
+    "title": "Creating an account name with an apostrophe crashes the app",
+    "observed_behavior": "On the Create Account dialog, if the user types an account name with an apostrophe, the app crashes.",
+    "expected_behavior": "The app should allow creating an account name with an apostrophe without crashing.",
+    "steps_to_reproduce": "1. Open the app. <846193342>\n2. On the initial account selection dialog, tap \"Create Accounts.\" <2039393157>\n3. On the Accounts screen, tap \"Create Account.\" <-80703439>\n4. In the Create Account dialog, type an account name with an apostrophe. <920809737>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "de999f1d-75c5-4660-9396-345fd63d6705",
+  "run_metadata": {
+    "bug_id": 4,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-02T02:35:21.149372+00:00",
+  "ended_at": "2026-06-02T02:35:34.320802+00:00",
+  "total_wall_clock_seconds": 13.17143,
+  "total_turn_processing_seconds": 13.17143,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 28748,
+    "output_tokens": 660,
+    "total_tokens": 29408,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}

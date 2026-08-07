@@ -1,0 +1,322 @@
+{
+  "session_id": "9e3aeae8-f862-4497-be82-83bb71d7d772",
+  "turn": 1,
+  "started_at": "2026-06-02T02:32:25.417399+00:00",
+  "ended_at": "2026-06-02T02:32:42.305662+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "app crashes when trying to duplicate an entry",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "f3c7f4a6-636b-4c91-a9b0-f620b0184de3"
+        }
+      },
+      "meta_data": {
+        "latency": "3.514497075229883e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "trying to duplicate an entry",
+            "evidence": [
+              "trying to duplicate an entry"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "app crashes",
+            "evidence": [
+              "app crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.7383666000096127 s",
+        "node_token_consumption": {
+          "input_tokens": 885,
+          "output_tokens": 68,
+          "total_tokens": 953,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.082455676048994 s",
+        "node_token_consumption": {
+          "input_tokens": 437,
+          "output_tokens": 21,
+          "total_tokens": 458,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-878131199",
+                "evidence": "User reports the crash occurs when 'trying to duplicate an entry'. In the graph, the Duplicate action exists on PlantDetailsActivity popup menu screen -878131199, where selecting 'Duplicate' can lead to the crash dialog."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User said 'trying to duplicate an entry'. Transition 2104660620 is the click on 'Duplicate' from the Plant details popup menu."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "app crashes",
+                "evidence": "User explicitly stated: 'app crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should duplicate the entry without crashing.",
+                "evidence": "Inferred from user report that the app crashes when 'trying to duplicate an entry'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-985609370",
+                  "evidence": "App must be opened first per reproduction requirements."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "209336389",
+                  "evidence": "From app open, the graph-valid path to the main screen uses the ALLOW permission action."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "A valid path to create/select an entry begins by adding a plant from the main screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1972602105",
+                  "evidence": "Graph-valid continuation from AddPlantActivity back toward a state where a plant entry exists in the list."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2136516104",
+                  "evidence": "Continues along the recorded graph path associated with creating/saving a plant-related entry."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-574050281",
+                  "evidence": "Continues the available path through entry creation in the watering flow."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "739481292",
+                  "evidence": "Continues the same graph-valid sequence."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2128019188",
+                  "evidence": "Continues the same graph-valid sequence."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "362217506",
+                  "evidence": "Continues the same graph-valid sequence."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "979084034",
+                  "evidence": "Completes the watering entry and returns to PlantDetailsActivity, producing an existing entry to duplicate."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1326171146",
+                  "evidence": "Opens More options from PlantDetailsActivity to access duplicate action."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User-triggering action: click 'Duplicate'."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "9.269004856934771 s",
+        "node_token_consumption": {
+          "input_tokens": 15079,
+          "output_tokens": 633,
+          "total_tokens": 15712,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "3.992300480604172e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "App crashes when duplicating an entry from the plant details menu",
+          "observed_behavior": "On the plant details More options menu, if the user taps Duplicate, the app crashes.",
+          "expected_behavior": "The app should duplicate the entry without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-985609370>\n2. Tap ALLOW on the permission prompt. <209336389>\n3. Tap the add button from the main screen. <515114713>\n4. Tap Navigate up to continue along the recorded path toward an existing plant entry. <1972602105>\n5. Tap Feed. <2136516104>\n6. Enter a value in the water pH field. <-574050281>\n7. Enter another value in the water pH field. <739481292>\n8. Enter a value in the water PPM field. <2128019188>\n9. Enter a value in the runoff pH field. <362217506>\n10. Tap the save/confirm icon to complete the entry and return to the plant details screen. <979084034>\n11. Tap More options on the plant details screen. <1326171146>\n12. Tap Duplicate. <2104660620>"
+        }
+      },
+      "meta_data": {
+        "latency": "4.746376354014501 s",
+        "node_token_consumption": {
+          "input_tokens": 12647,
+          "output_tokens": 273,
+          "total_tokens": 12920,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "9e3aeae8-f862-4497-be82-83bb71d7d772",
+  "final_report": {
+    "title": "App crashes when duplicating an entry from the plant details menu",
+    "observed_behavior": "On the plant details More options menu, if the user taps Duplicate, the app crashes.",
+    "expected_behavior": "The app should duplicate the entry without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-985609370>\n2. Tap ALLOW on the permission prompt. <209336389>\n3. Tap the add button from the main screen. <515114713>\n4. Tap Navigate up to continue along the recorded path toward an existing plant entry. <1972602105>\n5. Tap Feed. <2136516104>\n6. Enter a value in the water pH field. <-574050281>\n7. Enter another value in the water pH field. <739481292>\n8. Enter a value in the water PPM field. <2128019188>\n9. Enter a value in the runoff pH field. <362217506>\n10. Tap the save/confirm icon to complete the entry and return to the plant details screen. <979084034>\n11. Tap More options on the plant details screen. <1326171146>\n12. Tap Duplicate. <2104660620>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "9e3aeae8-f862-4497-be82-83bb71d7d772",
+  "run_metadata": {
+    "bug_id": 5,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-02T02:32:25.417399+00:00",
+  "ended_at": "2026-06-02T02:32:42.305662+00:00",
+  "total_wall_clock_seconds": 16.888263,
+  "total_turn_processing_seconds": 16.888263,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 29048,
+    "output_tokens": 995,
+    "total_tokens": 30043,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}

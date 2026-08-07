@@ -1,0 +1,250 @@
+{
+  "session_id": "749eebb4-8377-4101-ab76-db48e2cf31b1",
+  "turn": 1,
+  "started_at": "2026-06-02T02:36:13.096485+00:00",
+  "ended_at": "2026-06-02T02:36:26.076963+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "App crashes when I created an account",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "90bc6ce9-7061-4219-a3f7-087505a0e02f"
+        }
+      },
+      "meta_data": {
+        "latency": "3.512902185320854e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "creating an account",
+            "evidence": [
+              "created an account"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "App crashes",
+            "evidence": [
+              "App crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.7119125640019774 s",
+        "node_token_consumption": {
+          "input_tokens": 884,
+          "output_tokens": 64,
+          "total_tokens": 948,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.3276340760057792 s",
+        "node_token_consumption": {
+          "input_tokens": 433,
+          "output_tokens": 21,
+          "total_tokens": 454,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-1489414740",
+                "evidence": "The bug is triggered by \"creating an account\" / \"created an account\", and the graph shows account creation is performed on the \"Create Account\" dialog (screen -1489414740), where the user completes creation via Save."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1127280829",
+                  "evidence": "User reported the crash happens when \"creating an account\" / \"created an account\". In the graph, the concrete interaction that performs account creation is tapping \"Save\" on the Create Account dialog, transition -1127280829."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crashes",
+                "evidence": "User explicitly stated: \"App crashes\"."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should create the account and return to the Accounts screen without crashing.",
+                "evidence": "Given the reported buggy behavior \"App crashes\" after \"creating an account\", the expected behavior is successful account creation instead of a crash. The graph shows Save from the Create Account dialog completes account creation."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "846193342",
+                  "evidence": "Always start from opening the application."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2039393157",
+                  "evidence": "From first launch, the user must create initial accounts to reach the main Accounts screen; this is the graph-supported path from app open."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-80703439",
+                  "evidence": "From the Accounts screen, account creation is initiated via the \"Create Account\" action."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1127280829",
+                  "evidence": "The triggering interaction for \"creating an account\" is tapping Save on the Create Account dialog."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "6.847471602028236 s",
+        "node_token_consumption": {
+          "input_tokens": 14858,
+          "output_tokens": 427,
+          "total_tokens": 15285,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "3.448792267590761e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "App crashes when saving a new account from the Create Account dialog",
+          "observed_behavior": "On the Create Account dialog, if the user taps Save to create an account, the app crashes.",
+          "expected_behavior": "The app should create the account and return to the Accounts screen without crashing.",
+          "steps_to_reproduce": "1. Open the app. <846193342>\n2. On the initial setup screen, tap Create Accounts. <2039393157>\n3. On the Accounts screen, tap Create Account. <-80703439>\n4. On the Create Account dialog, tap Save. <-1127280829>"
+        }
+      },
+      "meta_data": {
+        "latency": "3.0379502340219915 s",
+        "node_token_consumption": {
+          "input_tokens": 12554,
+          "output_tokens": 137,
+          "total_tokens": 12691,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "749eebb4-8377-4101-ab76-db48e2cf31b1",
+  "final_report": {
+    "title": "App crashes when saving a new account from the Create Account dialog",
+    "observed_behavior": "On the Create Account dialog, if the user taps Save to create an account, the app crashes.",
+    "expected_behavior": "The app should create the account and return to the Accounts screen without crashing.",
+    "steps_to_reproduce": "1. Open the app. <846193342>\n2. On the initial setup screen, tap Create Accounts. <2039393157>\n3. On the Accounts screen, tap Create Account. <-80703439>\n4. On the Create Account dialog, tap Save. <-1127280829>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "749eebb4-8377-4101-ab76-db48e2cf31b1",
+  "run_metadata": {
+    "bug_id": 4,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-02T02:36:13.096485+00:00",
+  "ended_at": "2026-06-02T02:36:26.076963+00:00",
+  "total_wall_clock_seconds": 12.980478,
+  "total_turn_processing_seconds": 12.980478,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 28729,
+    "output_tokens": 649,
+    "total_tokens": 29378,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}

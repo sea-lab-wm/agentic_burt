@@ -1,0 +1,250 @@
+{
+  "session_id": "08371210-baab-468b-b397-d7ae79f395b6",
+  "turn": 1,
+  "started_at": "2026-06-01T23:03:13.639799+00:00",
+  "ended_at": "2026-06-01T23:03:25.719432+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The app crashes when calculating a BMI",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "677431ad-4b41-4a27-afdb-8495ee160f87"
+        }
+      },
+      "meta_data": {
+        "latency": "2.4429988116025925e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "calculating a BMI",
+            "evidence": [
+              "calculating a BMI"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The app crashes",
+            "evidence": [
+              "The app crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.5469064889475703 s",
+        "node_token_consumption": {
+          "input_tokens": 884,
+          "output_tokens": 68,
+          "total_tokens": 952,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.0328437329735607 s",
+        "node_token_consumption": {
+          "input_tokens": 435,
+          "output_tokens": 21,
+          "total_tokens": 456,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "78249749",
+                "evidence": "The reported triggering interaction is 'calculating a BMI'. In the GUI graph, BMI calculation is performed on screen 78249749 (BmiCalcActivity), which contains height/weight inputs and a Go button to perform the calculation."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1823142148",
+                  "evidence": "The user reports the bug occurs when 'calculating a BMI'. On BmiCalcActivity (78249749), pressing the 'Go' button is the graph action that performs the BMI calculation in the observed user trace."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The app crashes",
+                "evidence": "User explicitly stated: 'The app crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should calculate and display the BMI result instead of crashing",
+                "evidence": "The bug is triggered while 'calculating a BMI' on the BMI Calculator screen, and the reported problem is 'The app crashes'. Therefore, the expected behavior is that BMI calculation completes and the result is shown on the calculator screen."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-707067098",
+                  "evidence": "Bug reproduction must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "990647563",
+                  "evidence": "From the initial MeasureTabs tracking screen, navigating to the Statistics tab is required to reach BMI Calculator. Transition 990647563 opens the statistics screen from the launch screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "938952174",
+                  "evidence": "From the Statistics screen, the BMI Calculator is opened by tapping 'BMI Calculator', which leads to BmiCalcActivity."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1823142148",
+                  "evidence": "The triggering interaction is calculating a BMI, which is executed by tapping 'Go' on the BMI Calculator screen."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "6.576234273961745 s",
+        "node_token_consumption": {
+          "input_tokens": 9843,
+          "output_tokens": 446,
+          "total_tokens": 10289,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "4.006107337772846e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "App crashes when calculating BMI from the BMI Calculator screen",
+          "observed_behavior": "On the BMI Calculator screen, if the user taps the Go button to calculate a BMI, the app crashes.",
+          "expected_behavior": "The app should calculate and display the BMI result instead of crashing.",
+          "steps_to_reproduce": "1. Open the app. <-707067098>\n2. Navigate to the Statistics tab. <990647563>\n3. Tap the BMI Calculator button. <938952174>\n4. Tap the Go button to calculate BMI. <1823142148>"
+        }
+      },
+      "meta_data": {
+        "latency": "1.8899433289188892 s",
+        "node_token_consumption": {
+          "input_tokens": 8349,
+          "output_tokens": 126,
+          "total_tokens": 8475,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "final_report",
+  "session_id": "08371210-baab-468b-b397-d7ae79f395b6",
+  "final_report": {
+    "title": "App crashes when calculating BMI from the BMI Calculator screen",
+    "observed_behavior": "On the BMI Calculator screen, if the user taps the Go button to calculate a BMI, the app crashes.",
+    "expected_behavior": "The app should calculate and display the BMI result instead of crashing.",
+    "steps_to_reproduce": "1. Open the app. <-707067098>\n2. Navigate to the Statistics tab. <990647563>\n3. Tap the BMI Calculator button. <938952174>\n4. Tap the Go button to calculate BMI. <1823142148>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "08371210-baab-468b-b397-d7ae79f395b6",
+  "run_metadata": {
+    "bug_id": 11,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-06-01T23:03:13.639799+00:00",
+  "ended_at": "2026-06-01T23:03:25.719432+00:00",
+  "total_wall_clock_seconds": 12.079633,
+  "total_turn_processing_seconds": 12.079633,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 19511,
+    "output_tokens": 661,
+    "total_tokens": 20172,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}
