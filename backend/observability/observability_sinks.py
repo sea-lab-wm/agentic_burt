@@ -21,6 +21,30 @@ from observability.observability_models import (
 )
 
 
+def parse_log_records(filepath: Path) -> list[dict[str, Any]]:
+    """Parse a session log file's back-to-back JSON records into dicts, in written order."""
+    if not filepath.exists():
+        return []
+
+    text = filepath.read_text(encoding="utf-8")
+    decoder = json.JSONDecoder()
+    idx = 0
+    records: list[dict[str, Any]] = []
+
+    while idx < len(text):
+        while idx < len(text) and text[idx].isspace():
+            idx += 1
+
+        if idx >= len(text):
+            break
+
+        record, next_idx = decoder.raw_decode(text, idx)
+        records.append(record)
+        idx = next_idx
+
+    return records
+
+
 class ObservabilitySink(ABC):
     """Persistence backend for observability records."""
 
@@ -182,29 +206,6 @@ class LocalFileSink(ObservabilitySink):
             self.filepath,
         )
 
-    def _parse_json_records(self, filepath: Path) -> list[dict[str, Any]]:
-        """Parse the log file's back-to-back JSON records."""
-        if not filepath.exists():
-            return []
-
-        text = filepath.read_text(encoding="utf-8")
-        decoder = json.JSONDecoder()
-        idx = 0
-        records: list[dict[str, Any]] = []
-
-        while idx < len(text):
-            while idx < len(text) and text[idx].isspace():
-                idx += 1
-
-            if idx >= len(text):
-                break
-
-            record, next_idx = decoder.raw_decode(text, idx)
-            records.append(record)
-            idx = next_idx
-
-        return records
-
     def finalize_session(
         self,
         *,
@@ -214,7 +215,7 @@ class LocalFileSink(ObservabilitySink):
     ) -> None:
         """Append terminal records after reconstructing totals from persisted turns."""
         turn_records: list[ConversationTurn] = []
-        for record in self._parse_json_records(self.filepath):
+        for record in parse_log_records(self.filepath):
             if "turn" not in record:
                 continue
             turn_records.append(ConversationTurn.model_validate(record))

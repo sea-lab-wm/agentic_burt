@@ -226,9 +226,39 @@ describe("App", () => {
   });
 
   it("hides step identifiers and appends an edited final report after save", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [2, 10, 135] }));
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({
+    // Routed by URL rather than queued, because the report card also fetches its
+    // screenshot metadata as soon as it renders.
+    fetchMock.mockImplementation(async (input) => {
+      const url = String(input);
+
+      if (url.endsWith("/bugs/active")) {
+        return jsonResponse({ bug_ids: [2, 10, 135] });
+      }
+
+      if (url.endsWith("/report-media")) {
+        return jsonResponse({
+          session_id: "session-456",
+          bug_id: 2,
+          app_name: "1-com.example.app-1.0",
+          screen_id: null,
+          has_screen_screenshot: false,
+          steps: [],
+        });
+      }
+
+      if (url.endsWith("/report")) {
+        return jsonResponse({
+          session_id: "session-456",
+          status: "completed",
+          question: null,
+          final_report: {
+            title: "Edited crash on save",
+            steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
+          },
+        });
+      }
+
+      return jsonResponse({
         session_id: "session-456",
         status: "completed",
         question: null,
@@ -236,19 +266,8 @@ describe("App", () => {
           title: "Crash on save",
           steps_to_reproduce: "1. Open the app. <abc-123>\n2. Tap Save. <def-456>",
         },
-      }),
-    );
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({
-        session_id: "session-456",
-        status: "completed",
-        question: null,
-        final_report: {
-          title: "Edited crash on save",
-          steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
-        },
-      }),
-    );
+      });
+    });
 
     const user = userEvent.setup();
     render(<App />);
@@ -279,7 +298,7 @@ describe("App", () => {
 
     expect(await screen.findByText("Final Report")).toBeInTheDocument();
     expect(screen.getByText("Edited crash on save")).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenLastCalledWith(
+    expect(fetchMock).toHaveBeenCalledWith(
       "/api/sessions/session-456/report",
       expect.objectContaining({
         method: "POST",

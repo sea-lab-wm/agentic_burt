@@ -3,7 +3,9 @@ import type {
   ConversationTurnResponse,
   CreateSessionRequest,
   ModifyReportRequest,
+  ReportMediaResponse,
   ResumeConversationRequest,
+  ScreenshotKind,
 } from "../../features/chat/types/api";
 
 const API_BASE_PATH = (import.meta.env.VITE_API_BASE_PATH ?? "/api").replace(/\/$/, "");
@@ -75,5 +77,20 @@ export function saveModifiedReport(
       method: "POST",
       body: JSON.stringify(payload),
     },
+  );
+}
+
+export function fetchReportMedia(sessionId: string): Promise<ReportMediaResponse> {
+  return requestJson<ReportMediaResponse>(apiPath(`/sessions/${sessionId}/report-media`));
+}
+
+/** Build the <img> source for one GUI graph screenshot captured for a session's bug. */
+export function buildScreenshotUrl(
+  sessionId: string,
+  kind: ScreenshotKind,
+  imageId: string,
+): string {
+  return apiPath(
+    `/sessions/${encodeURIComponent(sessionId)}/screenshots/${kind}/${encodeURIComponent(imageId)}`,
   );
 }

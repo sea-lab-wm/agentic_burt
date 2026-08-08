@@ -20,6 +20,8 @@ export type FinalReportMessage = {
   kind: "final_report";
   report: Record<string, unknown>;
   heading?: string;
+  // Needed to fetch the report's screenshots, including after a page reload.
+  sessionId?: string;
 };
 
 export type ErrorMessage = {

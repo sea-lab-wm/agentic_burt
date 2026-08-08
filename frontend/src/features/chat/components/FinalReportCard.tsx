@@ -1,8 +1,22 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+
+import { fetchReportMedia } from "../../../services/api/sessionApi";
+import type { ReportMediaResponse } from "../types/api";
+import { ReportFieldIcon, getReportFieldMedia } from "./reportFieldIcons";
+import type { ReportFieldMedia } from "./reportFieldIcons";
+import { ReportScreenshotPanel } from "./ReportScreenshotPanel";
+import { ReportStepsDialog } from "./ReportStepsDialog";
+import {
+  buildStepViews,
+  isStepsToReproduceKey,
+  readStepLines,
+  sanitizeStepsToReproduce,
+} from "./reportSteps";
 
 type FinalReportCardProps = {
   report: Record<string, unknown>;
   heading?: string;
+  sessionId?: string;
   onSave?: (report: Record<string, unknown>) => Promise<void>;
 };
 
@@ -17,31 +31,6 @@ function formatLabel(label: string): string {
   return label
     .replace(/_/g, " ")
     .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function isStepsToReproduceKey(key: string): boolean {
-  return key.replace(/[_-]/g, " ").toLowerCase() === "steps to reproduce";
-}
-
-function stripStepIdentifier(step: string): string {
-  return step.replace(/\s*<[^>\n]+>\s*$/u, "");
-}
-
-function sanitizeStepsToReproduce(value: unknown): unknown {
-  if (typeof value === "string") {
-    return value
-      .split("\n")
-      .map((line) => stripStepIdentifier(line))
-      .join("\n");
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((step) =>
-      typeof step === "string" ? stripStepIdentifier(step) : step,
-    );
-  }
-
-  return value;
 }
 
 export function sanitizeReportForDisplay(
@@ -155,6 +144,7 @@ export function buildReportFromFields(
 export function FinalReportCard({
   report,
   heading = "Draft report",
+  sessionId,
   onSave,
 }: FinalReportCardProps) {
   const displayReport = sanitizeReportForDisplay(report);
@@ -166,6 +156,60 @@ export function FinalReportCard({
   );
   const [editorError, setEditorError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [media, setMedia] = useState<ReportMediaResponse | null>(null);
+  const [openScreenshotKey, setOpenScreenshotKey] = useState<string | null>(null);
+  const [areStepsOpen, setAreStepsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchReportMedia(sessionId)
+      .then((response) => {
+        if (!cancelled) {
+          setMedia(response);
+        }
+      })
+      // Screenshots are supporting evidence, so a report without them still reads
+      // fine; the icons simply stay inert.
+      .catch(() => {
+        if (!cancelled) {
+          setMedia(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
+
+  const screenId = media?.has_screen_screenshot ? media.screen_id : null;
+  const stepViews = buildStepViews(readStepLines(displayReport), media?.steps ?? []);
+  const hasStepScreenshots = stepViews.some((step) => step.hasScreenshot);
+
+  function isMediaAvailable(fieldMedia: ReportFieldMedia): boolean {
+    if (!sessionId) {
+      return false;
+    }
+
+    if (fieldMedia === "screen") {
+      return screenId !== null;
+    }
+
+    return fieldMedia === "steps" && hasStepScreenshots;
+  }
+
+  function toggleFieldMedia(key: string, fieldMedia: ReportFieldMedia): void {
+    if (fieldMedia === "steps") {
+      setAreStepsOpen(true);
+      return;
+    }
+
+    setOpenScreenshotKey((currentKey) => (currentKey === key ? null : key));
+  }
 
   function openEditor(): void {
     setFields(buildEditableFields(displayReport));
@@ -219,14 +263,62 @@ export function FinalReportCard({
           </button>
         ) : null}
       </div>
-      <div className="final-report-card__body">
-        {entries.map(([key, value]) => (
-          <article key={key} className="final-report-card__row">
-            <h3>{formatLabel(key)}</h3>
-            <p>{renderValue(value)}</p>
-          </article>
-        ))}
+      <div
+        className={`final-report-card__content${
+          openScreenshotKey ? " final-report-card__content--with-panel" : ""
+        }`}
+      >
+        <div className="final-report-card__body">
+          {entries.map(([key, value]) => {
+            const label = formatLabel(key);
+            const fieldMedia = getReportFieldMedia(key);
+            const isPanelOpen = openScreenshotKey === key;
+
+            return (
+              <article key={key} className="final-report-card__row">
+                <h3>
+                  {isMediaAvailable(fieldMedia) ? (
+                    <button
+                      className="final-report-card__media-toggle"
+                      type="button"
+                      aria-expanded={fieldMedia === "screen" ? isPanelOpen : undefined}
+                      aria-label={
+                        fieldMedia === "steps"
+                          ? `Show screenshots for ${label}`
+                          : `${isPanelOpen ? "Hide" : "Show"} screenshot for ${label}`
+                      }
+                      onClick={() => toggleFieldMedia(key, fieldMedia)}
+                    >
+                      <ReportFieldIcon fieldKey={key} />
+                    </button>
+                  ) : (
+                    <span className="final-report-card__field-icon" aria-hidden="true">
+                      <ReportFieldIcon fieldKey={key} />
+                    </span>
+                  )}
+                  {label}
+                </h3>
+                <p>{renderValue(value)}</p>
+              </article>
+            );
+          })}
+        </div>
+        {sessionId && screenId && openScreenshotKey ? (
+          <ReportScreenshotPanel
+            sessionId={sessionId}
+            screenId={screenId}
+            label={formatLabel(openScreenshotKey)}
+            onClose={() => setOpenScreenshotKey(null)}
+          />
+        ) : null}
       </div>
+      {sessionId && areStepsOpen ? (
+        <ReportStepsDialog
+          sessionId={sessionId}
+          steps={stepViews}
+          onClose={() => setAreStepsOpen(false)}
+        />
+      ) : null}
       <details className="final-report-card__raw">
         <summary>Raw response</summary>
         <pre>{JSON.stringify(displayReport, null, 2)}</pre>

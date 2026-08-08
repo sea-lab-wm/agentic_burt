@@ -21,3 +21,22 @@ export type ConversationTurnResponse = {
   question: string | null;
   final_report: Record<string, unknown> | null;
 };
+
+/** Directory the screenshot lives in: a screen reference vs. a reproduction step. */
+export type ScreenshotKind = "states" | "transitions";
+
+export type ReportStepMedia = {
+  index: number;
+  text: string;
+  transition_id: string | null;
+  has_screenshot: boolean;
+};
+
+export type ReportMediaResponse = {
+  session_id: string;
+  bug_id: number;
+  app_name: string | null;
+  screen_id: string | null;
+  has_screen_screenshot: boolean;
+  steps: ReportStepMedia[];
+};

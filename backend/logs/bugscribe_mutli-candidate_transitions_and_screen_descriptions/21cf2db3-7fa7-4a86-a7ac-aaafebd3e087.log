@@ -1,0 +1,2114 @@
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:18:14.117832+00:00",
+  "ended_at": "2026-08-08T02:18:22.141717+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "App crash while calculating BMI",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "50e30461-4222-4872-a8f9-b3bdc88d858d"
+        }
+      },
+      "meta_data": {
+        "latency": "1.2874999811174348e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "calculating BMI",
+            "evidence": [
+              "calculating BMI"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "App crash",
+            "evidence": [
+              "App crash"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.2231427099995926 s",
+        "node_token_consumption": {
+          "input_tokens": 882,
+          "output_tokens": 64,
+          "total_tokens": 946,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.1391669589993398 s",
+        "node_token_consumption": {
+          "input_tokens": 431,
+          "output_tokens": 21,
+          "total_tokens": 452,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "unknown",
+            "candidates": []
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Inferred from buggy behavior \"App crash\"; no app-specific successful outcome is provided."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "2.1486736679999012 s",
+        "node_token_consumption": {
+          "input_tokens": 8335,
+          "output_tokens": 139,
+          "total_tokens": 8474,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_screen_reference",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.2374999389285222e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "Can you describe the exact path you took before the crash, starting from the first screen you saw when opening the app? Please list each screen and what you tapped or entered, and tell me the exact screen you were on when it crashed—for example, was it the token list, the More options menu, the Add Token step 1 screen, the Add Token step 2 screen, the change PIN screen, the remove PIN screen, or a popup/dialog? Also, what was the last thing you did right before the app crashed?",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions",
+            "triggering_screen_reference"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.497284792998471 s",
+        "node_token_consumption": {
+          "input_tokens": 7777,
+          "output_tokens": 146,
+          "total_tokens": 7923,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:18:35.342360+00:00",
+  "ended_at": "2026-08-08T02:18:41.345757+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Tap on BMI calculator\tOn the popup window, tap on the height text field\tTap 2, on the keyboard\tTap on the height text field\tTap 3, on the keyboard\tTap Go",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "bfc7d341-5d3a-4171-92d6-147a6a0dd3a6"
+        }
+      },
+      "meta_data": {
+        "latency": "9.624998710933141e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the popup window",
+            "evidence": [
+              "On the popup window"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Tap Go after entering 2 and 3 in the height text field on the popup window keyboard",
+            "evidence": [
+              "Tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": {
+            "value": "Tap on BMI calculator, on the popup window tap on the height text field, tap 2 on the keyboard, tap on the height text field, tap 3 on the keyboard, then tap Go",
+            "evidence": [
+              "Tap on BMI calculator",
+              "On the popup window, tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "2.6219437929994456 s",
+        "node_token_consumption": {
+          "input_tokens": 1050,
+          "output_tokens": 200,
+          "total_tokens": 1250,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Triggering Screen Reference is vague: 'the popup window' is not uniquely identified",
+          "Triggering Gui Interactions is unclear: 'Tap Go after entering 2 and 3 in the height text field on the popup window keyboard' ambiguously describes the input sequence/field state",
+          "Steps To Reproduce is unclear: entering '2' and then '3' in the height text field is ambiguous about the final value entered"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.9417928340008075 s",
+        "node_token_consumption": {
+          "input_tokens": 597,
+          "output_tokens": 109,
+          "total_tokens": 706,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "clarity",
+          "question": "When you say “the popup window,” do you mean the BMI calculator popup that appears after tapping BMI calculator? Also, for the height field, was the final value entered 23 in the same field, or did you enter 2 first and then replace it with 3 before tapping Go?",
+          "target_info_elements": []
+        },
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.4325835420004296 s",
+        "node_token_consumption": {
+          "input_tokens": 516,
+          "output_tokens": 75,
+          "total_tokens": 591,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:18:50.902663+00:00",
+  "ended_at": "2026-08-08T02:18:58.898431+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "yes",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "0a87daf3-a833-4cd2-b5b3-af5519bc2f1f"
+        }
+      },
+      "meta_data": {
+        "latency": "1.0959000064758584e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the popup window",
+            "evidence": [
+              "On the popup window",
+              "yes"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Tap on BMI calculator; on the popup window, tap on the height text field; tap 2 on the keyboard; tap on the height text field; tap 3 on the keyboard; tap Go",
+            "evidence": [
+              "Tap on BMI calculator",
+              "On the popup window, tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": {
+            "value": "Tap on BMI calculator, then on the popup window tap on the height text field, tap 2 on the keyboard, tap on the height text field again, tap 3 on the keyboard, and tap Go.",
+            "evidence": [
+              "Tap on BMI calculator",
+              "On the popup window, tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "2.0830102090003493 s",
+        "node_token_consumption": {
+          "input_tokens": 986,
+          "output_tokens": 235,
+          "total_tokens": 1221,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Triggering Screen Reference is vague: 'the popup window' is not uniquely identified",
+          "Triggering Gui Interactions references an unclear target: 'height text field' on the popup window is not uniquely identified",
+          "Steps To Reproduce includes vague references: 'the popup window' and 'height text field' are not uniquely identified"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.751246165998964 s",
+        "node_token_consumption": {
+          "input_tokens": 636,
+          "output_tokens": 89,
+          "total_tokens": 725,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "ambiguous",
+            "candidates": [
+              {
+                "value": "-277241117",
+                "evidence": "User says the bug occurs on 'the popup window'. In the graph, -277241117 is a popup/dialog screen ('TokenList(Window=Main)') and is the strongest popup-window match."
+              },
+              {
+                "value": "1457469927",
+                "evidence": "User says the bug occurs on 'the popup window'. In the graph, 1457469927 is also explicitly a popup menu window ('TokenAdd(Window=Popup Menu)')."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Inferred from buggy behavior \"App crash\"; no app-specific successful outcome is provided."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 3
+      },
+      "meta_data": {
+        "latency": "2.366504376001103 s",
+        "node_token_consumption": {
+          "input_tokens": 8634,
+          "output_tokens": 238,
+          "total_tokens": 8872,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_screen_reference",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.0957999620586634e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "Can you describe the exact path you took before the crash, starting from the app’s main token list screen? Please include which menu or popup you opened, which option you tapped there, and the final tap that caused the crash. For example, was it on the token management options menu with items like Add Token/Change PIN/Remove Pin/Delete Token, or on the seed-format popup with choices like Hex/Base 32/Base 64?",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions",
+            "triggering_screen_reference"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "1.7867072929984715 s",
+        "node_token_consumption": {
+          "input_tokens": 7882,
+          "output_tokens": 127,
+          "total_tokens": 8009,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:19:09.935562+00:00",
+  "ended_at": "2026-08-08T02:19:18.323107+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "dont know",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "8317fcbc-a13e-42db-9ce3-ca6a74916e2a"
+        }
+      },
+      "meta_data": {
+        "latency": "1.1291998816886917e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.1070556249997026 s",
+        "node_token_consumption": {
+          "input_tokens": 992,
+          "output_tokens": 42,
+          "total_tokens": 1034,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "No information elements provided."
+        ]
+      },
+      "meta_data": {
+        "latency": "1.4176802090005367 s",
+        "node_token_consumption": {
+          "input_tokens": 394,
+          "output_tokens": 30,
+          "total_tokens": 424,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "ambiguous",
+            "candidates": [
+              {
+                "value": "-277241117",
+                "evidence": "Existing mapping retained: user previously described the bug as occurring on 'the popup window'; this screen is a popup/dialog."
+              },
+              {
+                "value": "1457469927",
+                "evidence": "Existing mapping retained: user previously described the bug as occurring on 'the popup window'; this screen is also an explicit popup menu."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Inferred from buggy behavior \"App crash\"; no app-specific successful outcome is provided."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 4
+      },
+      "meta_data": {
+        "latency": "2.422529626001051 s",
+        "node_token_consumption": {
+          "input_tokens": 8496,
+          "output_tokens": 213,
+          "total_tokens": 8709,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_screen_reference",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "6.459000360337086e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "Can you describe the exact path you took right before the crash, starting from the main token list screen? Please include each tap in order, especially which popup you were on when it crashed: was it the dialog with the item \"h\" and OK/CANCEL buttons, or the seed format popup with options like Hex, Base 32, and Base 64? Also, what was the last thing you tapped before the app crashed?",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions",
+            "triggering_screen_reference"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "3.431094793999364 s",
+        "node_token_consumption": {
+          "input_tokens": 7856,
+          "output_tokens": 126,
+          "total_tokens": 7982,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:19:45.074594+00:00",
+  "ended_at": "2026-08-08T02:19:51.699714+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "base 32 may be, I dont know what I types",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "fc99fa9f-339f-4d33-84c3-e33580f6aafe"
+        }
+      },
+      "meta_data": {
+        "latency": "7.374999768217094e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "base 32 may be",
+            "evidence": [
+              "base 32 may be"
+            ]
+          },
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.2229745840013493 s",
+        "node_token_consumption": {
+          "input_tokens": 1001,
+          "output_tokens": 58,
+          "total_tokens": 1059,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Triggering Screen Reference is unclear: 'base 32 may be' is not a resolved screen or location reference."
+        ]
+      },
+      "meta_data": {
+        "latency": "1.0065575419994275 s",
+        "node_token_consumption": {
+          "input_tokens": 418,
+          "output_tokens": 48,
+          "total_tokens": 466,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "New evidence says \"base 32 may be\". In the graph, screen 1457469927 is the TokenAdd popup menu for token seed format, where Base 32 is an available option. This is a stronger match than -277241117, which contains item \"h\" and no Base 32 option."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Inferred from buggy behavior \"App crash\"; no app-specific successful outcome is provided."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 5
+      },
+      "meta_data": {
+        "latency": "2.241012876000241 s",
+        "node_token_consumption": {
+          "input_tokens": 8495,
+          "output_tokens": 217,
+          "total_tokens": 8712,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.7750000552041456e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "What were the exact actions you took right before the crash, starting from the app’s main token list screen? For example, did you open More options, choose Add Token, go to the second Add Token screen, open the seed format chooser, select Base 32 or another format, and then tap something like COMPLETE or OK? Please list each tap/selection in order and say which action caused the crash.",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.1460345840005175 s",
+        "node_token_consumption": {
+          "input_tokens": 7852,
+          "output_tokens": 115,
+          "total_tokens": 7967,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:20:28.525302+00:00",
+  "ended_at": "2026-08-08T02:20:34.813471+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I tapped 3 on the keyboard before the crash,",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "b5747f55-350f-4270-9df3-ebad7f7d5e9b"
+        }
+      },
+      "meta_data": {
+        "latency": "1.0290999853168614e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "I tapped 3 on the keyboard before the crash.",
+            "evidence": [
+              "I tapped 3 on the keyboard before the crash"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.5656596680000803 s",
+        "node_token_consumption": {
+          "input_tokens": 991,
+          "output_tokens": 68,
+          "total_tokens": 1059,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.8236033749999478 s",
+        "node_token_consumption": {
+          "input_tokens": 429,
+          "output_tokens": 21,
+          "total_tokens": 450,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "New evidence says \"base 32 may be\". In the graph, screen 1457469927 is the TokenAdd popup menu for token seed format, where Base 32 is an available option. This is a stronger match than -277241117, which contains item \"h\" and no Base 32 option."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Inferred from buggy behavior \"App crash\"; no app-specific successful outcome is provided."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 6
+      },
+      "meta_data": {
+        "latency": "1.9136738340002921 s",
+        "node_token_consumption": {
+          "input_tokens": 8507,
+          "output_tokens": 217,
+          "total_tokens": 8724,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.1875001039006747e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "What were the exact actions you took just before the crash, starting from the main token list screen? Please list each tap or entry in order—for example, opening More options, choosing Add Token, filling any fields on the Add Token screens, selecting the seed method or seed format popup, and the final tap that immediately caused the app to crash.",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "1.974206626000523 s",
+        "node_token_consumption": {
+          "input_tokens": 7852,
+          "output_tokens": 102,
+          "total_tokens": 7954,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:20:54.796627+00:00",
+  "ended_at": "2026-08-08T02:21:02.664498+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The app crashes when calculating a BMI\tThe computed BMI should appear on screen\tTap on Statistics tab\tTap on BMI calculator\tOn the popup window, tap on the height text field\tTap 2, on the keyboard\tTap on the height text field\tTap 3, on the keyboard\tTap Go\n\nthese are the steps",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "742307e4-7dd1-46e6-ba1a-da0fa2391214"
+        }
+      },
+      "meta_data": {
+        "latency": "9.749999662744813e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "On the popup window",
+            "evidence": [
+              "On the popup window, tap on the height text field"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Tap on the height text field, enter 2, tap on the height text field again, enter 3, then tap Go.",
+            "evidence": [
+              "Tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The app crashes when calculating a BMI.",
+            "evidence": [
+              "The app crashes when calculating a BMI"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The computed BMI should appear on screen.",
+            "evidence": [
+              "The computed BMI should appear on screen"
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Tap on Statistics tab. Tap on BMI calculator. On the popup window, tap on the height text field. Tap 2 on the keyboard. Tap on the height text field. Tap 3 on the keyboard. Tap Go.",
+            "evidence": [
+              "Tap on Statistics tab",
+              "Tap on BMI calculator",
+              "On the popup window, tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "2.3738681680006266 s",
+        "node_token_consumption": {
+          "input_tokens": 1033,
+          "output_tokens": 265,
+          "total_tokens": 1298,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.9792840000009164 s",
+        "node_token_consumption": {
+          "input_tokens": 679,
+          "output_tokens": 21,
+          "total_tokens": 700,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "Existing inferred mapping is retained because confirmed entries cannot be changed and the new evidence only says \"On the popup window,\" which is too generic to ground to a different unique screen in this app graph."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Existing inferred behavior retained because the confirmed buggy behavior is only \"App crash\" in the current mapping. The new statement about BMI is inconsistent with the TOKEN app graph and cannot be grounded here."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 7
+      },
+      "meta_data": {
+        "latency": "2.6216296260008676 s",
+        "node_token_consumption": {
+          "input_tokens": 8757,
+          "output_tokens": 211,
+          "total_tokens": 8968,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.2624999726540409e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "Right before the app crashed, what exact action did you take on the token setup flow? For example, were you on the popup that lets you choose the seed format (Hex, Base 32, or Base 64), and did you tap one of those options, tap COMPLETE, or do something else? Also, starting from the app’s main token list screen, what screens or taps did you go through to reach that point?",
+          "target_info_elements": [
+            "triggering_GUI_interactions",
+            "steps_to_reproduce"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "1.8848618760002864 s",
+        "node_token_consumption": {
+          "input_tokens": 7846,
+          "output_tokens": 121,
+          "total_tokens": 7967,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:21:21.849432+00:00",
+  "ended_at": "2026-08-08T02:21:28.470376+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I tapped BMI calculator",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "f1e71725-42d7-444f-b3cd-b0c20a55db07"
+        }
+      },
+      "meta_data": {
+        "latency": "1.3540999134420417e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "I tapped BMI calculator.",
+            "evidence": [
+              "I tapped BMI calculator"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.0894761260005907 s",
+        "node_token_consumption": {
+          "input_tokens": 990,
+          "output_tokens": 56,
+          "total_tokens": 1046,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.1193425000001298 s",
+        "node_token_consumption": {
+          "input_tokens": 417,
+          "output_tokens": 21,
+          "total_tokens": 438,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "Existing inferred mapping is retained because confirmed entries cannot be changed and the only new interaction evidence, \"I tapped BMI calculator,\" does not correspond to any GUI element in the TOKEN app graph."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "Existing inferred behavior retained because the confirmed buggy behavior is only \"App crash\" and the new interaction statement about \"BMI calculator\" cannot be grounded in the TOKEN app graph."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 8
+      },
+      "meta_data": {
+        "latency": "2.2191217509989656 s",
+        "node_token_consumption": {
+          "input_tokens": 8489,
+          "output_tokens": 205,
+          "total_tokens": 8694,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.7708000086713582e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "What exact action caused the app to crash, and how did you get to that screen from when you first opened the app? Please list the taps/selections in order using the screen labels if you remember them, for example: open the app, tap More options, tap Add Token, go to the second add-token screen, open the seed format list, select Base 32. Also mention the final thing you tapped right before the crash.",
+          "target_info_elements": [
+            "triggering_GUI_interactions",
+            "steps_to_reproduce"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.183883875999527 s",
+        "node_token_consumption": {
+          "input_tokens": 7840,
+          "output_tokens": 121,
+          "total_tokens": 7961,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:22:23.826359+00:00",
+  "ended_at": "2026-08-08T02:22:31.958718+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I typed Go button then got crashed",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "0ca9f1db-6761-4397-a77f-7a6eab0d580b"
+        }
+      },
+      "meta_data": {
+        "latency": "7.95800042396877e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "typed Go button",
+            "evidence": [
+              "I typed Go button then got crashed"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "got crashed",
+            "evidence": [
+              "I typed Go button then got crashed"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.179737958998885 s",
+        "node_token_consumption": {
+          "input_tokens": 994,
+          "output_tokens": 73,
+          "total_tokens": 1067,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Triggering Gui Interactions is unclear: 'typed Go button' does not clearly describe the action or target",
+          "Buggy Behavior is unclear: 'got crashed' does not specify what crashed"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.3322163749999163 s",
+        "node_token_consumption": {
+          "input_tokens": 442,
+          "output_tokens": 62,
+          "total_tokens": 504,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "Existing inferred mapping is retained because confirmed entries cannot be changed and the new interaction evidence, \"I typed Go button then got crashed,\" does not match any GO button in the TOKEN app graph."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should not crash when performing the triggering interaction and should complete the action normally.",
+                "evidence": "From the confirmed buggy behavior \"got crashed/App crash,\" the expected behavior is that the app remains stable and completes the requested action instead of crashing."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 9
+      },
+      "meta_data": {
+        "latency": "2.359048542999517 s",
+        "node_token_consumption": {
+          "input_tokens": 8508,
+          "output_tokens": 201,
+          "total_tokens": 8709,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.758399957907386e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "What exact action were you doing right before the app crashed? Please describe the full path starting from the first screen you saw after opening the app, including each tap or text entry, and especially the final control you used on the add-token flow. For example, were you on the second Add Token screen and did you tap the seed format dropdown (showing options like Hex, Base 32, Base 64), tap COMPLETE, tap NEXT >, or use some other button or field?",
+          "target_info_elements": [
+            "steps_to_reproduce",
+            "triggering_GUI_interactions"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.249941583999316 s",
+        "node_token_consumption": {
+          "input_tokens": 7836,
+          "output_tokens": 132,
+          "total_tokens": 7968,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:23:00.185561+00:00",
+  "ended_at": "2026-08-08T02:23:07.758829+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "The app crashes when calculating a BMI\tThe computed BMI should appear on screen\tTap on Statistics tab\tTap on BMI calculator\tOn the popup window, tap on the height text field\tTap 2, on the keyboard\tTap on the height text field\tTap 3, on the keyboard\tTap Go\n\nthis is the full steps",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "361ba7be-f542-4564-9c3a-159030829c86"
+        }
+      },
+      "meta_data": {
+        "latency": "9.41700091061648e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Tap Go after entering height in the BMI calculator popup window.",
+            "evidence": [
+              "Tap Go",
+              "On the popup window, tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "The app crashes when calculating a BMI.",
+            "evidence": [
+              "The app crashes when calculating a BMI"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The computed BMI should appear on screen.",
+            "evidence": [
+              "The computed BMI should appear on screen"
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Tap on Statistics tab. Tap on BMI calculator. On the popup window, tap on the height text field. Tap 2 on the keyboard. Tap on the height text field. Tap 3 on the keyboard. Tap Go.",
+            "evidence": [
+              "Tap on Statistics tab",
+              "Tap on BMI calculator",
+              "On the popup window, tap on the height text field",
+              "Tap 2, on the keyboard",
+              "Tap on the height text field",
+              "Tap 3, on the keyboard",
+              "Tap Go"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "2.385281209999448 s",
+        "node_token_consumption": {
+          "input_tokens": 1063,
+          "output_tokens": 234,
+          "total_tokens": 1297,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.8675600420010596 s",
+        "node_token_consumption": {
+          "input_tokens": 639,
+          "output_tokens": 21,
+          "total_tokens": 660,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "Retained existing inferred mapping. New evidence refers to a BMI calculator popup and Go button, which do not exist in the TOKEN app graph, so no graph-grounded replacement can be made."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The computed result should appear on screen instead of the app crashing.",
+                "evidence": "User stated the correct behavior as \"The computed BMI should appear on screen,\" which implies the app should remain stable and show the result rather than crash."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 10
+      },
+      "meta_data": {
+        "latency": "2.4060745840015443 s",
+        "node_token_consumption": {
+          "input_tokens": 8701,
+          "output_tokens": 198,
+          "total_tokens": 8899,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "steps_to_reproduce[0]",
+          "triggering_GUI_interactions[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.8332999388803728e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "What was the last thing you tapped or changed right before the app crashed on the Add Token flow? For example, were you on the second Add Token screen and did you tap the seed format dropdown (showing Base 32), choose a format like Hex/Base 32/Base 64, tap COMPLETE, or do something else? Also, please list the steps you took from opening the app until the crash, screen by screen.",
+          "target_info_elements": [
+            "triggering_GUI_interactions",
+            "steps_to_reproduce"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "1.9016318339999998 s",
+        "node_token_consumption": {
+          "input_tokens": 7833,
+          "output_tokens": 119,
+          "total_tokens": 7952,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "turn": 1,
+  "started_at": "2026-08-08T02:23:15.384548+00:00",
+  "ended_at": "2026-08-08T02:23:24.079013+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Hex format",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "2f47b282-8b90-4a42-b37c-fb7dbfbfa25e"
+        }
+      },
+      "meta_data": {
+        "latency": "1.0750000001280569e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Hex format",
+            "evidence": [
+              "Hex format"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.1781720839990157 s",
+        "node_token_consumption": {
+          "input_tokens": 987,
+          "output_tokens": 52,
+          "total_tokens": 1039,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.9397286249986792 s",
+        "node_token_consumption": {
+          "input_tokens": 413,
+          "output_tokens": 21,
+          "total_tokens": 434,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "1457469927",
+                "evidence": "Retained existing inferred mapping. New evidence \"Hex format\" corresponds to selecting Hex from the token seed format popup menu, which is screen 1457469927."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "690676356",
+                  "evidence": "Extracted triggering interaction is \"Hex format\". In the graph, transition 690676356 is clicking the CheckedTextView with text \"Hex\" on screen 1457469927."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crash",
+                "evidence": "Buggy Behavior: \"App crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should apply the Hex seed format selection and continue normally instead of crashing.",
+                "evidence": "Bug occurs after the user selects \"Hex format\" and the confirmed buggy behavior is \"App crash\"; therefore the expected behavior is that selecting Hex should work without crashing."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-887213525",
+                  "evidence": "App must be opened first."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "From TokenList, open More options to reach the management menu containing Add Token."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "449119491",
+                  "evidence": "Select Add Token from the options menu to begin token creation."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1382300187",
+                  "evidence": "Proceed from TokenAdd step 1 to step 2 using NEXT >. This is the most common traced path to the screen containing the seed format selector."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1410767919",
+                  "evidence": "Open the seed format popup from TokenAdd step 2 by clicking the current format value \"Base 32\"."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "690676356",
+                  "evidence": "Select \"Hex format\" / click \"Hex\" from the popup menu."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 11
+      },
+      "meta_data": {
+        "latency": "4.424952502000451 s",
+        "node_token_consumption": {
+          "input_tokens": 8472,
+          "output_tokens": 469,
+          "total_tokens": 8941,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "1.383299968438223e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Selecting the Hex seed format while adding a token crashes the app",
+          "observed_behavior": "On the Add Token step 2 screen, if the user opens the seed format selector and selects Hex, the app crashes.",
+          "expected_behavior": "The app should apply the Hex seed format selection and continue normally instead of crashing.",
+          "steps_to_reproduce": "1. Open the app. <-887213525>\n2. Tap the More options button from the token list screen. <-1583881812>\n3. Tap Add Token. <449119491>\n4. Tap NEXT > to proceed to the second Add Token screen. <-1382300187>\n5. Tap the current seed format value, \"Base 32\", to open the seed format popup. <1410767919>\n6. Select \"Hex\" from the popup menu. <690676356>"
+        }
+      },
+      "meta_data": {
+        "latency": "2.141192334000152 s",
+        "node_token_consumption": {
+          "input_tokens": 7289,
+          "output_tokens": 187,
+          "total_tokens": 7476,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "draft_report": {
+    "title": "Selecting the Hex seed format while adding a token crashes the app",
+    "observed_behavior": "On the Add Token step 2 screen, if the user opens the seed format selector and selects Hex, the app crashes.",
+    "expected_behavior": "The app should apply the Hex seed format selection and continue normally instead of crashing.",
+    "steps_to_reproduce": "1. Open the app. <-887213525>\n2. Tap the More options button from the token list screen. <-1583881812>\n3. Tap Add Token. <449119491>\n4. Tap NEXT > to proceed to the second Add Token screen. <-1382300187>\n5. Tap the current seed format value, \"Base 32\", to open the seed format popup. <1410767919>\n6. Select \"Hex\" from the popup menu. <690676356>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "run_metadata": {
+    "bug_id": 9,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-08T02:18:14.117832+00:00",
+  "ended_at": "2026-08-08T02:23:24.079013+00:00",
+  "total_wall_clock_seconds": 309.961181,
+  "total_turn_processing_seconds": 82.21279099999998,
+  "total_conversation_turns": 11,
+  "token_consumption": {
+    "input_tokens": 180237,
+    "output_tokens": 5490,
+    "total_tokens": 185727,
+    "llm_calls": 43,
+    "llm_calls_with_usage": 43,
+    "llm_calls_missing_usage": 0
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "21cf2db3-7fa7-4a86-a7ac-aaafebd3e087",
+  "modified_report": {
+    "title": "Selecting the Hex seed format while adding a token crashes the app",
+    "observed_behavior": "On the Add Token step 2 screen, if the user opens the seed format selector and selects Hex, the app crashes.",
+    "expected_behavior": "The app should apply the Hex seed format selection and continue normally instead of crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. Tap the More options button from the token list screen.\n3. Tap Add Token.\n4. Tap NEXT > to proceed to the second Add Token screen.\n5. Tap the current seed format value, \"Base 32\", to open the seed format popup.\n6. Select \"Hex\" from the popup menu."
+  }
+}

@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from redis.exceptions import RedisError
 
 from app.schemas.sessions import (
@@ -8,6 +9,7 @@ from app.schemas.sessions import (
     ConversationTurnResponse,
     CreateSessionRequest,
     ModifyReportRequest,
+    ReportMediaResponse,
     ResumeConversationRequest,
 )
 from app.services.burt_runtime import (
@@ -19,6 +21,7 @@ from app.services.burt_runtime import (
     save_modified_report,
     start_conversation,
 )
+from app.services.report_media import build_report_media, resolve_screenshot
 from app.services.session_store import get_session, ping
 from gui_graph_context_management.loader import list_active_bug_ids
 
@@ -116,3 +119,33 @@ def modify_report(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except InvalidSessionError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@sessions_router.get("/sessions/{session_id}/report-media", response_model=ReportMediaResponse)
+def report_media(session_id: str) -> ReportMediaResponse:
+    """Describe which report fields of a session have a GUI graph screenshot to show."""
+    try:
+        return build_report_media(session_id)
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except InvalidSessionError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@sessions_router.get("/sessions/{session_id}/screenshots/{kind}/{image_id}")
+def screenshot(session_id: str, kind: str, image_id: str) -> FileResponse:
+    """Serve one GUI graph screenshot captured for the bug behind a session.
+
+    ``kind`` is ``states`` for a screen reference and ``transitions`` for a step.
+    """
+    try:
+        screenshot_path = resolve_screenshot(session_id, kind, image_id)
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except InvalidSessionError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if screenshot_path is None:
+        raise HTTPException(status_code=404, detail="Screenshot not found")
+
+    return FileResponse(screenshot_path, media_type="image/png")

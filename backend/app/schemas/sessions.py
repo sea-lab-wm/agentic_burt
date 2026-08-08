@@ -37,3 +37,23 @@ class ActiveBugIdsResponse(BaseModel):
     """API response describing which bug ids are currently reportable."""
 
     bug_ids: list[int]
+
+
+class ReportStepMedia(BaseModel):
+    """One reproduction step and the GUI graph transition it was mapped to."""
+
+    index: int
+    text: str
+    transition_id: str | None = None
+    has_screenshot: bool
+
+
+class ReportMediaResponse(BaseModel):
+    """API response describing which report fields have a retrievable screenshot."""
+
+    session_id: str
+    bug_id: int
+    app_name: str | None = None
+    screen_id: str | None = None
+    has_screen_screenshot: bool
+    steps: list[ReportStepMedia]

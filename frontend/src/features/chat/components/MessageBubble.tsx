@@ -25,6 +25,7 @@ export function MessageBubble({ message, onSaveReport }: MessageBubbleProps) {
           <FinalReportCard
             heading={message.heading}
             report={message.report}
+            sessionId={message.sessionId}
             onSave={onSaveReport}
           />
         </div>

@@ -603,7 +603,7 @@ class SaveModifiedReportTests(unittest.TestCase):
             log_path = Path(tmpdir) / "session-123.log"
 
             with patch(
-                "app.services.burt_runtime._build_api_log_path",
+                "app.services.burt_runtime.build_api_log_path",
                 return_value=log_path,
             ):
                 response = burt_runtime.save_modified_report(

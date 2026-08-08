@@ -158,6 +158,11 @@ textarea {
   border: 1px solid rgba(19, 35, 31, 0.08);
 }
 
+/* Wider than a chat bubble so a screenshot can sit beside the report text. */
+.message-bubble--report {
+  max-width: min(100%, 54rem);
+}
+
 .message-bubble--user {
   background: #213a32;
   color: #f8f5ec;
@@ -197,6 +202,9 @@ textarea {
 .final-report-card__row p,
 .report-editor__header h2,
 .report-editor__error,
+.steps-viewer__header h2,
+.steps-viewer__text,
+.report-screenshot__caption,
 .final-report-card__raw pre {
   margin: 0;
 }
@@ -230,6 +238,17 @@ textarea {
   cursor: pointer;
 }
 
+.final-report-card__content {
+  display: grid;
+  gap: 1.15rem;
+}
+
+/* Opening a field's screenshot splits the card into report text plus evidence. */
+.final-report-card__content--with-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 15rem);
+  align-items: start;
+}
+
 .final-report-card__body {
   display: grid;
   gap: 0.85rem;
@@ -241,6 +260,9 @@ textarea {
 }
 
 .final-report-card__row h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   font-size: 0.85rem;
   letter-spacing: 0.08em;
@@ -250,6 +272,192 @@ textarea {
 
 .final-report-card__row p {
   white-space: pre-wrap;
+}
+
+.final-report-card__field-icon,
+.final-report-card__media-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.final-report-card__field-icon svg,
+.final-report-card__media-toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.final-report-card__field-icon {
+  border: 1px solid transparent;
+  color: #8d9790;
+}
+
+.final-report-card__media-toggle {
+  border: 1px solid rgba(19, 35, 31, 0.16);
+  background: #fffdf8;
+  color: #2b4a40;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.final-report-card__media-toggle:hover,
+.final-report-card__media-toggle[aria-expanded="true"] {
+  background: #2b4a40;
+  color: #fcfbf7;
+}
+
+.report-screenshot {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  padding: 0.75rem;
+  border: 1px solid rgba(19, 35, 31, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(246, 241, 233, 0.7);
+}
+
+.report-screenshot__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.report-screenshot__title,
+.report-screenshot__caption {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #445048;
+}
+
+.report-screenshot__caption {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: #6b6257;
+}
+
+.report-screenshot__close {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+  border: 1px solid rgba(19, 35, 31, 0.14);
+  border-radius: 999px;
+  background: #fffdf8;
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Phone captures are 9:16, so the frame keeps that ratio whatever the source is. */
+.screenshot-frame {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  aspect-ratio: 9 / 16;
+  border-radius: 0.5rem;
+  background: #101a17;
+}
+
+.screenshot-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.screenshot-frame__empty {
+  padding: 0.5rem;
+  color: rgba(248, 245, 236, 0.65);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.steps-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 1.5rem 1rem;
+  background: rgba(19, 35, 31, 0.42);
+}
+
+.steps-viewer__panel {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+  width: min(100%, 56rem);
+  margin: auto;
+  padding: 1.5rem;
+  border: 1px solid rgba(19, 35, 31, 0.12);
+  border-radius: 0.75rem;
+  background: #fffbf3;
+  box-shadow: 0 24px 70px rgba(19, 35, 31, 0.24);
+}
+
+.steps-viewer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.steps-viewer__close {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(19, 35, 31, 0.14);
+  border-radius: 999px;
+  background: #fffdf8;
+  cursor: pointer;
+}
+
+.steps-viewer__list {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Wide enough that the highlighted control in each capture stays readable. */
+.steps-viewer__step {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(19, 35, 31, 0.08);
+}
+
+.steps-viewer__step:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.steps-viewer__text {
+  white-space: pre-wrap;
+}
+
+/* A missing capture gets a compact note, not a full-height empty frame. */
+.steps-viewer__no-screenshot {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1.25rem 0.75rem;
+  border: 1px dashed rgba(19, 35, 31, 0.18);
+  border-radius: 0.5rem;
+  color: #6b6257;
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 .final-report-card__raw summary {
@@ -482,11 +690,25 @@ textarea {
     max-width: 100%;
   }
 
-  .report-editor {
+  .report-editor,
+  .steps-viewer {
     padding: 0.75rem 0.5rem;
   }
 
-  .report-editor__panel {
+  .report-editor__panel,
+  .steps-viewer__panel {
     padding: 1rem;
+  }
+
+  /* Stacked, the 9:16 frames would run the full column width, so cap them. */
+  .final-report-card__content--with-panel,
+  .steps-viewer__step {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-screenshot .screenshot-frame,
+  .steps-viewer__step .screenshot-frame,
+  .steps-viewer__no-screenshot {
+    width: min(100%, 12rem);
   }
 }

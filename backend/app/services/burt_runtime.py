@@ -134,7 +134,7 @@ def _persist_and_build_response(
     return response
 
 
-def _build_api_log_path(session_id: str) -> Path:
+def build_api_log_path(session_id: str) -> Path:
     """Build the log path used for one containerized API session."""
     return Path("logs") / str(config.PROMPT_VERSION) / f"{session_id}.log"
 
@@ -160,7 +160,7 @@ def save_modified_report(
             f"Session {session_id} is missing required report metadata."
         )
 
-    LocalFileSink(filepath=_build_api_log_path(session_id)).append_modified_report(
+    LocalFileSink(filepath=build_api_log_path(session_id)).append_modified_report(
         session_id=session_id,
         modified_report=modified_report,
     )
@@ -195,7 +195,7 @@ def start_conversation(bug_id: int, user_description: str) -> ConversationTurnRe
     )
     runtime_context = create_runtime_context(
         session_id=session_id,
-        log_path=_build_api_log_path(session_id),
+        log_path=build_api_log_path(session_id),
         sink_mode="redis_then_file",
         redis_client=redis_client,
     )
@@ -268,7 +268,7 @@ def resume_conversation(user_description: str, session_id: str) -> ConversationT
         )
         runtime_context = create_runtime_context(
             session_id=session_id,
-            log_path=_build_api_log_path(session_id),
+            log_path=build_api_log_path(session_id),
             sink_mode="redis_then_file",
             redis_client=redis_client,
         )

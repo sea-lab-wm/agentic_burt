@@ -78,6 +78,7 @@ export function responseToMessages(
         kind: "final_report",
         report: response.final_report,
         heading: "Draft report",
+        sessionId: response.session_id,
       },
     ];
   }
@@ -302,6 +303,7 @@ export function useChatSession(): ActiveConversationState {
           kind: "final_report",
           report: response.final_report,
           heading: "Final Report",
+          sessionId: response.session_id,
         },
       ],
     });
