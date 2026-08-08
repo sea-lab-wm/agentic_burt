@@ -335,8 +335,8 @@ class ObservabilityTests(unittest.TestCase):
             self.assertEqual(records[1]["turn"], 2)
             self.assertEqual(records[1]["actions"][2]["action_name"], "generate_report")
             self.assertEqual(records[1]["actions"][2]["output"]["full_report"]["title"], "Bug title")
-            self.assertEqual(records[2]["record_type"], "final_report")
-            self.assertEqual(records[2]["final_report"]["title"], "Bug title")
+            self.assertEqual(records[2]["record_type"], "draft_report")
+            self.assertEqual(records[2]["draft_report"]["title"], "Bug title")
             self.assertEqual(records[3]["record_type"], "conversation_summary")
             self.assertEqual(records[3]["session_id"], "sess-5")
             self.assertEqual(
@@ -479,8 +479,8 @@ class ObservabilityTests(unittest.TestCase):
             records = self._parse_json_stream(log_path.read_text())
             self.assertEqual(records[0]["turn"], 1)
             self.assertEqual(records[1]["turn"], 2)
-            self.assertEqual(records[2]["record_type"], "final_report")
-            self.assertEqual(records[2]["final_report"]["title"], "Bug title")
+            self.assertEqual(records[2]["record_type"], "draft_report")
+            self.assertEqual(records[2]["draft_report"]["title"], "Bug title")
             self.assertEqual(records[3]["record_type"], "conversation_summary")
             self.assertEqual(
                 records[3]["run_metadata"],

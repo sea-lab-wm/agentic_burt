@@ -1,0 +1,384 @@
+{
+  "session_id": "c0be7047-17bd-40a9-96e2-929dfa373852",
+  "turn": 1,
+  "started_at": "2026-08-08T00:44:06.205554+00:00",
+  "ended_at": "2026-08-08T00:44:10.004523+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I got an app crash.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "f00630b9-e0fc-4d2d-b9cf-8c052207a309"
+        }
+      },
+      "meta_data": {
+        "latency": "0.00019912500101781916 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": {
+            "value": "I got an app crash.",
+            "evidence": [
+              "I got an app crash."
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.3637454170002457 s",
+        "node_token_consumption": {
+          "input_tokens": 883,
+          "output_tokens": 59,
+          "total_tokens": 942,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Buggy Behavior is unclear: 'app crash' does not identify which app or crash context."
+        ]
+      },
+      "meta_data": {
+        "latency": "1.1413745419995394 s",
+        "node_token_consumption": {
+          "input_tokens": 418,
+          "output_tokens": 44,
+          "total_tokens": 462,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "clarity",
+          "question": "Which app crashed, and what were you doing in it right before the crash?",
+          "target_info_elements": []
+        },
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.2671940840009484 s",
+        "node_token_consumption": {
+          "input_tokens": 269,
+          "output_tokens": 32,
+          "total_tokens": 301,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "c0be7047-17bd-40a9-96e2-929dfa373852",
+  "turn": 1,
+  "started_at": "2026-08-08T00:44:39.147743+00:00",
+  "ended_at": "2026-08-08T00:44:48.808697+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Attempting to delete a token that was created causes the app the crash\tThe token should be deleted without the app crashing\tClick Options button (three verticle dots)",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "68d4729b-d55b-41b5-9515-417c43ebd357"
+        }
+      },
+      "meta_data": {
+        "latency": "1.1750000339816324e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Attempting to delete a token that was created; click Options button (three verticle dots)",
+            "evidence": [
+              "Attempting to delete a token that was created",
+              "Click Options button (three verticle dots)"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "Deleting a token that was created causes the app to crash",
+            "evidence": [
+              "I got an app crash.",
+              "Attempting to delete a token that was created causes the app the crash"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The token should be deleted without the app crashing",
+            "evidence": [
+              "The token should be deleted without the app crashing"
+            ]
+          },
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.9394396679999772 s",
+        "node_token_consumption": {
+          "input_tokens": 939,
+          "output_tokens": 147,
+          "total_tokens": 1086,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.020565834000081 s",
+        "node_token_consumption": {
+          "input_tokens": 526,
+          "output_tokens": 21,
+          "total_tokens": 547,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-1331436002",
+                "evidence": "The user says the crash happens when 'Attempting to delete a token that was created' after 'Click Options button (three verticle dots)'. In the graph, the Delete Token action is available from the options menu TokenList screen -1331436002."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "Directly matches 'Click Options button (three verticle dots)' from the main TokenList screen to open the options menu."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "930063727",
+                  "evidence": "Directly matches 'Attempting to delete a token that was created'; in the options menu screen, the Delete Token item is the delete action."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Deleting a token that was created causes the app to crash.",
+                "evidence": "User explicitly reported 'I got an app crash' and 'Attempting to delete a token that was created causes the app the crash'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The token should be deleted without the app crashing.",
+                "evidence": "User explicitly stated 'The token should be deleted without the app crashing'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-887213525",
+                  "evidence": "Required app-open step from start state to TokenList."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "User explicitly said 'Click Options button (three verticle dots)'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "449119491",
+                  "evidence": "To reproduce deleting a created token, a token must first be created; the graph shows Add Token is selected from the options menu."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1382300187",
+                  "evidence": "From TokenAdd step 1, proceeding with NEXT > is necessary to continue token creation before deletion. Specific field-entry steps were not provided by the user, so the minimal supported navigation step is inferred."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1176462002",
+                  "evidence": "Completing token creation is necessary because the user refers to 'a token that was created'. The COMPLETE action on TokenAdd step 2 leads to app end state in the traced graph and is the most plausible creation-completion step."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "4.749115836000783 s",
+        "node_token_consumption": {
+          "input_tokens": 8430,
+          "output_tokens": 543,
+          "total_tokens": 8973,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "1.8333999832975678e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Deleting a created token crashes the app",
+          "observed_behavior": "On the token list options menu screen, if the user taps More options and then selects Delete Token, the app crashes when deleting a token that was created.",
+          "expected_behavior": "The token should be deleted without the app crashing.",
+          "steps_to_reproduce": "1. Open the app. <-887213525>\n2. Tap More options on the token list screen. <-1583881812>\n3. Select Add Token from the options menu. <449119491>\n4. Tap NEXT > to continue token creation. <-1382300187>\n5. Tap COMPLETE to finish creating the token. <-1176462002>"
+        }
+      },
+      "meta_data": {
+        "latency": "1.9439265429991792 s",
+        "node_token_consumption": {
+          "input_tokens": 7359,
+          "output_tokens": 152,
+          "total_tokens": 7511,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "c0be7047-17bd-40a9-96e2-929dfa373852",
+  "draft_report": {
+    "title": "Deleting a created token crashes the app",
+    "observed_behavior": "On the token list options menu screen, if the user taps More options and then selects Delete Token, the app crashes when deleting a token that was created.",
+    "expected_behavior": "The token should be deleted without the app crashing.",
+    "steps_to_reproduce": "1. Open the app. <-887213525>\n2. Tap More options on the token list screen. <-1583881812>\n3. Select Add Token from the options menu. <449119491>\n4. Tap NEXT > to continue token creation. <-1382300187>\n5. Tap COMPLETE to finish creating the token. <-1176462002>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "c0be7047-17bd-40a9-96e2-929dfa373852",
+  "run_metadata": {
+    "bug_id": 9,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-08T00:44:06.205554+00:00",
+  "ended_at": "2026-08-08T00:44:48.808697+00:00",
+  "total_wall_clock_seconds": 42.603143,
+  "total_turn_processing_seconds": 13.459923,
+  "total_conversation_turns": 2,
+  "token_consumption": {
+    "input_tokens": 18824,
+    "output_tokens": 998,
+    "total_tokens": 19822,
+    "llm_calls": 7,
+    "llm_calls_with_usage": 7,
+    "llm_calls_missing_usage": 0
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "c0be7047-17bd-40a9-96e2-929dfa373852",
+  "modified_report": {
+    "title": "Deleting a created token crashes the app",
+    "observed_behavior": "On the token list options menu screen, if the user taps More options and then selects Delete Token, the app crashes when deleting a token that was created.",
+    "expected_behavior": "The token should be deleted without the app crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. Tap More options on the token list screen.\n3. Select Add Token from the options menu.\n4. Tap NEXT > to continue token creation.\n5. Tap COMPLETE to finish creating the token.\n"
+  }
+}

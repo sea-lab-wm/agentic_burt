@@ -1,0 +1,822 @@
+{
+  "session_id": "c4c02197-e972-4fb1-af5f-a50c507b344e",
+  "turn": 1,
+  "started_at": "2026-08-08T00:22:22.623892+00:00",
+  "ended_at": "2026-08-08T00:22:30.050597+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Attempting to delete a token that was created causes the app the crash\tThe token should be deleted without the app crashing\tClick Options button (three verticle dots)\tClick \"Add Token\" from the drop down\tPut \"test\" in the Name field\tClick the Next button\tClick the \"Generate Random Seed\" option from the radio buttons\tClick the \"test\" token radio button\tClick the \"Okay\" button",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "29034322-225c-4cb6-85a4-0fa161591dec"
+        }
+      },
+      "meta_data": {
+        "latency": "4.325000008975621e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Attempting to delete a token that was created",
+            "evidence": [
+              "Attempting to delete a token that was created causes the app the crash"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the app crash when attempting to delete a token that was created",
+            "evidence": [
+              "Attempting to delete a token that was created causes the app the crash"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The token should be deleted without the app crashing",
+            "evidence": [
+              "The token should be deleted without the app crashing"
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Click Options button (three verticle dots) -> Click \"Add Token\" from the drop down -> Put \"test\" in the Name field -> Click the Next button -> Click the \"Generate Random Seed\" option from the radio buttons -> Click the \"test\" token radio button -> Click the \"Okay\" button",
+            "evidence": [
+              "Click Options button (three verticle dots)",
+              "Click \"Add Token\" from the drop down",
+              "Put \"test\" in the Name field",
+              "Click the Next button",
+              "Click the \"Generate Random Seed\" option from the radio buttons",
+              "Click the \"test\" token radio button",
+              "Click the \"Okay\" button"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "4.029914751999968 s",
+        "node_token_consumption": {
+          "input_tokens": 963,
+          "output_tokens": 257,
+          "total_tokens": 1220,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Steps To Reproduce do not include the delete action needed to trigger the crash",
+          "Triggering Gui Interactions is unclear about where/how the token is deleted"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.5771894169993175 s",
+        "node_token_consumption": {
+          "input_tokens": 653,
+          "output_tokens": 55,
+          "total_tokens": 708,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "clarity",
+          "question": "After creating the token, how exactly do you delete it? Please list the exact taps/buttons/menu options you use from the token screen until the crash occurs.",
+          "target_info_elements": []
+        },
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.7985422090005159 s",
+        "node_token_consumption": {
+          "input_tokens": 517,
+          "output_tokens": 47,
+          "total_tokens": 564,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "c4c02197-e972-4fb1-af5f-a50c507b344e",
+  "turn": 1,
+  "started_at": "2026-08-08T00:23:01.219038+00:00",
+  "ended_at": "2026-08-08T00:23:15.759570+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "Attempting to delete a token that was created causes the app the crash\tThe token should be deleted without the app crashing\tClick Options button (three verticle dots)\tClick \"Add Token\" from the drop down\tPut \"test\" in the Name field\tClick the Next button\tClick the \"Generate Random Seed\" option from the radio buttons\tClick \"Complete\" button\tClick Options button (three verticle dots)\tClick \"Delete Token\" from the drop down\tClick the \"test\" token radio button\tClick the \"Okay\" button",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "9e9d8924-109e-4bdc-ba78-a310316653a4"
+        }
+      },
+      "meta_data": {
+        "latency": "7.583001206512563e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Click Options button (three verticle dots) > Click \"Delete Token\" from the drop down > Click the \"test\" token radio button > Click the \"Okay\" button",
+            "evidence": [
+              "Click Options button (three verticle dots)",
+              "Click \"Delete Token\" from the drop down",
+              "Click the \"test\" token radio button",
+              "Click the \"Okay\" button"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "Attempting to delete a token that was created causes the app the crash",
+            "evidence": [
+              "Attempting to delete a token that was created causes the app the crash"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The token should be deleted without the app crashing",
+            "evidence": [
+              "The token should be deleted without the app crashing"
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Click Options button (three verticle dots) > Click \"Add Token\" from the drop down > Put \"test\" in the Name field > Click the Next button > Click the \"Generate Random Seed\" option from the radio buttons > Click \"Complete\" button > Click Options button (three verticle dots) > Click \"Delete Token\" from the drop down > Click the \"test\" token radio button > Click the \"Okay\" button",
+            "evidence": [
+              "Click Options button (three verticle dots)",
+              "Click \"Add Token\" from the drop down",
+              "Put \"test\" in the Name field",
+              "Click the Next button",
+              "Click the \"Generate Random Seed\" option from the radio buttons",
+              "Click \"Complete\" button",
+              "Click Options button (three verticle dots)",
+              "Click \"Delete Token\" from the drop down",
+              "Click the \"test\" token radio button",
+              "Click the \"Okay\" button"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "3.1651949179995427 s",
+        "node_token_consumption": {
+          "input_tokens": 1114,
+          "output_tokens": 358,
+          "total_tokens": 1472,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.181917916999737 s",
+        "node_token_consumption": {
+          "input_tokens": 764,
+          "output_tokens": 21,
+          "total_tokens": 785,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "-277241117",
+                "evidence": "The bug is triggered during the delete flow after 'Click \"Delete Token\" from the drop down > Click the \"test\" token radio button > Click the \"Okay\" button'. Screen -277241117 is the token deletion selection dialog with a selectable token item and OK button, matching the described interaction."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "Matches 'Click Options button (three verticle dots)' from the TokenList screen."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "930063727",
+                  "evidence": "Matches 'Click \"Delete Token\" from the drop down'."
+                }
+              ]
+            },
+            {
+              "status": "ambiguous",
+              "candidates": [
+                {
+                  "value": "-302678845",
+                  "evidence": "Matches clicking the token radio/list item in the delete dialog: 'Click the \"test\" token radio button'. The graph shows only one selectable token item ('h') in the delete dialog, which plausibly corresponds to the created token entry."
+                },
+                {
+                  "value": "-1213663108",
+                  "evidence": "The user next says 'Click the \"Okay\" button'; this is part of the same triggering delete-confirmation sequence on the dialog."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1213663108",
+                  "evidence": "Matches 'Click the \"Okay\" button' on the delete dialog."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Attempting to delete a token that was created causes the app the crash",
+                "evidence": "Directly stated: 'Attempting to delete a token that was created causes the app the crash'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The token should be deleted without the app crashing",
+                "evidence": "Directly stated: 'The token should be deleted without the app crashing'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-887213525",
+                  "evidence": "Always starts with opening the application."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "Matches 'Click Options button (three verticle dots)'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "449119491",
+                  "evidence": "Matches 'Click \"Add Token\" from the drop down'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "496202116",
+                  "evidence": "Matches 'Put \"test\" in the Name field'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1115715750",
+                  "evidence": "Matches 'Click the Next button'. This and transition -1382300187 represent the same NEXT action; this candidate is ranked first."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1711494833",
+                  "evidence": "Matches 'Click the \"Generate Random Seed\" option from the radio buttons'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1654102777",
+                  "evidence": "Matches 'Click \"Complete\" button'. This transition keeps the user on the same screen, consistent with the buggy add-token flow before returning to the list for deletion."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1144013812",
+                  "evidence": "After completing token creation in the observed trace, a tap on the main content returns control toward the next state used before deletion."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1735362067",
+                  "evidence": "Returns from the add-token second step to the TokenList/options context, needed before reopening options for deletion."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "930063727",
+                  "evidence": "Matches the later 'Click \"Delete Token\" from the drop down' after reopening the options menu in the described flow."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-302678845",
+                  "evidence": "Matches 'Click the \"test\" token radio button' in the delete dialog; the graph's token item label differs but represents the same token-selection action."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1213663108",
+                  "evidence": "Matches 'Click the \"Okay\" button'."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "8.137818420998883 s",
+        "node_token_consumption": {
+          "input_tokens": 8668,
+          "output_tokens": 895,
+          "total_tokens": 9563,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_GUI_interactions[2]"
+        ]
+      },
+      "meta_data": {
+        "latency": "4.1125000279862434e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "When the delete dialog appeared with the selectable token entry and the CANCEL/OK buttons, which action directly triggered the crash: selecting the token entry itself, tapping OK after selecting it, or only after both steps were completed? If possible, please describe the exact last tap you made before the app crashed.",
+          "target_info_elements": [
+            "triggering_GUI_interactions"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.04536708500018 s",
+        "node_token_consumption": {
+          "input_tokens": 8659,
+          "output_tokens": 88,
+          "total_tokens": 8747,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "c4c02197-e972-4fb1-af5f-a50c507b344e",
+  "turn": 1,
+  "started_at": "2026-08-08T00:23:39.036498+00:00",
+  "ended_at": "2026-08-08T00:23:50.948124+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "only after the both steps are completed",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "b51e16b5-c7d0-40eb-a6d5-1b8e32bc1930"
+        }
+      },
+      "meta_data": {
+        "latency": "1.4000001101521775e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "The crash happens only after both steps are completed.",
+            "evidence": [
+              "only after the both steps are completed"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.6000793749990407 s",
+        "node_token_consumption": {
+          "input_tokens": 961,
+          "output_tokens": 64,
+          "total_tokens": 1025,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Triggering GUI interactions refers to 'both steps' without identifying the steps."
+        ]
+      },
+      "meta_data": {
+        "latency": "1.0672014169995236 s",
+        "node_token_consumption": {
+          "input_tokens": 425,
+          "output_tokens": 40,
+          "total_tokens": 465,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "-277241117",
+                "evidence": "The bug is triggered during the delete flow after 'Click \"Delete Token\" from the drop down > Click the \"test\" token radio button > Click the \"Okay\" button'. Screen -277241117 is the token deletion selection dialog with a selectable token item and OK button, matching the described interaction."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "Matches 'Click Options button (three verticle dots)' from the TokenList screen."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "930063727",
+                  "evidence": "Matches 'Click \"Delete Token\" from the drop down'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-302678845",
+                  "evidence": "The new evidence says the crash happens 'only after the both steps are completed', which clarifies that the delete flow requires completing both dialog actions in sequence. This interaction matches selecting the token item ('Click the \"test\" token radio button') on the delete dialog before pressing OK."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1213663108",
+                  "evidence": "Matches 'Click the \"Okay\" button' on the delete dialog. The new evidence 'only after the both steps are completed' confirms the crash occurs only after completing both delete-dialog actions, including OK."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Attempting to delete a token that was created causes the app the crash",
+                "evidence": "Directly stated: 'Attempting to delete a token that was created causes the app the crash'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The token should be deleted without the app crashing",
+                "evidence": "Directly stated: 'The token should be deleted without the app crashing'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-887213525",
+                  "evidence": "Always starts with opening the application."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1583881812",
+                  "evidence": "Matches 'Click Options button (three verticle dots)'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "449119491",
+                  "evidence": "Matches 'Click \"Add Token\" from the drop down'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "496202116",
+                  "evidence": "Matches 'Put \"test\" in the Name field'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1115715750",
+                  "evidence": "Matches 'Click the Next button'. This and transition -1382300187 represent the same NEXT action; this candidate is ranked first."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1711494833",
+                  "evidence": "Matches 'Click the \"Generate Random Seed\" option from the radio buttons'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1654102777",
+                  "evidence": "Matches 'Click \"Complete\" button'. This transition keeps the user on the same screen, consistent with the buggy add-token flow before returning to the list for deletion."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1144013812",
+                  "evidence": "After completing token creation in the observed trace, a tap on the main content returns control toward the next state used before deletion."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1735362067",
+                  "evidence": "Returns from the add-token second step to the TokenList/options context, needed before reopening options for deletion."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "930063727",
+                  "evidence": "Matches the later 'Click \"Delete Token\" from the drop down' after reopening the options menu in the described flow."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-302678845",
+                  "evidence": "Matches 'Click the \"test\" token radio button' in the delete dialog; the new evidence 'only after the both steps are completed' confirms this selection is one of the two required final delete-dialog steps."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1213663108",
+                  "evidence": "Matches 'Click the \"Okay\" button'; the new evidence 'only after the both steps are completed' confirms the crash occurs after finishing this second final delete-dialog step."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 3
+      },
+      "meta_data": {
+        "latency": "6.356657128000734 s",
+        "node_token_consumption": {
+          "input_tokens": 9318,
+          "output_tokens": 925,
+          "total_tokens": 10243,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.7375001081964e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Deleting a created token crashes the app",
+          "observed_behavior": "On the delete token selection dialog, if the user opens More options, taps Delete Token, selects the created token, and taps OK, the app crashes when attempting to delete the created token.",
+          "expected_behavior": "The token should be deleted without the app crashing.",
+          "steps_to_reproduce": "1. Open the app. <-887213525>\n2. Tap the More options button (three vertical dots). <-1583881812>\n3. Tap \"Add Token\" from the menu. <449119491>\n4. Enter \"test\" in the Name field. <496202116>\n5. Tap the \"NEXT >\" button. <1115715750>\n6. Select the \"Generate Random Seed\" radio option. <1711494833>\n7. Tap the \"COMPLETE\" button. <1654102777>\n8. Tap the main content area to continue. <-1144013812>\n9. Tap the action bar to return to the options context. <1735362067>\n10. Tap \"Delete Token\" from the menu. <930063727>\n11. Select the \"test\" token radio button. <-302678845>\n12. Tap the \"OK\" button. <-1213663108>"
+        }
+      },
+      "meta_data": {
+        "latency": "2.8755101259994262 s",
+        "node_token_consumption": {
+          "input_tokens": 7828,
+          "output_tokens": 284,
+          "total_tokens": 8112,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "c4c02197-e972-4fb1-af5f-a50c507b344e",
+  "final_report": {
+    "title": "Deleting a created token crashes the app",
+    "observed_behavior": "On the delete token selection dialog, if the user opens More options, taps Delete Token, selects the created token, and taps OK, the app crashes when attempting to delete the created token.",
+    "expected_behavior": "The token should be deleted without the app crashing.",
+    "steps_to_reproduce": "1. Open the app. <-887213525>\n2. Tap the More options button (three vertical dots). <-1583881812>\n3. Tap \"Add Token\" from the menu. <449119491>\n4. Enter \"test\" in the Name field. <496202116>\n5. Tap the \"NEXT >\" button. <1115715750>\n6. Select the \"Generate Random Seed\" radio option. <1711494833>\n7. Tap the \"COMPLETE\" button. <1654102777>\n8. Tap the main content area to continue. <-1144013812>\n9. Tap the action bar to return to the options context. <1735362067>\n10. Tap \"Delete Token\" from the menu. <930063727>\n11. Select the \"test\" token radio button. <-302678845>\n12. Tap the \"OK\" button. <-1213663108>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "c4c02197-e972-4fb1-af5f-a50c507b344e",
+  "run_metadata": {
+    "bug_id": 9,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-08T00:22:22.623892+00:00",
+  "ended_at": "2026-08-08T00:23:50.948124+00:00",
+  "total_wall_clock_seconds": 88.324232,
+  "total_turn_processing_seconds": 33.878863,
+  "total_conversation_turns": 3,
+  "token_consumption": {
+    "input_tokens": 39870,
+    "output_tokens": 3034,
+    "total_tokens": 42904,
+    "llm_calls": 11,
+    "llm_calls_with_usage": 11,
+    "llm_calls_missing_usage": 0
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "c4c02197-e972-4fb1-af5f-a50c507b344e",
+  "modified_report": {
+    "title": "Deleting a created token crashes the app",
+    "observed_behavior": "On the delete token selection dialog, if the user opens More options, taps Delete Token, selects the created token, and taps OK, the app crashes when attempting to delete the created token.",
+    "expected_behavior": "The token should be deleted without the app crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. Tap the More options button (three vertical dots).\n3. Tap \"Add Token\" from the menu.\n4. Enter \"test\" in the Name field.\n5. Tap the \"NEXT >\" button.\n6. Select the \"Generate Random Seed\" radio option.\n7. Tap the \"COMPLETE\" button.\n9. Tap the action bar to return to the options context.\n10. Tap \"Delete Token\" from the menu.\n11. Select the \"test\" token radio button.\n12. Tap the \"OK\" button."
+  }
+}

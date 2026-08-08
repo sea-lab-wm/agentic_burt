@@ -1,4 +1,4 @@
-import { FormEvent, useLayoutEffect, useRef } from "react";
+import { FormEvent, KeyboardEvent, useLayoutEffect, useRef } from "react";
 
 type ComposerProps = {
   disabled: boolean;
@@ -38,9 +38,24 @@ export function Composer({
     };
   }, [draft]);
 
+  const canSubmit = !disabled && draft.trim().length > 0;
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onSubmit();
+  }
+
+  // Enter sends the draft; Shift+Enter and IME composition keep their newline behavior.
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (canSubmit) {
+      onSubmit();
+    }
   }
 
   return (
@@ -54,11 +69,12 @@ export function Composer({
         rows={1}
         value={draft}
         onChange={(event) => onDraftChange(event.target.value)}
+        onKeyDown={handleKeyDown}
       />
       <button
         aria-label="Send"
         className="composer__submit"
-        disabled={disabled || draft.trim().length === 0}
+        disabled={!canSubmit}
         title="Send"
         type="submit"
       >

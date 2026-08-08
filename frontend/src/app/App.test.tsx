@@ -83,6 +83,73 @@ describe("App", () => {
     });
   });
 
+  it("distinguishes a failed bug lookup from an empty one and recovers on retry", async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [1, 2, 3] }));
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByText("Could not reach the server")).toBeInTheDocument();
+    expect(screen.queryByText("No active bugs available")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Select bug to report on")).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+
+    expect(await screen.findByRole("option", { name: "Bug 3" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Select bug to report on")).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
+  });
+
+  it("still reports a genuinely empty bug list as no active bugs", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [] }));
+
+    render(<App />);
+
+    expect(await screen.findByText("No active bugs available")).toBeInTheDocument();
+    expect(screen.getByLabelText("Select bug to report on")).toBeDisabled();
+  });
+
+  it("submits the draft when Enter is pressed and keeps Shift+Enter for newlines", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [2, 10, 135] }));
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        session_id: "session-123",
+        status: "awaiting_user",
+        question: "What screen were you on?",
+        final_report: null,
+      }),
+    );
+
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText("I’m BURT++, your bug reporting assistant.");
+
+    const input = screen.getByLabelText("Message BURT");
+    await user.type(input, "The app crashed.{Shift>}{Enter}{/Shift}On the save screen.");
+    expect(input).toHaveValue("The app crashed.\nOn the save screen.");
+
+    await user.type(input, "{Enter}");
+
+    expect(await screen.findByText("What screen were you on?")).toBeInTheDocument();
+    expect(screen.getByText("The app crashed. On the save screen.")).toBeInTheDocument();
+    expect(input).toHaveValue("");
+  });
+
+  it("ignores Enter while the draft is empty", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [2, 10, 135] }));
+
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText("I’m BURT++, your bug reporting assistant.");
+
+    const input = screen.getByLabelText("Message BURT");
+    await user.type(input, "   {Enter}");
+
+    expect(input).toHaveValue("   ");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("wipes the transcript back to opening messages when the bug selection changes", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ bug_ids: [2, 10, 135] }));
     const user = userEvent.setup();

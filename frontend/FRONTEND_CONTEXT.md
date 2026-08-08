@@ -149,10 +149,11 @@ Ordered roughly by user impact. None of these are decided yet — this is the ca
     and press Send again.
 
 **Input ergonomics**
-13. The composer textarea is `rows={1}` with no auto-grow, so long descriptions scroll in
-    a one-line box.
-14. Enter inserts a newline; there is no Enter-to-send / Shift+Enter-for-newline handling,
-    so sending always requires reaching for the button.
+13. ~~The composer textarea is `rows={1}` with no auto-grow.~~ **Done.** It starts at one
+    row and grows with the draft, capped at 40% of the viewport before it scrolls.
+14. ~~Enter inserts a newline; there is no Enter-to-send handling.~~ **Done.** Enter sends
+    the draft, Shift+Enter inserts a newline, and Enter is ignored while the composer is
+    disabled or the draft is blank.
 
 **Visual system**
 15. Every color, radius, and shadow is a hard-coded literal in `styles.css`. No custom
@@ -163,7 +164,10 @@ Ordered roughly by user impact. None of these are decided yet — this is the ca
 
 ## 6. Working Notes
 
-- Run the UI alone: `cd frontend && npm run dev` (expects the API proxied at `/api`).
+- Run the UI alone: `cd frontend && npm run dev`. `vite.config.ts` proxies `/api` to
+  `http://localhost:3000` (the Compose nginx), so the rest of the stack must be up or every
+  call fails. Without that proxy `/api/...` hits the SPA index fallback and returns HTML,
+  which surfaces as "could not reach the server" in the bug selector.
 - Run the full stack: `docker compose up --build`, UI at `http://localhost:3000`.
 - Tests: `cd frontend && npm test`. `npm run build` runs `tsc --noEmit` on both tsconfigs
   before `vite build`, so type errors fail the build.

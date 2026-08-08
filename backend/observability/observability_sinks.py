@@ -14,7 +14,7 @@ import redis
 from observability.observability_models import (
     ConversationSummaryRecord,
     ConversationTurn,
-    FinalReportRecord,
+    DraftReportRecord,
     ModifiedReportRecord,
     RunMetadata,
     TokenConsumptionSummary,
@@ -229,7 +229,7 @@ class LocalFileSink(ObservabilitySink):
         )
 
         self._append_record(
-            FinalReportRecord(session_id=session_id, final_report=final_report),
+            DraftReportRecord(session_id=session_id, draft_report=final_report),
             self.filepath,
         )
         self._append_record(summary_record, self.filepath)
@@ -287,9 +287,9 @@ class RedisThenFileSink(ObservabilitySink):
                 file_handle.write(turn_record.model_dump_json(indent=2))
                 file_handle.write("\n")
             file_handle.write(
-                FinalReportRecord(
+                DraftReportRecord(
                     session_id=session_id,
-                    final_report=final_report,
+                    draft_report=final_report,
                 ).model_dump_json(indent=2)
             )
             file_handle.write("\n")

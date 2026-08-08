@@ -21,11 +21,11 @@ class EvaluatorTests(unittest.TestCase):
         return log_path
 
     @staticmethod
-    def _final_report_record() -> dict:
+    def _draft_report_record() -> dict:
         return {
-            "record_type": "final_report",
+            "record_type": "draft_report",
             "session_id": "10",
-            "final_report": {
+            "draft_report": {
                 "title": "Bug title",
                 "observed_behavior": "Observed behavior",
                 "expected_behavior": "Expected behavior",
@@ -94,7 +94,7 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_build_log_context_extracts_summary_metrics(self):
         log_path = self._write_log(
-            [self._final_report_record(), self._summary_record()]
+            [self._draft_report_record(), self._summary_record()]
         )
 
         context = build_log_context(log_path, self._ground_truth_rows())
@@ -108,10 +108,23 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["total_turn_processing_seconds"], 3.0)
         self.assertEqual(context["total_conversation_turns"], 2)
 
+    def test_build_log_context_reads_legacy_final_report_record(self):
+        # Logs written before the rename carry "final_report" as both the record type and
+        # the payload key; they still sit in backend/logs and must stay evaluable.
+        legacy_record = self._draft_report_record()
+        legacy_record["record_type"] = "final_report"
+        legacy_record["final_report"] = legacy_record.pop("draft_report")
+        log_path = self._write_log([legacy_record, self._summary_record()])
+
+        context = build_log_context(log_path, self._ground_truth_rows())
+
+        self.assertIsNone(context["parse_error"])
+        self.assertEqual(context["final_report"]["title"], "Bug title")
+
     def test_build_log_context_uses_embedded_run_metadata(self):
         log_path = self._write_log(
             [
-                self._final_report_record(),
+                self._draft_report_record(),
                 self._summary_record(
                     run_metadata={
                         "bug_id": 10,
@@ -136,7 +149,7 @@ class EvaluatorTests(unittest.TestCase):
     def test_build_log_context_embedded_metadata_takes_precedence_over_filename(self):
         log_path = self._write_log(
             [
-                self._final_report_record(),
+                self._draft_report_record(),
                 self._summary_record(
                     run_metadata={
                         "bug_id": 2,
@@ -158,7 +171,7 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_build_log_context_legacy_filename_metadata_still_resolves(self):
         log_path = self._write_log(
-            [self._final_report_record(), self._summary_record()],
+            [self._draft_report_record(), self._summary_record()],
             filename="session_local_bug10_LC_LP.log",
         )
 
@@ -171,7 +184,7 @@ class EvaluatorTests(unittest.TestCase):
     def test_build_log_context_api_metadata_without_description_level_joins_ground_truth(self):
         log_path = self._write_log(
             [
-                self._final_report_record(),
+                self._draft_report_record(),
                 self._summary_record(
                     run_metadata={
                         "bug_id": 2,
@@ -192,7 +205,7 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(context["app_name"], "API Test App")
 
     def test_build_log_context_defaults_summary_metrics_to_null_when_missing(self):
-        log_path = self._write_log([self._final_report_record()])
+        log_path = self._write_log([self._draft_report_record()])
 
         context = build_log_context(log_path, self._ground_truth_rows())
 
@@ -211,7 +224,7 @@ class EvaluatorTests(unittest.TestCase):
             total_conversation_turns=None,
             token_consumption={"input_tokens": 7},
         )
-        log_path = self._write_log([self._final_report_record(), partial_summary])
+        log_path = self._write_log([self._draft_report_record(), partial_summary])
 
         context = build_log_context(log_path, self._ground_truth_rows())
 
@@ -234,7 +247,7 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_evaluate_log_includes_summary_metrics(self):
         log_path = self._write_log(
-            [self._final_report_record(), self._summary_record()]
+            [self._draft_report_record(), self._summary_record()]
         )
         model = object()
 

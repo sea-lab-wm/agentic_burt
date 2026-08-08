@@ -157,9 +157,10 @@ def extract_run_metadata(summary_record: dict[str, Any] | None) -> RunIdentity |
 
 
 def find_final_report_record(records: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Find the dedicated final_report record, if present."""
+    """Find the dedicated draft_report record, if present."""
     for record in reversed(records):
-        if record.get("record_type") == "final_report":
+        # "final_report" is the legacy record_type used by logs written before the rename.
+        if record.get("record_type") in {"draft_report", "final_report"}:
             return record
     return None
 
@@ -245,7 +246,10 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
 
     #NOTE: There is a fallback in place for legacy log formats that do not have the top leve final report. Those logs used a full report json object within an output record.
     if isinstance(final_report_record, dict):
-        final_report = final_report_record.get("final_report")
+        # "final_report" is the legacy payload key used by logs written before the rename.
+        final_report = final_report_record.get("draft_report")
+        if final_report is None:
+            final_report = final_report_record.get("final_report")
     elif generate_report_action is not None:
         output = generate_report_action.get("output") or {}
         final_report = output.get("full_report")
@@ -254,12 +258,12 @@ def build_log_context(log_path: Path, ground_truth_rows: dict[int, dict[str, str
         )
     else:
         context["parse_status"] = "missing_full_report"
-        context["parse_error"] = "No final_report record found in log."
+        context["parse_error"] = "No draft_report record found in log."
         return context
 
     if not isinstance(final_report, dict):
         context["parse_status"] = "missing_full_report"
-        context["parse_error"] = "final_report record did not include a valid final_report object."
+        context["parse_error"] = "draft_report record did not include a valid report object."
         return context
 
     context["final_report"] = final_report

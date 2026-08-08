@@ -13,6 +13,7 @@ export function App() {
     submitDraft,
     submitModifiedReport,
     changeBug,
+    reloadActiveBugs,
     activeConversation,
   } = useChatSession();
   const composerDisabled =
@@ -28,6 +29,7 @@ export function App() {
         bugDiscoveryStatus={bugDiscoveryStatus}
         selectedBugId={appState.selectedBugId}
         onBugChange={changeBug}
+        onBugReload={reloadActiveBugs}
       />
       <ChatTranscript
         messages={activeConversation.messages}

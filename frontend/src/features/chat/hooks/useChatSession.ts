@@ -26,6 +26,7 @@ type ActiveConversationState = {
   submitDraft: () => Promise<void>;
   submitModifiedReport: (report: Record<string, unknown>) => Promise<void>;
   changeBug: (bugId: number) => void;
+  reloadActiveBugs: () => void;
   activeConversation: ConversationSnapshot;
 };
 
@@ -118,6 +119,8 @@ export function useChatSession(): ActiveConversationState {
     "loading",
   );
   const [draft, setDraft] = useState("");
+  // Bumped by reloadActiveBugs so a failed discovery can be retried without a page reload.
+  const [bugDiscoveryAttempt, setBugDiscoveryAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -161,7 +164,11 @@ export function useChatSession(): ActiveConversationState {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [bugDiscoveryAttempt]);
+
+  function reloadActiveBugs(): void {
+    setBugDiscoveryAttempt((attempt) => attempt + 1);
+  }
 
   useEffect(() => {
     saveAppState(appState);
@@ -309,6 +316,7 @@ export function useChatSession(): ActiveConversationState {
     submitDraft,
     submitModifiedReport,
     changeBug,
+    reloadActiveBugs,
     activeConversation,
   };
 }

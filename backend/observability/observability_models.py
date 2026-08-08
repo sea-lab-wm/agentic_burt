@@ -128,12 +128,12 @@ class RunMetadata(BaseModel):
     runtime: Optional[str] = None
 
 
-class FinalReportRecord(BaseModel):
+class DraftReportRecord(BaseModel):
     """Terminal record that stores the generated report payload."""
 
-    record_type: str = "final_report"
+    record_type: str = "draft_report"
     session_id: str
-    final_report: dict[str, Any]
+    draft_report: dict[str, Any]
 
 
 class ModifiedReportRecord(BaseModel):

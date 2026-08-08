@@ -5,6 +5,7 @@ type HeaderBarProps = {
   bugDiscoveryStatus: "loading" | "ready" | "error";
   selectedBugId: number | null;
   onBugChange: (bugId: number) => void;
+  onBugReload: () => void;
 };
 
 export function HeaderBar({
@@ -12,6 +13,7 @@ export function HeaderBar({
   bugDiscoveryStatus,
   selectedBugId,
   onBugChange,
+  onBugReload,
 }: HeaderBarProps) {
   return (
     <header className="header-bar">
@@ -23,6 +25,7 @@ export function HeaderBar({
         bugDiscoveryStatus={bugDiscoveryStatus}
         selectedBugId={selectedBugId}
         onChange={onBugChange}
+        onRetry={onBugReload}
       />
     </header>
   );
