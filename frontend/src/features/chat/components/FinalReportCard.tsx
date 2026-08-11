@@ -1,16 +1,15 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { fetchReportMedia } from "../../../services/api/sessionApi";
 import type { ReportMediaResponse } from "../types/api";
-import { ReportFieldIcon, getReportFieldMedia } from "./reportFieldIcons";
-import type { ReportFieldMedia } from "./reportFieldIcons";
-import { ReportScreenshotPanel } from "./ReportScreenshotPanel";
-import { ReportStepsDialog } from "./ReportStepsDialog";
+import { ReportSectionList } from "./ReportSectionList";
+import { formatLabel, groupReportSections } from "./reportSections";
 import {
   buildStepViews,
   isStepsToReproduceKey,
   readStepLines,
   sanitizeStepsToReproduce,
+  stripStepNumber,
 } from "./reportSteps";
 
 type FinalReportCardProps = {
@@ -26,12 +25,6 @@ type EditableField = {
   text: string;
   originalValue: unknown;
 };
-
-function formatLabel(label: string): string {
-  return label
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-}
 
 export function sanitizeReportForDisplay(
   report: Record<string, unknown>,
@@ -148,8 +141,8 @@ export function FinalReportCard({
   onSave,
 }: FinalReportCardProps) {
   const displayReport = sanitizeReportForDisplay(report);
-  const entries = Object.entries(displayReport);
-  const fieldIdPrefix = useId();
+  const sections = groupReportSections(Object.entries(displayReport));
+  
   const [isEditing, setIsEditing] = useState(false);
   const [fields, setFields] = useState<EditableField[]>(() =>
     buildEditableFields(displayReport),
@@ -157,8 +150,6 @@ export function FinalReportCard({
   const [editorError, setEditorError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [media, setMedia] = useState<ReportMediaResponse | null>(null);
-  const [openScreenshotKey, setOpenScreenshotKey] = useState<string | null>(null);
-  const [areStepsOpen, setAreStepsOpen] = useState(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -187,29 +178,24 @@ export function FinalReportCard({
   }, [sessionId]);
 
   const screenId = media?.has_screen_screenshot ? media.screen_id : null;
-  const stepViews = buildStepViews(readStepLines(displayReport), media?.steps ?? []);
-  const hasStepScreenshots = stepViews.some((step) => step.hasScreenshot);
+  // The behavior box shows this screen for as long as the report is on screen,
+  // so the evidence is resolved once here rather than per icon click.
+  const screenEvidence = sessionId && screenId ? { sessionId, screenId } : null;
 
-  function isMediaAvailable(fieldMedia: ReportFieldMedia): boolean {
-    if (!sessionId) {
-      return false;
-    }
+  // Grouping keys the same way for both views is what keeps the editor's boxes
+  // identical to the report's; only the field bodies differ.
+  const editableSections = groupReportSections(
+    fields.map((field) => [field.key, field.text]),
+  );
 
-    if (fieldMedia === "screen") {
-      return screenId !== null;
-    }
-
-    return fieldMedia === "steps" && hasStepScreenshots;
-  }
-
-  function toggleFieldMedia(key: string, fieldMedia: ReportFieldMedia): void {
-    if (fieldMedia === "steps") {
-      setAreStepsOpen(true);
-      return;
-    }
-
-    setOpenScreenshotKey((currentKey) => (currentKey === key ? null : key));
-  }
+  const stepLines = readStepLines(displayReport);
+  const stepViews = buildStepViews(stepLines, media?.steps ?? []);
+  // A report whose steps carry no graph ids would storyboard into nothing but
+  // placeholders, so the strip only appears once there is a screen to show.
+  const storyboard =
+    sessionId && stepViews.some((step) => step.hasScreenshot)
+      ? { sessionId, steps: stepViews }
+      : null;
 
   function openEditor(): void {
     setFields(buildEditableFields(displayReport));
@@ -263,62 +249,24 @@ export function FinalReportCard({
           </button>
         ) : null}
       </div>
-      <div
-        className={`final-report-card__content${
-          openScreenshotKey ? " final-report-card__content--with-panel" : ""
-        }`}
-      >
-        <div className="final-report-card__body">
-          {entries.map(([key, value]) => {
-            const label = formatLabel(key);
-            const fieldMedia = getReportFieldMedia(key);
-            const isPanelOpen = openScreenshotKey === key;
-
-            return (
-              <article key={key} className="final-report-card__row">
-                <h3>
-                  {isMediaAvailable(fieldMedia) ? (
-                    <button
-                      className="final-report-card__media-toggle"
-                      type="button"
-                      aria-expanded={fieldMedia === "screen" ? isPanelOpen : undefined}
-                      aria-label={
-                        fieldMedia === "steps"
-                          ? `Show screenshots for ${label}`
-                          : `${isPanelOpen ? "Hide" : "Show"} screenshot for ${label}`
-                      }
-                      onClick={() => toggleFieldMedia(key, fieldMedia)}
-                    >
-                      <ReportFieldIcon fieldKey={key} />
-                    </button>
-                  ) : (
-                    <span className="final-report-card__field-icon" aria-hidden="true">
-                      <ReportFieldIcon fieldKey={key} />
-                    </span>
-                  )}
-                  {label}
-                </h3>
-                <p>{renderValue(value)}</p>
-              </article>
-            );
-          })}
-        </div>
-        {sessionId && screenId && openScreenshotKey ? (
-          <ReportScreenshotPanel
-            sessionId={sessionId}
-            screenId={screenId}
-            label={formatLabel(openScreenshotKey)}
-            onClose={() => setOpenScreenshotKey(null)}
-          />
-        ) : null}
-      </div>
-      {sessionId && areStepsOpen ? (
-        <ReportStepsDialog
-          sessionId={sessionId}
-          steps={stepViews}
-          onClose={() => setAreStepsOpen(false)}
-        />
-      ) : null}
+      <ReportSectionList
+        sections={sections}
+        screenEvidence={screenEvidence}
+        storyboard={storyboard}
+        renderField={([key, value]) =>
+          // Numbering the steps here is what ties each one to the badge on its
+          // screenshot below.
+          isStepsToReproduceKey(key) && stepLines.length > 0 ? (
+            <ol className="report-section__steps">
+              {stepLines.map((line, position) => (
+                <li key={`${position}-${line}`}>{stripStepNumber(line)}</li>
+              ))}
+            </ol>
+          ) : (
+            <p>{renderValue(value)}</p>
+          )
+        }
+      />
       <details className="final-report-card__raw">
         <summary>Raw response</summary>
         <pre>{JSON.stringify(displayReport, null, 2)}</pre>
@@ -337,30 +285,31 @@ export function FinalReportCard({
                 X
               </button>
             </div>
-            <div className="report-editor__fields">
-              {fields.map((field) => (
-                <div key={field.key} className="report-editor__field">
-                  <label
-                    className="report-editor__label"
-                    htmlFor={`${fieldIdPrefix}-${field.key}`}
-                  >
-                    {field.label}
-                  </label>
+            {/* The same boxes and screenshots as the report itself, so editing
+                shows the layout the text will land in. */}
+            <ReportSectionList
+              sections={editableSections}
+              screenEvidence={screenEvidence}
+              storyboard={storyboard}
+              renderField={([key], labelId) => {
+                const field = fields.find((candidate) => candidate.key === key);
+
+                return field ? (
                   <div
                     className="report-editor__autogrow"
                     data-replicated-value={field.text}
                   >
                     <textarea
-                      id={`${fieldIdPrefix}-${field.key}`}
                       className="report-editor__input"
+                      aria-labelledby={labelId}
                       rows={1}
                       value={field.text}
                       onChange={(event) => updateField(field.key, event.target.value)}
                     />
                   </div>
-                </div>
-              ))}
-            </div>
+                ) : null;
+              }}
+            />
             {editorError ? <p className="report-editor__error">{editorError}</p> : null}
             <div className="report-editor__actions">
               <button

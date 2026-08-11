@@ -1,0 +1,297 @@
+{
+  "session_id": "7aba0d9d-4eec-40dd-9735-6d8224b90324",
+  "turn": 1,
+  "started_at": "2026-08-08T14:24:42.765797+00:00",
+  "ended_at": "2026-08-08T14:24:53.740550+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "App crashes when trying to duplicate an existing plant entry",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "12ee605d-815c-4566-8ad0-8880bdb82754"
+        }
+      },
+      "meta_data": {
+        "latency": "9.979199967347085e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "trying to duplicate an existing plant entry",
+            "evidence": [
+              "trying to duplicate an existing plant entry"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "App crashes",
+            "evidence": [
+              "App crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.6398800019996997 s",
+        "node_token_consumption": {
+          "input_tokens": 887,
+          "output_tokens": 72,
+          "total_tokens": 959,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.3074979589982831 s",
+        "node_token_consumption": {
+          "input_tokens": 441,
+          "output_tokens": 21,
+          "total_tokens": 462,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-878131199",
+                "evidence": "The user reports the crash occurs when 'trying to duplicate an existing plant entry'. In the GUI graph, the Duplicate action is available from PlantDetailsActivity popup menu screen -878131199."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User explicitly said they were 'trying to duplicate an existing plant entry'. Transition 2104660620 is tapping 'Duplicate' from the Plant details popup menu."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crashes",
+                "evidence": "User explicitly reported: 'App crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should duplicate the existing plant entry without crashing.",
+                "evidence": "Inferred from the reported buggy behavior 'App crashes' when trying to duplicate an existing plant entry."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-985609370",
+                  "evidence": "All reproduction paths must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "209336389",
+                  "evidence": "A valid path from app launch to the main screen uses the permission dialog's ALLOW action."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1126732244",
+                  "evidence": "From the main screen, clicking the add-related image transitions to AddPlantActivity, which is part of the observed user trace leading to plant creation/detail flow."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "621133247",
+                  "evidence": "Returning from Add new plant to the populated main screen provides access to an existing plant entry."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1435511503",
+                  "evidence": "Selecting an existing plant entry opens PlantDetailsActivity."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1326171146",
+                  "evidence": "Opening More options from PlantDetailsActivity reveals the menu containing Duplicate."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User explicitly said they were 'trying to duplicate an existing plant entry'. This is the Duplicate action."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "4.538113752001664 s",
+        "node_token_consumption": {
+          "input_tokens": 15083,
+          "output_tokens": 489,
+          "total_tokens": 15572,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "4.829200042877346e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "App crashes when duplicating an existing plant entry from the plant details menu",
+          "observed_behavior": "On the plant details More options menu, if the user taps Duplicate, the app crashes.",
+          "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-985609370>\n2. On the permission dialog, tap ALLOW. <209336389>\n3. On the main screen, tap the add image/button to open Add new plant. <1126732244>\n4. Tap Navigate up to return to the plant list/main screen with an existing plant entry. <621133247>\n5. Tap an existing plant entry to open its details screen. <-1435511503>\n6. Tap More options on the plant details screen. <1326171146>\n7. Tap Duplicate. <2104660620>"
+        }
+      },
+      "meta_data": {
+        "latency": "2.4670832510018954 s",
+        "node_token_consumption": {
+          "input_tokens": 12453,
+          "output_tokens": 196,
+          "total_tokens": 12649,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "7aba0d9d-4eec-40dd-9735-6d8224b90324",
+  "draft_report": {
+    "title": "App crashes when duplicating an existing plant entry from the plant details menu",
+    "observed_behavior": "On the plant details More options menu, if the user taps Duplicate, the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-985609370>\n2. On the permission dialog, tap ALLOW. <209336389>\n3. On the main screen, tap the add image/button to open Add new plant. <1126732244>\n4. Tap Navigate up to return to the plant list/main screen with an existing plant entry. <621133247>\n5. Tap an existing plant entry to open its details screen. <-1435511503>\n6. Tap More options on the plant details screen. <1326171146>\n7. Tap Duplicate. <2104660620>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "7aba0d9d-4eec-40dd-9735-6d8224b90324",
+  "run_metadata": {
+    "bug_id": 5,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-08T14:24:42.765797+00:00",
+  "ended_at": "2026-08-08T14:24:53.740550+00:00",
+  "total_wall_clock_seconds": 10.974753,
+  "total_turn_processing_seconds": 10.974753,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 28864,
+    "output_tokens": 778,
+    "total_tokens": 29642,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "7aba0d9d-4eec-40dd-9735-6d8224b90324",
+  "modified_report": {
+    "title": "App crashes when duplicating an existing plant entry from the plant details menu",
+    "observed_behavior": "On the plant details More options menu, if the user taps Duplicate, the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. On the permission dialog, tap ALLOW.\n3. On the main screen, tap the add image/button to open Add new plant.\n4. Tap Navigate up to return to the plant list/main screen with an existing plant entry.\n5. Tap an existing plant entry to open its details screen.\n6. Tap More options on the plant details screen.\n7. Tap Duplicate.\n8. Enter Finish"
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "7aba0d9d-4eec-40dd-9735-6d8224b90324",
+  "modified_report": {
+    "title": "App crashes when duplicating an existing plant entry from the plant details menu",
+    "observed_behavior": "On the plant details More options menu, if the user taps Duplicate, the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. On the permission dialog, tap ALLOW.\n3. On the main screen, tap the add image/button to open Add new plant.\n4. Tap Navigate up to return to the plant list/main screen with an existing plant entry.\n5. Tap an existing plant entry to open its details screen.\n6. Tap More options on the plant details screen.\n7. Tap Duplicate."
+  }
+}

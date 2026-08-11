@@ -17,6 +17,16 @@ export function stripStepIdentifier(step: string): string {
   return step.replace(/\s*<[^>\n]+>\s*$/u, "");
 }
 
+/**
+ * Drop the agent's own "1." prefix so an ordered list does not number the step
+ * twice. A line that is nothing but a number keeps it, since stripping would
+ * leave the step blank.
+ */
+export function stripStepNumber(step: string): string {
+  const stripped = step.replace(/^\s*\d+[.)]\s*/u, "").trim();
+  return stripped.length > 0 ? stripped : step.trim();
+}
+
 export function sanitizeStepsToReproduce(value: unknown): unknown {
   if (typeof value === "string") {
     return value
@@ -74,6 +84,42 @@ export function buildStepViews(
       text,
       transitionId: stepMedia?.transition_id ?? null,
       hasScreenshot: stepMedia?.has_screenshot ?? false,
+    };
+  });
+}
+
+/** How the arrow leaving a step reaches the next one, or null at the last step. */
+export type StoryboardConnector = "right" | "left" | "down" | null;
+
+/** One storyboard screenshot, placed on the serpentine path by grid coordinates. */
+export type StoryboardTile = ReportStepView & {
+  row: number;
+  column: number;
+  connector: StoryboardConnector;
+};
+
+export const STORYBOARD_COLUMNS = 4;
+
+/**
+ * Lay the steps out as a boustrophedon: the first row reads left to right, the
+ * next reads back right to left, and so on, so consecutive steps always end up
+ * adjacent and one unbroken arrow path can join them.
+ *
+ * Rows and columns are 1-based to drop straight into CSS grid placement.
+ */
+export function buildStoryboardTiles(steps: ReportStepView[]): StoryboardTile[] {
+  return steps.map((step, position) => {
+    const row = Math.floor(position / STORYBOARD_COLUMNS);
+    const positionInRow = position % STORYBOARD_COLUMNS;
+    const isReversedRow = row % 2 === 1;
+    const isLastStep = position === steps.length - 1;
+    const isRowEnd = positionInRow === STORYBOARD_COLUMNS - 1;
+
+    return {
+      ...step,
+      row: row + 1,
+      column: isReversedRow ? STORYBOARD_COLUMNS - positionInRow : positionInRow + 1,
+      connector: isLastStep ? null : isRowEnd ? "down" : isReversedRow ? "left" : "right",
     };
   });
 }

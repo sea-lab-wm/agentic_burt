@@ -1,8 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { FinalReportCard, buildEditableFields, buildReportFromFields } from "./FinalReportCard";
+import { groupReportSections } from "./reportSections";
 
 describe("report editor fields", () => {
   it("labels each report key and keeps the original key order", () => {
@@ -57,6 +58,40 @@ describe("report editor fields", () => {
   });
 });
 
+describe("report sections", () => {
+  it("boxes observed and expected behavior together, in a fixed section order", () => {
+    const sections = groupReportSections(
+      Object.entries({
+        steps_to_reproduce: "1. Open the app.",
+        expected_behavior: "The app should save.",
+        title: "Crash on save",
+        observed_behavior: "The app closes.",
+      }),
+    );
+
+    expect(sections.map((section) => section.id)).toEqual(["title", "behavior", "steps"]);
+    expect(sections[1]?.entries.map(([key]) => key)).toEqual([
+      "expected_behavior",
+      "observed_behavior",
+    ]);
+  });
+
+  it("collects fields outside the known report shape into one details box", () => {
+    const sections = groupReportSections(
+      Object.entries({ title: "Crash on save", severity: "high", is_reproducible: true }),
+    );
+
+    expect(sections.map((section) => section.id)).toEqual(["title", "details"]);
+    expect(sections[1]?.entries.map(([key]) => key)).toEqual(["severity", "is_reproducible"]);
+  });
+
+  it("drops sections the report has no fields for", () => {
+    expect(groupReportSections(Object.entries({ title: "Crash on save" }))).toEqual([
+      { id: "title", entries: [["title", "Crash on save"]] },
+    ]);
+  });
+});
+
 const REPORT = {
   title: "Crash on save",
   observed_behavior: "The app closes.",
@@ -93,85 +128,41 @@ describe("report field screenshots", () => {
     vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("opens the triggering screen beside the report when a behavior icon is clicked", async () => {
+  it("shows the triggering screen inside the behavior box without a click", async () => {
     mockReportMedia(REPORT_MEDIA);
-    const user = userEvent.setup();
     render(<FinalReportCard report={REPORT} sessionId="session-456" />);
 
-    const toggle = await screen.findByRole("button", {
-      name: "Show screenshot for Observed Behavior",
+    const behavior = await screen.findByRole("region", {
+      name: "Observed and expected behavior",
     });
-    await user.click(toggle);
 
     expect(
-      screen.getByAltText("App screen 78249749, where the bug was triggered"),
+      within(behavior).getByAltText("App screen 78249749, where the bug was triggered"),
     ).toHaveAttribute("src", "/api/sessions/session-456/screenshots/states/78249749");
-    expect(
-      screen.getByRole("button", { name: "Hide screenshot for Observed Behavior" }),
-    ).toBeInTheDocument();
+    // The icons label their fields now, so there is nothing left to click.
+    expect(screen.queryByRole("button", { name: /screenshot/i })).not.toBeInTheDocument();
   });
 
-  it("swaps the panel to the other behavior rather than stacking two screenshots", async () => {
+  it("shows one screenshot for the behavior pair rather than one per field", async () => {
     mockReportMedia(REPORT_MEDIA);
-    const user = userEvent.setup();
     render(<FinalReportCard report={REPORT} sessionId="session-456" />);
 
-    await user.click(
-      await screen.findByRole("button", { name: "Show screenshot for Observed Behavior" }),
-    );
-    await user.click(
-      screen.getByRole("button", { name: "Show screenshot for Expected Behavior" }),
-    );
-
-    expect(screen.getAllByRole("img")).toHaveLength(1);
-    expect(screen.getByLabelText("Expected Behavior screenshot")).toBeInTheDocument();
-  });
-
-  it("closes the panel when the same icon is clicked again", async () => {
-    mockReportMedia(REPORT_MEDIA);
-    const user = userEvent.setup();
-    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
-
-    const toggle = await screen.findByRole("button", {
-      name: "Show screenshot for Observed Behavior",
+    const behavior = await screen.findByRole("region", {
+      name: "Observed and expected behavior",
     });
-    await user.click(toggle);
-    await user.click(
-      screen.getByRole("button", { name: "Hide screenshot for Observed Behavior" }),
-    );
 
-    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(within(behavior).getAllByRole("img")).toHaveLength(1);
+    expect(within(behavior).getByText("Observed Behavior")).toBeInTheDocument();
+    expect(within(behavior).getByText("Expected Behavior")).toBeInTheDocument();
   });
 
-  it("shows each reproduction step next to its transition screenshot in a dialog", async () => {
-    mockReportMedia(REPORT_MEDIA);
-    const user = userEvent.setup();
-    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
-
-    await user.click(
-      await screen.findByRole("button", { name: "Show screenshots for Steps To Reproduce" }),
-    );
-
-    const dialog = screen.getByRole("dialog", { name: "Steps to reproduce with screenshots" });
-    expect(dialog).toBeInTheDocument();
-    expect(
-      screen.getByAltText("Screenshot for step 2: 2. Tap Go."),
-    ).toHaveAttribute("src", "/api/sessions/session-456/screenshots/transitions/990647563");
-    // The synthetic "open app" transition has no capture, so the step still lists.
-    expect(screen.getByText("1. Open the app.")).toBeInTheDocument();
-    expect(screen.getByText("No screenshot captured")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Close steps" }));
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
-
-  it("leaves the icons inert when the session has no captured screenshots", async () => {
+  it("keeps the behavior box readable when the session captured no screen", async () => {
     mockReportMedia({ ...REPORT_MEDIA, has_screen_screenshot: false, screen_id: null, steps: [] });
     render(<FinalReportCard report={REPORT} sessionId="session-456" />);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
-    expect(screen.queryByRole("button", { name: /screenshot/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getByText("Observed Behavior")).toBeInTheDocument();
   });
 
@@ -182,7 +173,7 @@ describe("report field screenshots", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
     expect(screen.getByText("The app closes.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /screenshot/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
   it("does not look up screenshots for a report with no session", () => {
@@ -190,5 +181,167 @@ describe("report field screenshots", () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.getByText("Crash on save")).toBeInTheDocument();
+  });
+});
+
+describe("report editor layout", () => {
+  const fetchMock = vi.fn<typeof fetch>();
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify(REPORT_MEDIA), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  async function openEditor(onSave = vi.fn().mockResolvedValue(undefined)) {
+    const user = userEvent.setup();
+    render(<FinalReportCard report={REPORT} sessionId="session-456" onSave={onSave} />);
+
+    // Wait for the media lookup so the editor opens with the screenshots in place.
+    await screen.findAllByRole("img");
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+
+    return {
+      user,
+      onSave,
+      dialog: screen.getByRole("dialog", { name: "Edit bug report" }),
+    };
+  }
+
+  it("edits the behaviors in the same box, screenshot and all", async () => {
+    const { dialog } = await openEditor();
+    const behavior = within(dialog).getByRole("region", {
+      name: "Observed and expected behavior",
+    });
+
+    expect(within(behavior).getByLabelText("Observed Behavior")).toHaveValue("The app closes.");
+    expect(within(behavior).getByLabelText("Expected Behavior")).toHaveValue(
+      "The app should save.",
+    );
+    expect(
+      within(behavior).getByAltText("App screen 78249749, where the bug was triggered"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the storyboard beside the steps it is editing", async () => {
+    const { dialog } = await openEditor();
+    const steps = within(dialog).getByRole("region", { name: "Steps to reproduce" });
+
+    // The steps edit as their raw lines, identifiers already stripped.
+    expect(within(steps).getByLabelText("Steps To Reproduce")).toHaveValue(
+      "1. Open the app.\n2. Tap Go.",
+    );
+    expect(
+      within(steps).getByRole("list", { name: "Reproduction steps as screenshots" }),
+    ).toBeInTheDocument();
+  });
+
+  it("boxes every report field, the title included", async () => {
+    const { dialog } = await openEditor();
+
+    expect(
+      within(dialog)
+        .getAllByRole("region")
+        .map((region) => region.getAttribute("aria-label")),
+    ).toEqual(["Report title", "Observed and expected behavior", "Steps to reproduce"]);
+  });
+
+  it("saves what was typed into the boxes", async () => {
+    const { user, onSave, dialog } = await openEditor();
+    const title = within(dialog).getByLabelText("Title");
+
+    await user.clear(title);
+    await user.type(title, "Crash on load");
+    await user.click(within(dialog).getByRole("button", { name: "Save" }));
+
+    expect(onSave).toHaveBeenCalledWith({
+      ...REPORT,
+      title: "Crash on load",
+      steps_to_reproduce: "1. Open the app.\n2. Tap Go.",
+    });
+  });
+});
+
+describe("steps storyboard", () => {
+  const fetchMock = vi.fn<typeof fetch>();
+
+  function mockReportMedia(payload: unknown): void {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify(payload), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  }
+
+  function findStoryboard(): Promise<HTMLElement> {
+    return screen.findByRole("list", { name: "Reproduction steps as screenshots" });
+  }
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  it("puts the storyboard in the steps box, badges matching the written steps", async () => {
+    mockReportMedia(REPORT_MEDIA);
+    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
+
+    const storyboard = await findStoryboard();
+    const steps = screen.getByRole("region", { name: "Steps to reproduce" });
+    const tiles = within(storyboard).getAllByRole("listitem");
+
+    expect(steps).toContainElement(storyboard);
+    expect(within(tiles[1]!).getByText("2")).toBeInTheDocument();
+    expect(within(tiles[1]!).getByAltText("Screenshot for step 2: 2. Tap Go.")).toHaveAttribute(
+      "src",
+      "/api/sessions/session-456/screenshots/transitions/990647563",
+    );
+  });
+
+  it("keeps the uncaptured first step on the path as a placeholder", async () => {
+    mockReportMedia(REPORT_MEDIA);
+    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
+
+    const tiles = within(await findStoryboard()).getAllByRole("listitem");
+
+    expect(tiles).toHaveLength(2);
+    expect(within(tiles[0]!).getByText("1")).toBeInTheDocument();
+    expect(within(tiles[0]!).getByText("No screenshot captured")).toBeInTheDocument();
+    expect(within(tiles[0]!).queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("places the tiles along the serpentine path it computed", async () => {
+    mockReportMedia(REPORT_MEDIA);
+    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
+
+    const tiles = within(await findStoryboard()).getAllByRole("listitem");
+
+    expect(tiles[0]).toHaveStyle({ gridRow: "1", gridColumn: "1" });
+    expect(tiles[1]).toHaveStyle({ gridRow: "1", gridColumn: "2" });
+    expect(tiles[0]).toHaveClass("steps-storyboard__step--right");
+    // Nothing follows the last step, so it carries no connector.
+    expect(tiles[1]!.className).toBe("steps-storyboard__step");
+  });
+
+  it("leaves out the storyboard when no step was captured", async () => {
+    mockReportMedia({
+      ...REPORT_MEDIA,
+      steps: REPORT_MEDIA.steps.map((step) => ({ ...step, has_screenshot: false })),
+    });
+    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    expect(
+      screen.queryByRole("list", { name: "Reproduction steps as screenshots" }),
+    ).not.toBeInTheDocument();
+    // The written steps still stand on their own.
+    expect(screen.getByText("Open the app.")).toBeInTheDocument();
   });
 });

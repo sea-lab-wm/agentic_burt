@@ -158,8 +158,11 @@ textarea {
   border: 1px solid rgba(19, 35, 31, 0.08);
 }
 
-/* Wider than a chat bubble so a screenshot can sit beside the report text. */
+/* Wider than a chat bubble so a screenshot can sit beside the report text. The
+   width is set rather than capped: the sections inside size themselves against
+   the bubble, so the bubble cannot in turn take its width from their content. */
 .message-bubble--report {
+  width: min(100%, 54rem);
   max-width: min(100%, 54rem);
 }
 
@@ -198,13 +201,14 @@ textarea {
 }
 
 .final-report-card__header h2,
-.final-report-card__row h3,
-.final-report-card__row p,
+.report-section__field h3,
+.report-section__field p,
 .report-editor__header h2,
 .report-editor__error,
 .steps-viewer__header h2,
 .steps-viewer__text,
 .report-screenshot__caption,
+.screenshot-frame__empty,
 .final-report-card__raw pre {
   margin: 0;
 }
@@ -238,28 +242,53 @@ textarea {
   cursor: pointer;
 }
 
-.final-report-card__content {
-  display: grid;
-  gap: 1.15rem;
-}
-
-/* Opening a field's screenshot splits the card into report text plus evidence. */
-.final-report-card__content--with-panel {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 15rem);
-  align-items: start;
-}
-
-.final-report-card__body {
+/* Sections size against this wrapper rather than the viewport, so the report
+   reflows correctly however wide its bubble is. The edit dialog is a sibling of
+   this element, since inline-size containment would anchor its fixed position
+   here instead of to the viewport. */
+.report-sections {
   display: grid;
   gap: 0.85rem;
+  container-type: inline-size;
+  container-name: report;
 }
 
-.final-report-card__row {
+/* Each information element of the report gets its own bounded, tinted box. */
+.report-section {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.85rem;
+  border: 1px solid rgba(19, 35, 31, 0.1);
+  border-radius: 1rem;
+  background: rgba(240, 233, 220, 0.5);
+}
+
+/* Behavior text keeps the left 70%; its screen evidence holds the right 30%. */
+.report-section--with-media {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 30%);
+}
+
+.report-section__text,
+.report-screenshot {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(19, 35, 31, 0.08);
+  border-radius: 0.75rem;
+  background: rgba(255, 253, 248, 0.9);
+}
+
+.report-section__text {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+}
+
+.report-section__field {
   display: grid;
   gap: 0.25rem;
 }
 
-.final-report-card__row h3 {
+.report-section__field h3 {
   display: flex;
   align-items: center;
   gap: 0.45rem;
@@ -270,64 +299,113 @@ textarea {
   color: #445048;
 }
 
-.final-report-card__row p {
+.report-section__field p {
   white-space: pre-wrap;
 }
 
-.final-report-card__field-icon,
-.final-report-card__media-toggle {
+.report-section__steps {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.report-section__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
   width: 1.75rem;
   height: 1.75rem;
-  padding: 0;
   border-radius: 999px;
-}
-
-.final-report-card__field-icon svg,
-.final-report-card__media-toggle svg {
-  width: 1.05rem;
-  height: 1.05rem;
-}
-
-.final-report-card__field-icon {
-  border: 1px solid transparent;
   color: #8d9790;
 }
 
-.final-report-card__media-toggle {
-  border: 1px solid rgba(19, 35, 31, 0.16);
-  background: #fffdf8;
-  color: #2b4a40;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.final-report-card__media-toggle:hover,
-.final-report-card__media-toggle[aria-expanded="true"] {
-  background: #2b4a40;
-  color: #fcfbf7;
+.report-section__icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .report-screenshot {
   display: grid;
   gap: 0.5rem;
   align-content: start;
-  padding: 0.75rem;
-  border: 1px solid rgba(19, 35, 31, 0.1);
-  border-radius: 0.75rem;
-  background: rgba(246, 241, 233, 0.7);
 }
 
-.report-screenshot__header {
-  display: flex;
+/* Four screens to a row, alternating direction, so the arrows below trace one
+   unbroken path. Columns cap out at a readable width and shrink from there. */
+.steps-storyboard {
+  --storyboard-column-gap: 1.5rem;
+  --storyboard-row-gap: 1.75rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 9rem));
+  justify-content: center;
+  gap: var(--storyboard-row-gap) var(--storyboard-column-gap);
+  margin: 0;
+  padding: 0.9rem 0.85rem;
+  list-style: none;
+  border: 1px solid rgba(19, 35, 31, 0.08);
+  border-radius: 0.75rem;
+  background: rgba(255, 253, 248, 0.9);
+}
+
+.steps-storyboard__step {
+  position: relative;
+}
+
+/* The step number, over the top-left corner of the screen it belongs to. */
+.steps-storyboard__badge {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  z-index: 1;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: rgba(19, 35, 31, 0.85);
+  color: #fcfbf7;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+/* Each connector sits in the grid gap it spans, so it lands between the two
+   screens it joins whatever width the columns settle at. */
+.steps-storyboard__step::after {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  color: #6b6257;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.steps-storyboard__step--right::after {
+  content: "\2192";
+  top: 50%;
+  left: 100%;
+  width: var(--storyboard-column-gap);
+  transform: translateY(-50%);
+}
+
+.steps-storyboard__step--left::after {
+  content: "\2190";
+  top: 50%;
+  right: 100%;
+  width: var(--storyboard-column-gap);
+  transform: translateY(-50%);
+}
+
+.steps-storyboard__step--down::after {
+  content: "\2193";
+  top: 100%;
+  left: 50%;
+  height: var(--storyboard-row-gap);
+  transform: translateX(-50%);
 }
 
 .report-screenshot__title,
@@ -343,18 +421,6 @@ textarea {
   text-transform: none;
   letter-spacing: 0.02em;
   color: #6b6257;
-}
-
-.report-screenshot__close {
-  width: 1.6rem;
-  height: 1.6rem;
-  flex: none;
-  border: 1px solid rgba(19, 35, 31, 0.14);
-  border-radius: 999px;
-  background: #fffdf8;
-  font-size: 0.8rem;
-  line-height: 1;
-  cursor: pointer;
 }
 
 /* Phone captures are 9:16, so the frame keeps that ratio whatever the source is. */
@@ -513,22 +579,10 @@ textarea {
   cursor: pointer;
 }
 
-.report-editor__fields {
-  display: grid;
-  gap: 1.15rem;
-}
-
-.report-editor__field {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.report-editor__label {
-  font-family: "Avenir Next", "Segoe UI", sans-serif;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #445048;
+/* The editor lays the report out in the same boxes, so only the breathing room
+   around an input differs from the read-only field it replaces. */
+.report-editor .report-section__field {
+  gap: 0.4rem;
 }
 
 /* The pseudo-element mirrors the textarea value so the field grows with its
@@ -701,14 +755,47 @@ textarea {
   }
 
   /* Stacked, the 9:16 frames would run the full column width, so cap them. */
-  .final-report-card__content--with-panel,
   .steps-viewer__step {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .report-screenshot .screenshot-frame,
   .steps-viewer__step .screenshot-frame,
   .steps-viewer__no-screenshot {
     width: min(100%, 12rem);
+  }
+}
+
+/* Below this the 30% evidence column is too narrow to read, so it moves under
+   the text and the 9:16 frame is capped rather than run the full width. */
+@container report (max-width: 32rem) {
+  .report-section--with-media {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-screenshot {
+    justify-items: center;
+  }
+
+  .report-screenshot .screenshot-frame {
+    width: min(100%, 12rem);
+  }
+
+  /* The storyboard keeps its four columns here, so the gaps and badges give up
+     their space to the screens rather than the other way round. */
+  .steps-storyboard {
+    --storyboard-column-gap: 0.9rem;
+    --storyboard-row-gap: 1.2rem;
+    padding: 0.6rem 0.5rem;
+  }
+
+  .steps-storyboard__badge {
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.2rem;
+    font-size: 0.6rem;
+  }
+
+  .steps-storyboard__step::after {
+    font-size: 0.85rem;
   }
 }

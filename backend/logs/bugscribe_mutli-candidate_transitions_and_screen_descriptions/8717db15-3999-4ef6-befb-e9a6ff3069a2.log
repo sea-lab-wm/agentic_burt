@@ -416,3 +416,13 @@
     "llm_calls_missing_usage": 0
   }
 }
+{
+  "record_type": "modified_report",
+  "session_id": "8717db15-3999-4ef6-befb-e9a6ff3069a2",
+  "modified_report": {
+    "title": "App crashes when saving a new account name containing an apostrophe",
+    "observed_behavior": "On the Create Account dialog, if the user unselects Income, taps Create Accounts, taps the title-bar Create Account action, enters an account name containing an apostrophe such as \"Ben's\", and taps Save, the app crashes.",
+    "expected_behavior": "The app should save/create the account successfully when the account name contains an apostrophe instead of crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. On the initial account-selection dialog, unselect the Income option.\n3. Tap Create Accounts.\n4. On the Accounts screen, tap the Create Account action (plus button) in the title bar.\n5. In the account name field on the Create Account dialog, enter \"Ben's\".\n6. Tap Save."
+  }
+}

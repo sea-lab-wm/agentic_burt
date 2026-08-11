@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -277,12 +277,13 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Send" }));
 
     expect(await screen.findByText("Draft report")).toBeInTheDocument();
+    const stepsBox = screen.getByRole("region", { name: "Steps to reproduce" });
+    // The list supplies the numbering, so the agent's own prefixes come off too.
     expect(
-      screen.getByText((_, element) =>
-        element?.tagName.toLowerCase() === "p" &&
-        element.textContent === "1. Open the app.\n2. Tap Save.",
-      ),
-    ).toBeInTheDocument();
+      within(stepsBox)
+        .getAllByRole("listitem")
+        .map((item) => item.textContent),
+    ).toEqual(["Open the app.", "Tap Save."]);
     expect(screen.queryByText(/<abc-123>|<def-456>/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Edit" }));

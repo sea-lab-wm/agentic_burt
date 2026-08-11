@@ -1,14 +1,15 @@
 import type { ReactElement } from "react";
 
 /**
- * Which screenshot a report field can open: the screen the bug was triggered on,
- * or the per-step transition storyboard. Fields with no visual evidence get null.
+ * Which boxed section of the report a field belongs to. Observed and expected
+ * behavior share one section because they describe the same screen from two
+ * sides; anything the agent adds beyond the known fields lands in "details".
  */
-export type ReportFieldMedia = "screen" | "steps" | null;
+export type ReportSectionId = "title" | "behavior" | "steps" | "details";
 
 type ReportFieldPresentation = {
   icon: ReactElement;
-  media: ReportFieldMedia;
+  section: ReportSectionId;
 };
 
 const iconProps = {
@@ -61,21 +62,24 @@ const NOTE_ICON = (
   </svg>
 );
 
-const DEFAULT_PRESENTATION: ReportFieldPresentation = { icon: NOTE_ICON, media: null };
+const DEFAULT_PRESENTATION: ReportFieldPresentation = {
+  icon: NOTE_ICON,
+  section: "details",
+};
 
 /**
  * Report keys vary in wording between prompt versions, so each icon is claimed by
  * every phrasing the agent is known to emit for that information element.
  */
 const PRESENTATION_BY_FIELD: Record<string, ReportFieldPresentation> = {
-  title: { icon: TAG_ICON, media: null },
-  summary: { icon: TAG_ICON, media: null },
-  "observed behavior": { icon: EYE_ICON, media: "screen" },
-  "buggy behavior": { icon: EYE_ICON, media: "screen" },
-  "actual behavior": { icon: EYE_ICON, media: "screen" },
-  "expected behavior": { icon: CHECK_ICON, media: "screen" },
-  "correct behavior": { icon: CHECK_ICON, media: "screen" },
-  "steps to reproduce": { icon: STEPS_ICON, media: "steps" },
+  title: { icon: TAG_ICON, section: "title" },
+  summary: { icon: TAG_ICON, section: "title" },
+  "observed behavior": { icon: EYE_ICON, section: "behavior" },
+  "buggy behavior": { icon: EYE_ICON, section: "behavior" },
+  "actual behavior": { icon: EYE_ICON, section: "behavior" },
+  "expected behavior": { icon: CHECK_ICON, section: "behavior" },
+  "correct behavior": { icon: CHECK_ICON, section: "behavior" },
+  "steps to reproduce": { icon: STEPS_ICON, section: "steps" },
 };
 
 export function normalizeFieldKey(key: string): string {
@@ -86,8 +90,8 @@ function presentationFor(key: string): ReportFieldPresentation {
   return PRESENTATION_BY_FIELD[normalizeFieldKey(key)] ?? DEFAULT_PRESENTATION;
 }
 
-export function getReportFieldMedia(key: string): ReportFieldMedia {
-  return presentationFor(key).media;
+export function getReportFieldSection(key: string): ReportSectionId {
+  return presentationFor(key).section;
 }
 
 export function ReportFieldIcon({ fieldKey }: { fieldKey: string }): ReactElement {
