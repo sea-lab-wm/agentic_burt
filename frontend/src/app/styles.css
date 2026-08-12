@@ -233,6 +233,19 @@ textarea {
   color: #6b6257;
 }
 
+.final-report-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.final-report-card__edits-left {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  color: #6b6257;
+  white-space: nowrap;
+}
+
 .final-report-card__edit {
   border: 1px solid rgba(19, 35, 31, 0.16);
   border-radius: 999px;
@@ -253,20 +266,42 @@ textarea {
   container-name: report;
 }
 
-/* Each information element of the report gets its own bounded, tinted box. */
+/* Each information element of the report gets its own bounded, tinted box.
+   The screen-sizing tokens live here rather than on the container above, since a
+   container query can restyle a container's descendants but not the container. */
 .report-section {
+  --report-section-padding: 0.85rem;
+  --storyboard-padding-inline: 0.85rem;
+  --storyboard-column-gap: 1.5rem;
+  --storyboard-row-gap: 1.75rem;
+  /* One width for every app screen in the report, so the behavior box's screen and
+     a storyboard step are always the same size. The storyboard's four columns are
+     what set it: whatever is left of the report once the section padding, the
+     storyboard padding, its three gaps and both borders are taken out, divided
+     four ways, and capped where a screen stops being worth enlarging. */
+  --report-screen-width: min(
+    9rem,
+    calc(
+      (
+          100cqw - 2 * var(--report-section-padding) - 2 *
+            var(--storyboard-padding-inline) - 3 * var(--storyboard-column-gap) -
+            4px
+        ) / 4
+    )
+  );
   display: grid;
   gap: 0.75rem;
   align-items: start;
-  padding: 0.85rem;
+  padding: var(--report-section-padding);
   border: 1px solid rgba(19, 35, 31, 0.1);
   border-radius: 1rem;
   background: rgba(240, 233, 220, 0.5);
 }
 
-/* Behavior text keeps the left 70%; its screen evidence holds the right 30%. */
+/* Behavior text takes the room left over once its screen has been given the
+   same width a storyboard step gets. */
 .report-section--with-media {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 30%);
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .report-section__text,
@@ -328,21 +363,22 @@ textarea {
 
 .report-screenshot {
   display: grid;
-  gap: 0.5rem;
   align-content: start;
+}
+
+.report-screenshot .screenshot-frame {
+  width: var(--report-screen-width);
 }
 
 /* Four screens to a row, alternating direction, so the arrows below trace one
    unbroken path. Columns cap out at a readable width and shrink from there. */
 .steps-storyboard {
-  --storyboard-column-gap: 1.5rem;
-  --storyboard-row-gap: 1.75rem;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 9rem));
+  grid-template-columns: repeat(4, minmax(0, var(--report-screen-width)));
   justify-content: center;
   gap: var(--storyboard-row-gap) var(--storyboard-column-gap);
   margin: 0;
-  padding: 0.9rem 0.85rem;
+  padding: 0.9rem var(--storyboard-padding-inline);
   list-style: none;
   border: 1px solid rgba(19, 35, 31, 0.08);
   border-radius: 0.75rem;
@@ -406,21 +442,6 @@ textarea {
   left: 50%;
   height: var(--storyboard-row-gap);
   transform: translateX(-50%);
-}
-
-.report-screenshot__title,
-.report-screenshot__caption {
-  font-family: "Avenir Next", "Segoe UI", sans-serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #445048;
-}
-
-.report-screenshot__caption {
-  text-transform: none;
-  letter-spacing: 0.02em;
-  color: #6b6257;
 }
 
 /* Phone captures are 9:16, so the frame keeps that ratio whatever the source is. */
@@ -627,8 +648,18 @@ textarea {
   color: #7f2f16;
 }
 
-.report-editor__actions {
-  justify-content: flex-end;
+/* Saving costs one of a capped number of reruns, so the hint holds the left of
+   the row and the buttons stay together on the right. */
+.report-editor__hint {
+  color: #6b6257;
+  font-size: 0.85rem;
+}
+
+.report-editor__buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
 }
 
 .report-editor__secondary,
@@ -765,8 +796,8 @@ textarea {
   }
 }
 
-/* Below this the 30% evidence column is too narrow to read, so it moves under
-   the text and the 9:16 frame is capped rather than run the full width. */
+/* Below this the evidence column leaves the text too little room, so the screen
+   moves under it instead of beside it. */
 @container report (max-width: 32rem) {
   .report-section--with-media {
     grid-template-columns: minmax(0, 1fr);
@@ -776,16 +807,17 @@ textarea {
     justify-items: center;
   }
 
-  .report-screenshot .screenshot-frame {
-    width: min(100%, 12rem);
-  }
-
-  /* The storyboard keeps its four columns here, so the gaps and badges give up
-     their space to the screens rather than the other way round. */
-  .steps-storyboard {
+  /* The storyboard keeps its four columns here, so the gaps and padding give up
+     their space to the screens rather than the other way round. Retuning the
+     tokens is what keeps --report-screen-width in step with them. */
+  .report-section {
+    --storyboard-padding-inline: 0.5rem;
     --storyboard-column-gap: 0.9rem;
     --storyboard-row-gap: 1.2rem;
-    padding: 0.6rem 0.5rem;
+  }
+
+  .steps-storyboard {
+    padding: 0.6rem var(--storyboard-padding-inline);
   }
 
   .steps-storyboard__badge {

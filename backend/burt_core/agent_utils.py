@@ -444,10 +444,22 @@ def validate_info_status(complete_bug_info : InfoSlots) -> None:
     for step in complete_bug_info.steps_to_reproduce:
         get_resolved_candidate(step, "steps_to_reproduce")
 
-def generate_report(complete_bug_info: InfoSlots, transitions: str, model: Any, app_name: str) -> dict[str, Any]:
-    """Generate the final structured bug-report payload from resolved bug info."""
+def generate_report(
+    complete_bug_info: InfoSlots,
+    transitions: str,
+    model: Any,
+    app_name: str,
+    require_resolved: bool = True,
+) -> dict[str, Any]:
+    """Generate the final structured bug-report payload from resolved bug info.
 
-    validate_info_status(complete_bug_info)
+    ``require_resolved`` is dropped by a single-pass regeneration, which has no
+    follow-up round to close the gaps with. The mapping carries each slot's status
+    into the prompt either way, so unresolved slots arrive labelled as such.
+    """
+
+    if require_resolved:
+        validate_info_status(complete_bug_info)
     structured_bug_report_mapping = format_bug_info_for_prompt(complete_bug_info)
 
     system_template = load_prompt_template("generate_report")

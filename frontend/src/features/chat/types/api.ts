@@ -20,6 +20,29 @@ export type ConversationTurnResponse = {
   status: "awaiting_user" | "completed";
   question: string | null;
   final_report: Record<string, unknown> | null;
+  /** How many reports BURT++ has generated for this session so far. */
+  draft_revision: number;
+  /** How many edited reports the user has saved for this session so far. */
+  final_revision: number;
+  /** How many more edit-and-regenerate rounds the session may still run. */
+  edits_remaining: number;
+};
+
+/** One report a session wrote to its log: an agent draft or a saved user edit. */
+export type SessionReportEntry = {
+  kind: "draft" | "final";
+  revision: number;
+  label: string;
+  report: Record<string, unknown>;
+};
+
+export type SessionReportsResponse = {
+  session_id: string;
+  bug_id: number;
+  reports: SessionReportEntry[];
+  draft_revision: number;
+  final_revision: number;
+  edits_remaining: number;
 };
 
 /** Directory the screenshot lives in: a screen reference vs. a reproduction step. */

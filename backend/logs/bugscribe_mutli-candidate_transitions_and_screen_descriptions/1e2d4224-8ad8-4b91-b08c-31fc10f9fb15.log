@@ -1,0 +1,816 @@
+{
+  "session_id": "1e2d4224-8ad8-4b91-b08c-31fc10f9fb15",
+  "turn": 1,
+  "started_at": "2026-08-11T22:53:38.537150+00:00",
+  "ended_at": "2026-08-11T22:53:46.099723+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I got Crash when creating account names with an apostrophe",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "df3ed10d-5e4d-4362-8b66-7a2e7b46fbe7"
+        }
+      },
+      "meta_data": {
+        "latency": "6.608300009247614e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "creating account names with an apostrophe",
+            "evidence": [
+              "creating account names with an apostrophe"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "Crash",
+            "evidence": [
+              "I got Crash"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.66231262600013 s",
+        "node_token_consumption": {
+          "input_tokens": 888,
+          "output_tokens": 72,
+          "total_tokens": 960,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.057206167000004 s",
+        "node_token_consumption": {
+          "input_tokens": 441,
+          "output_tokens": 21,
+          "total_tokens": 462,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "unknown",
+            "candidates": []
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Crash",
+                "evidence": "Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should create/save the name without crashing when the name contains an apostrophe.",
+                "evidence": "Triggering Gui Interactions: \"creating account names with an apostrophe\" + Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "1.7822030840002299 s",
+        "node_token_consumption": {
+          "input_tokens": 15083,
+          "output_tokens": 146,
+          "total_tokens": 15229,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_GUI_interactions[0]",
+          "steps_to_reproduce[0]",
+          "triggering_screen_reference"
+        ]
+      },
+      "meta_data": {
+        "latency": "6.025000038789585e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "When the crash happened while creating a name with an apostrophe, which screen were you on and what exactly did you tap right before it crashed? For example, were you in the garden creation dialog with the Name field, the Add new plant screen with the Plant name field, or another name-entry screen? Please also list the steps you took from opening the app to reaching that screen.",
+          "target_info_elements": [
+            "triggering_screen_reference",
+            "triggering_GUI_interactions",
+            "steps_to_reproduce"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.0424543760000233 s",
+        "node_token_consumption": {
+          "input_tokens": 14523,
+          "output_tokens": 115,
+          "total_tokens": 14638,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "1e2d4224-8ad8-4b91-b08c-31fc10f9fb15",
+  "turn": 1,
+  "started_at": "2026-08-11T22:54:08.676127+00:00",
+  "ended_at": "2026-08-11T22:54:16.100194+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I try to do \"Unselect Income option\tTap on create accounts\tTap on plus button in the title bar\tEnter the \"Ben's\" in the account name\tTap Save\"",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "33fda7b5-18d7-419a-84a6-249ec652c2c8"
+        }
+      },
+      "meta_data": {
+        "latency": "1.0875000043597538e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "create accounts",
+            "evidence": [
+              "Tap on create accounts"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Tap on plus button in the title bar, enter the \"Ben's\" in the account name, and tap Save",
+            "evidence": [
+              "Tap on plus button in the title bar",
+              "Enter the \"Ben's\" in the account name",
+              "Tap Save"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": {
+            "value": "Unselect Income option, tap on create accounts, tap on plus button in the title bar, enter the \"Ben's\" in the account name, and tap Save",
+            "evidence": [
+              "Unselect Income option",
+              "Tap on create accounts",
+              "Tap on plus button in the title bar",
+              "Enter the \"Ben's\" in the account name",
+              "Tap Save"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "2.5069036680001773 s",
+        "node_token_consumption": {
+          "input_tokens": 1018,
+          "output_tokens": 176,
+          "total_tokens": 1194,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.7179311249997227 s",
+        "node_token_consumption": {
+          "input_tokens": 567,
+          "output_tokens": 21,
+          "total_tokens": 588,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "unknown",
+            "candidates": []
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Crash",
+                "evidence": "Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should create/save the name without crashing when the name contains an apostrophe.",
+                "evidence": "Triggering Gui Interactions: \"creating account names with an apostrophe\" + Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "2.0310992089998763 s",
+        "node_token_consumption": {
+          "input_tokens": 15311,
+          "output_tokens": 146,
+          "total_tokens": 15457,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_GUI_interactions[0]",
+          "steps_to_reproduce[0]",
+          "triggering_screen_reference"
+        ]
+      },
+      "meta_data": {
+        "latency": "2.0167000002402347e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "When the crash happened while creating a name with an apostrophe, which screen were you on and what exactly did you do right before it crashed? For example, were you in the garden creation dialog with the Name field, the Add new plant screen’s Plant name field, or a plant details name field? Please list the steps starting from opening the app, including the screen you opened, the field where you entered the apostrophe, the exact text you typed, and what you tapped next such as OK, Save, the back/up button, or another button.",
+          "target_info_elements": [
+            "triggering_screen_reference",
+            "triggering_GUI_interactions",
+            "steps_to_reproduce"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "2.159167751000041 s",
+        "node_token_consumption": {
+          "input_tokens": 14523,
+          "output_tokens": 150,
+          "total_tokens": 14673,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "1e2d4224-8ad8-4b91-b08c-31fc10f9fb15",
+  "turn": 1,
+  "started_at": "2026-08-11T22:54:41.776177+00:00",
+  "ended_at": "2026-08-11T22:54:48.775934+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I was on the create accounts screen",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "0b5d81bc-293b-43ff-b74a-216dbeccf4e1"
+        }
+      },
+      "meta_data": {
+        "latency": "8.583000180806266e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the create accounts screen",
+            "evidence": [
+              "I was on the create accounts screen"
+            ]
+          },
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "1.5583473340002456 s",
+        "node_token_consumption": {
+          "input_tokens": 1022,
+          "output_tokens": 59,
+          "total_tokens": 1081,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.0246374590001324 s",
+        "node_token_consumption": {
+          "input_tokens": 419,
+          "output_tokens": 21,
+          "total_tokens": 440,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "937209487",
+                "evidence": "User said: \"I was on the create accounts screen.\" In the GUI graph, screen 937209487 is the Garden creation dialog, the closest create-name/account-like creation screen."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Crash",
+                "evidence": "Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should create/save the name without crashing when the name contains an apostrophe.",
+                "evidence": "Triggering Gui Interactions: \"creating account names with an apostrophe\" + Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "unknown",
+              "candidates": []
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 3
+      },
+      "meta_data": {
+        "latency": "2.461461291999967 s",
+        "node_token_consumption": {
+          "input_tokens": 15163,
+          "output_tokens": 195,
+          "total_tokens": 15358,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": [
+          "triggering_GUI_interactions[0]",
+          "steps_to_reproduce[0]"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.6375000086554792e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "more_info",
+          "question": "Can you describe the exact action that caused the crash on the garden creation dialog? For example, were you typing a garden name with an apostrophe into the Name field, tapping OK, tapping SELECT ALL first, or doing something else? Also, starting from when you opened the app, what screen did you go through to reach that dialog before it crashed?",
+          "target_info_elements": [
+            "triggering_GUI_interactions",
+            "steps_to_reproduce"
+          ]
+        }
+      },
+      "meta_data": {
+        "latency": "1.9465877089996866 s",
+        "node_token_consumption": {
+          "input_tokens": 14569,
+          "output_tokens": 105,
+          "total_tokens": 14674,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "1e2d4224-8ad8-4b91-b08c-31fc10f9fb15",
+  "turn": 1,
+  "started_at": "2026-08-11T22:55:22.312328+00:00",
+  "ended_at": "2026-08-11T22:55:31.882145+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I Tap on plus button in the title bar. then, in the textbox, I Added enter the \"Ben's\" in the account name",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "6a06c898-127b-4738-a8d3-49501cb65710"
+        }
+      },
+      "meta_data": {
+        "latency": "8.666999747219961e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "Tap on plus button in the title bar, then in the textbox enter \"Ben's\" in the account name.",
+            "evidence": [
+              "I Tap on plus button in the title bar.",
+              "in the textbox, I Added enter the \"Ben's\" in the account name"
+            ]
+          },
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": {
+            "value": "Tap on plus button in the title bar, then in the textbox enter \"Ben's\" in the account name.",
+            "evidence": [
+              "I Tap on plus button in the title bar.",
+              "in the textbox, I Added enter the \"Ben's\" in the account name"
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "2.0893591260000903 s",
+        "node_token_consumption": {
+          "input_tokens": 998,
+          "output_tokens": 150,
+          "total_tokens": 1148,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "0.7153997919999711 s",
+        "node_token_consumption": {
+          "input_tokens": 524,
+          "output_tokens": 21,
+          "total_tokens": 545,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "937209487",
+                "evidence": "Existing mapping already inferred this as the create-name dialog: user was on a create account/name screen, and the new evidence says they tapped the plus button and then entered \"Ben's\" in the textbox, which matches the Garden dialog reachable from the main screen and containing a Name field."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "User said: \"I Tap on plus button in the title bar.\" From the main screen, transition 515114713 is the add/plus button interaction that opens a creation flow, matching the described plus-button trigger most closely in the graph."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "665864042",
+                  "evidence": "User said: \"in the textbox, I Added enter the \\\"Ben's\\\" in the account name\". Transition 665864042 is typing into the Name textbox on the Garden dialog screen."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "Crash",
+                "evidence": "Buggy Behavior: \"I got Crash\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should accept and save/create the name \"Ben's\" without crashing.",
+                "evidence": "From user evidence that entering \"Ben's\" in the name textbox causes a crash, the expected behavior is that the app should handle the apostrophe and proceed without crashing."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-985609370",
+                  "evidence": "Required first step: open app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "209336389",
+                  "evidence": "To reach the main screen from the permission dialog, the valid graph transition is tapping ALLOW. This is the most plausible path to continue the reported flow."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "User said: \"I Tap on plus button in the title bar.\" This is the graph's plus/add button interaction from the main screen into a creation flow."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "665864042",
+                  "evidence": "User said: \"in the textbox, I Added enter the \\\"Ben's\\\" in the account name\". This matches typing in the Name field on the Garden dialog."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 4
+      },
+      "meta_data": {
+        "latency": "4.911752002000412 s",
+        "node_token_consumption": {
+          "input_tokens": 15319,
+          "output_tokens": 521,
+          "total_tokens": 15840,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "1.6958000287559116e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "App crashes when entering a garden/account name containing an apostrophe",
+          "observed_behavior": "On the create-name dialog screen, if the user taps the plus button in the title bar and enters \"Ben's\" in the Name text box, the app crashes.",
+          "expected_behavior": "The app should accept and save/create the name \"Ben's\" without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-985609370>\n2. On the permission prompt, tap ALLOW. <209336389>\n3. Tap the plus/add button from the main screen. <515114713>\n4. Enter \"Ben's\" in the Name text box on the create-name dialog. <665864042>"
+        }
+      },
+      "meta_data": {
+        "latency": "1.8443578339997657 s",
+        "node_token_consumption": {
+          "input_tokens": 12468,
+          "output_tokens": 157,
+          "total_tokens": 12625,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "1e2d4224-8ad8-4b91-b08c-31fc10f9fb15",
+  "draft_report": {
+    "title": "App crashes when entering a garden/account name containing an apostrophe",
+    "observed_behavior": "On the create-name dialog screen, if the user taps the plus button in the title bar and enters \"Ben's\" in the Name text box, the app crashes.",
+    "expected_behavior": "The app should accept and save/create the name \"Ben's\" without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-985609370>\n2. On the permission prompt, tap ALLOW. <209336389>\n3. Tap the plus/add button from the main screen. <515114713>\n4. Enter \"Ben's\" in the Name text box on the create-name dialog. <665864042>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "1e2d4224-8ad8-4b91-b08c-31fc10f9fb15",
+  "run_metadata": {
+    "bug_id": 5,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-11T22:53:38.537150+00:00",
+  "ended_at": "2026-08-11T22:55:31.882145+00:00",
+  "total_wall_clock_seconds": 113.344995,
+  "total_turn_processing_seconds": 31.556214,
+  "total_conversation_turns": 4,
+  "token_consumption": {
+    "input_tokens": 122836,
+    "output_tokens": 2076,
+    "total_tokens": 124912,
+    "llm_calls": 16,
+    "llm_calls_with_usage": 16,
+    "llm_calls_missing_usage": 0
+  }
+}

@@ -154,6 +154,72 @@ class BurtRuntimeContextTests(unittest.TestCase):
             "app graph",
             runtime_context.model,
             "Test App",
+            require_resolved=True,
+        )
+
+    @patch(
+        "burt_core.burt.generate_report",
+        return_value={"full_report": {"title": "Regenerated report"}},
+    )
+    def test_generate_final_report_reports_on_unresolved_info_in_a_single_pass(
+        self,
+        mock_generate_report,
+    ):
+        # A single-pass run has no follow-up round to close the gaps with, so it
+        # reports on what it has instead of refusing.
+        runtime_context = SimpleNamespace(logger=MagicMock(), model=object())
+        state = BugAgentState(single_pass=True)
+        state.BugInfo = MagicMock()
+        config = {
+            "configurable": {
+                "transitions": "app graph",
+                "app_name": "Test App",
+                "runtime_context": runtime_context,
+            }
+        }
+
+        with patch(
+            "burt_core.burt.find_unknown_or_ambiguous",
+            return_value={"correct_behavior"},
+        ):
+            result = burt.generate_final_report.__wrapped__(state, config)
+
+        self.assertEqual(result, {"full_report": {"title": "Regenerated report"}})
+        self.assertIs(mock_generate_report.call_args.kwargs["require_resolved"], False)
+
+    def test_generate_final_report_still_refuses_unresolved_info_in_a_normal_run(self):
+        runtime_context = SimpleNamespace(logger=MagicMock(), model=object())
+        state = BugAgentState()
+        state.BugInfo = MagicMock()
+        config = {"configurable": {"runtime_context": runtime_context}}
+
+        with patch(
+            "burt_core.burt.find_unknown_or_ambiguous",
+            return_value={"correct_behavior"},
+        ):
+            with self.assertRaises(ValueError):
+                burt.generate_final_report.__wrapped__(state, config)
+
+
+class SinglePassRoutingTests(unittest.TestCase):
+    """A regeneration answers in one pass, so neither follow-up branch is taken."""
+
+    def test_clarity_routing_skips_the_clarification_question(self):
+        unclear = BugAgentState(clarity_route="needs_clarification")
+
+        self.assertEqual(burt.should_route_clarity(unclear), "needs_clarification")
+        self.assertEqual(
+            burt.should_route_clarity(unclear.model_copy(update={"single_pass": True})),
+            "continue",
+        )
+
+    def test_evaluation_routing_goes_straight_to_the_report(self):
+        incomplete = BugAgentState(unknown_and_low_confidence_info={"correct_behavior"})
+
+        self.assertEqual(burt.should_continue(incomplete), "continue")
+        self.assertEqual(
+            burt.should_continue(incomplete.model_copy(update={"single_pass": True})),
+            "end",
         )
 
 

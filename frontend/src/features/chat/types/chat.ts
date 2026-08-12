@@ -22,6 +22,10 @@ export type FinalReportMessage = {
   heading?: string;
   // Needed to fetch the report's screenshots, including after a page reload.
   sessionId?: string;
+  /** Whether BURT++ generated this report or the user saved it. */
+  variant?: "draft" | "final";
+  /** Which round of the session this report belongs to, counted per variant. */
+  revision?: number;
 };
 
 export type ErrorMessage = {
@@ -48,4 +52,6 @@ export type ConversationSnapshot = {
   sessionId: string | null;
   status: ConversationStatus;
   messages: ChatMessage[];
+  /** How many edit-and-regenerate rounds the session has left, once it has one. */
+  editsRemaining?: number;
 };

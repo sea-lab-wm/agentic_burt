@@ -62,8 +62,13 @@ class ObservabilitySink(ABC):
         session_id: str,
         final_report: dict[str, Any],
         run_metadata: RunMetadata | dict[str, Any] | None = None,
+        revision: int = 1,
     ) -> None:
-        """Append final report and reconstructed conversation summary records."""
+        """Append final report and reconstructed conversation summary records.
+
+        ``revision`` labels which BURT++ run of the session produced the report, so
+        a session that was regenerated from a saved edit keeps every run on file.
+        """
 
     def _append_record(self, record: BaseModel, filepath: Path) -> None:
         """
@@ -196,11 +201,13 @@ class LocalFileSink(ObservabilitySink):
         *,
         session_id: str,
         modified_report: dict[str, Any],
+        revision: int = 1,
     ) -> None:
         """Append a user-edited final report record to an existing session log."""
         self._append_record(
             ModifiedReportRecord(
                 session_id=session_id,
+                revision=revision,
                 modified_report=modified_report,
             ),
             self.filepath,
@@ -212,6 +219,7 @@ class LocalFileSink(ObservabilitySink):
         session_id: str,
         final_report: dict[str, Any],
         run_metadata: RunMetadata | dict[str, Any] | None = None,
+        revision: int = 1,
     ) -> None:
         """Append terminal records after reconstructing totals from persisted turns."""
         turn_records: list[ConversationTurn] = []
@@ -230,7 +238,11 @@ class LocalFileSink(ObservabilitySink):
         )
 
         self._append_record(
-            DraftReportRecord(session_id=session_id, draft_report=final_report),
+            DraftReportRecord(
+                session_id=session_id,
+                revision=revision,
+                draft_report=final_report,
+            ),
             self.filepath,
         )
         self._append_record(summary_record, self.filepath)
@@ -265,8 +277,14 @@ class RedisThenFileSink(ObservabilitySink):
         session_id: str,
         final_report: dict[str, Any],
         run_metadata: RunMetadata | dict[str, Any] | None = None,
+        revision: int = 1,
     ) -> None:
-        """Write the reconstructed session log to disk, then clear staged Redis turns."""
+        """Write the reconstructed session log to disk, then clear staged Redis turns.
+
+        The log is appended to rather than rewritten: a session regenerated from a
+        saved edit finalizes once per run, and every earlier run's turns, draft
+        report, and saved edit have to survive on file for the next one.
+        """
         turn_records = [
             ConversationTurn.model_validate(record)
             for record in self._parse_redis_records(session_id)
@@ -283,13 +301,14 @@ class RedisThenFileSink(ObservabilitySink):
         )
 
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
-        with self.filepath.open("w", encoding="utf-8") as file_handle:
+        with self.filepath.open("a", encoding="utf-8") as file_handle:
             for turn_record in turn_records:
                 file_handle.write(turn_record.model_dump_json(indent=2))
                 file_handle.write("\n")
             file_handle.write(
                 DraftReportRecord(
                     session_id=session_id,
+                    revision=revision,
                     draft_report=final_report,
                 ).model_dump_json(indent=2)
             )

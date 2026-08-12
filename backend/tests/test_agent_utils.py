@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 
 from langchain_core.messages import HumanMessage
 
@@ -7,6 +8,7 @@ from burt_core.agent_utils import (
     format_bug_info_for_prompt,
     format_extraction_update,
     format_unknown_or_ambiguous_references,
+    generate_report,
     llm_clarity_follow_up,
     llm_extract,
     llm_more_info_follow_up,
@@ -186,6 +188,45 @@ class GraphUtilsTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             validate_info_status(info)
+
+    def test_generate_report_can_write_from_unresolved_info_for_a_single_pass_rerun(self):
+        # A regeneration has no follow-up round to close the gaps with, so the slot
+        # statuses go to the prompt as they are rather than blocking generation.
+        info = InfoSlots(
+            triggering_screen_reference=Slot(status=SlotStatus.unknown, candidates=[]),
+            triggering_GUI_interactions=[],
+            buggy_behavior=Slot(
+                status=SlotStatus.confirmed,
+                candidates=[CandidateMapping(value="freeze", evidence="quote")],
+            ),
+            correct_behavior=Slot(status=SlotStatus.unknown, candidates=[]),
+            steps_to_reproduce=[],
+        )
+
+        class _StubModel:
+            """Capture the rendered prompt instead of calling a provider."""
+
+            def __init__(self):
+                self.messages = None
+
+            def with_structured_output(self, _schema):
+                return self
+
+            def invoke(self, messages):
+                self.messages = messages
+                return SimpleNamespace(model_dump=lambda: {"title": "Regenerated"})
+
+        model = _StubModel()
+
+        report = generate_report(info, "app graph", model, "Test App", require_resolved=False)
+
+        self.assertEqual(report, {"full_report": {"title": "Regenerated"}})
+        # The prompt already documents what an unknown status means, so the model
+        # is told which slots the edit left open rather than being given nothing.
+        self.assertIn('"status": "unknown"', model.messages[-1].content)
+
+        with self.assertRaises(ValueError):
+            generate_report(info, "app graph", model, "Test App")
 
     def test_format_unknown_or_ambiguous_references_prioritizes_unknown_and_normalizes_labels(self):
         info = InfoSlots(

@@ -210,6 +210,9 @@ describe("App", () => {
         status: "completed",
         question: null,
         final_report: { title: "Crash on save" },
+        draft_revision: 1,
+        final_revision: 0,
+        edits_remaining: 3,
       }),
     );
 
@@ -220,14 +223,19 @@ describe("App", () => {
     await user.type(screen.getByLabelText("Message BURT"), "The app crashed.");
     await user.click(screen.getByRole("button", { name: "Send" }));
 
-    expect(await screen.findByText("Draft report")).toBeInTheDocument();
+    expect(await screen.findByText("Draft report 1")).toBeInTheDocument();
     expect(screen.getByLabelText("Message BURT")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
   });
 
-  it("hides step identifiers and appends an edited final report after save", async () => {
-    // Routed by URL rather than queued, because the report card also fetches its
-    // screenshot metadata as soon as it renders.
+  /**
+   * Stand up the API a report card talks to. Routed by URL rather than queued,
+   * because a card fetches its screenshot metadata as soon as it renders and the
+   * transcript replays the session's reports whenever one completes.
+   *
+   * ``onSaveReport`` answers the save-and-regenerate call.
+   */
+  function mockReportApi(onSaveReport: () => Response): void {
     fetchMock.mockImplementation(async (input) => {
       const url = String(input);
 
@@ -235,7 +243,7 @@ describe("App", () => {
         return jsonResponse({ bug_ids: [2, 10, 135] });
       }
 
-      if (url.endsWith("/report-media")) {
+      if (url.includes("/report-media")) {
         return jsonResponse({
           session_id: "session-456",
           bug_id: 2,
@@ -246,16 +254,12 @@ describe("App", () => {
         });
       }
 
+      if (url.endsWith("/reports")) {
+        return jsonResponse({ session_id: "session-456", bug_id: 2, reports: [] });
+      }
+
       if (url.endsWith("/report")) {
-        return jsonResponse({
-          session_id: "session-456",
-          status: "completed",
-          question: null,
-          final_report: {
-            title: "Edited crash on save",
-            steps_to_reproduce: "1. Open the app.\n2. Tap Save.",
-          },
-        });
+        return onSaveReport();
       }
 
       return jsonResponse({
@@ -266,17 +270,50 @@ describe("App", () => {
           title: "Crash on save",
           steps_to_reproduce: "1. Open the app. <abc-123>\n2. Tap Save. <def-456>",
         },
+        draft_revision: 1,
+        final_revision: 0,
+        edits_remaining: 3,
       });
     });
+  }
 
+  async function submitFirstDescription(): Promise<ReturnType<typeof userEvent.setup>> {
     const user = userEvent.setup();
     render(<App />);
     await screen.findByText("I’m BURT++, your bug reporting assistant.");
 
     await user.type(screen.getByLabelText("Message BURT"), "The app crashed.");
     await user.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Draft report 1");
 
-    expect(await screen.findByText("Draft report")).toBeInTheDocument();
+    return user;
+  }
+
+  async function editTitleAndSave(
+    user: ReturnType<typeof userEvent.setup>,
+  ): Promise<void> {
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Edited crash on save" },
+    });
+    await user.click(screen.getByRole("button", { name: "Save" }));
+  }
+
+  it("hides step identifiers and keeps the saved edit as the round's final report", async () => {
+    mockReportApi(() =>
+      jsonResponse({
+        session_id: "session-456",
+        status: "completed",
+        question: null,
+        final_report: { title: "Regenerated crash on save" },
+        draft_revision: 2,
+        final_revision: 1,
+        edits_remaining: 2,
+      }),
+    );
+
+    const user = await submitFirstDescription();
+
     const stepsBox = screen.getByRole("region", { name: "Steps to reproduce" });
     // The list supplies the numbering, so the agent's own prefixes come off too.
     expect(
@@ -297,7 +334,7 @@ describe("App", () => {
     });
     await user.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(await screen.findByText("Final Report")).toBeInTheDocument();
+    expect(await screen.findByText("Final report 1")).toBeInTheDocument();
     expect(screen.getByText("Edited crash on save")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/sessions/session-456/report",
@@ -311,6 +348,154 @@ describe("App", () => {
         }),
       }),
     );
+  });
+
+  it("reruns BURT++ on save and lands the regenerated report as the next draft", async () => {
+    mockReportApi(() =>
+      jsonResponse({
+        session_id: "session-456",
+        status: "completed",
+        question: null,
+        final_report: { title: "Regenerated crash on save" },
+        draft_revision: 2,
+        final_revision: 1,
+        edits_remaining: 2,
+      }),
+    );
+
+    const user = await submitFirstDescription();
+    await editTitleAndSave(user);
+
+    // Both rounds stay on screen, newest last, and only the newest draft is
+    // still the one an edit would start from.
+    expect(await screen.findByText("Draft report 2")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(["Draft report 1", "Final report 1", "Draft report 2"]);
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByText("2 reruns left")).toBeInTheDocument();
+  });
+
+  it("regenerates in one pass without asking anything back", async () => {
+    mockReportApi(() =>
+      jsonResponse({
+        session_id: "session-456",
+        status: "completed",
+        question: null,
+        final_report: { title: "Regenerated crash on save" },
+        draft_revision: 2,
+        final_revision: 1,
+        edits_remaining: 2,
+      }),
+    );
+
+    const user = await submitFirstDescription();
+    await editTitleAndSave(user);
+    await screen.findByText("Draft report 2");
+
+    // The edit already said what to change, so the round closes on the new report
+    // rather than reopening the chat.
+    expect(screen.getByLabelText("Message BURT")).toBeDisabled();
+    expect(screen.queryByLabelText("BURT is thinking")).not.toBeInTheDocument();
+  });
+
+  it("stops offering an edit once the session has spent its last rerun", async () => {
+    mockReportApi(() =>
+      jsonResponse({
+        session_id: "session-456",
+        status: "completed",
+        question: null,
+        final_report: { title: "Regenerated crash on save" },
+        draft_revision: 4,
+        final_revision: 3,
+        edits_remaining: 0,
+      }),
+    );
+
+    const user = await submitFirstDescription();
+    await editTitleAndSave(user);
+
+    expect(await screen.findByText("Draft report 4")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the saved edit and says so when the rerun fails", async () => {
+    mockReportApi(() => jsonResponse({ detail: "BURT++ is unavailable." }, 500));
+
+    const user = await submitFirstDescription();
+    await editTitleAndSave(user);
+
+    expect(await screen.findByText("BURT++ is unavailable.")).toBeInTheDocument();
+    expect(screen.getByText("Final report 1")).toBeInTheDocument();
+  });
+
+  it("replays the reports on file when a completed session is reopened", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const url = String(input);
+
+      if (url.endsWith("/bugs/active")) {
+        return jsonResponse({ bug_ids: [2, 10, 135] });
+      }
+
+      if (url.includes("/report-media")) {
+        return jsonResponse({
+          session_id: "session-456",
+          bug_id: 2,
+          app_name: null,
+          screen_id: null,
+          has_screen_screenshot: false,
+          steps: [],
+        });
+      }
+
+      return jsonResponse({
+        session_id: "session-456",
+        bug_id: 2,
+        reports: [
+          { kind: "draft", revision: 1, label: "Draft report 1", report: { title: "First" } },
+          { kind: "final", revision: 1, label: "Final report 1", report: { title: "Edited" } },
+          { kind: "draft", revision: 2, label: "Draft report 2", report: { title: "Second" } },
+        ],
+        draft_revision: 2,
+        final_revision: 1,
+        edits_remaining: 2,
+      });
+    });
+
+    // A transcript restored from this browser knows the conversation but only the
+    // one report card it happened to see.
+    window.localStorage.setItem(
+      "burt-chat-state",
+      JSON.stringify({
+        selectedBugId: 2,
+        conversations: {
+          "2": {
+            sessionId: "session-456",
+            status: "completed",
+            messages: [
+              { id: "user-1", kind: "user", text: "The app crashed." },
+              {
+                id: "report-1",
+                kind: "final_report",
+                report: { title: "First" },
+                heading: "Draft report 1",
+                sessionId: "session-456",
+                variant: "draft",
+                revision: 1,
+              },
+            ],
+          },
+        },
+      }),
+    );
+
+    render(<App />);
+
+    expect(await screen.findByText("Draft report 2")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(["Draft report 1", "Final report 1", "Draft report 2"]);
+    expect(screen.getByText("The app crashed.")).toBeInTheDocument();
   });
 
   it("keeps the selector and composer disabled when active bug discovery fails", async () => {

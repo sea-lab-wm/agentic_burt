@@ -63,6 +63,10 @@ This starts:
   - `POST /sessions`
   - `GET /sessions/{session_id}`
   - `POST /sessions/{session_id}/messages`
+  - `POST /sessions/{session_id}/report`
+  - `GET /sessions/{session_id}/reports`
+  - `GET /sessions/{session_id}/report-media`
+  - `GET /sessions/{session_id}/screenshots/{kind}/{image_id}`
 
 2. Open the frontend at:
    * Local machine: `http://localhost:3000`
@@ -72,6 +76,33 @@ Notes:
 
 - The backend API is not exposed directly on the host.
 - Browser API calls go through nginx at `/api/...`, which proxies to the internal `api:3000` service.
+
+### Editing And Regenerating A Report
+
+Saving an edited report does not only store the edit. `POST /sessions/{session_id}/report`
+writes it to the session log as the round's **final report**, then reruns BURT++ from the
+start on that edited report, exactly as if the text had been typed into the composer.
+
+The rerun is **single-pass**: the user has already said what they wanted changed, so it
+regenerates in one try instead of asking follow-up questions. Both follow-up branches of
+the graph are skipped for it (`BugAgentState.single_pass`), and the report is written from
+whatever the edit supplied — unresolved slots reach the prompt carrying their `unknown` or
+`ambiguous` status rather than blocking generation. The response therefore always carries
+the newly generated **draft report**.
+
+One session therefore accumulates alternating reports in its log:
+
+```
+draft report 1   <- the first BURT++ run
+final report 1   <- the user's edit, which triggers a rerun
+draft report 2   <- the regenerated report
+...
+```
+
+`config.MAX_REPORT_EDITS` (default 3) caps how many times this can happen, so a session
+tops out at final report 3 and draft report 4. `GET /sessions/{session_id}/reports` replays
+every report on file, which is what lets a reloaded page rebuild the whole history rather
+than only the report the last request happened to return.
 
 Stop the deployment with:
 

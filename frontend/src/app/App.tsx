@@ -15,6 +15,8 @@ export function App() {
     changeBug,
     reloadActiveBugs,
     activeConversation,
+    canEditReport,
+    editsRemaining,
   } = useChatSession();
   const composerDisabled =
     bugDiscoveryStatus !== "ready" ||
@@ -34,6 +36,8 @@ export function App() {
       <ChatTranscript
         messages={activeConversation.messages}
         onSaveReport={submitModifiedReport}
+        canEditReport={canEditReport}
+        editsRemaining={editsRemaining}
       />
       <div className="composer-shell">
         <Composer

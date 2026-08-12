@@ -6,6 +6,7 @@ import type {
   ReportMediaResponse,
   ResumeConversationRequest,
   ScreenshotKind,
+  SessionReportsResponse,
 } from "../../features/chat/types/api";
 
 const API_BASE_PATH = (import.meta.env.VITE_API_BASE_PATH ?? "/api").replace(/\/$/, "");
@@ -67,6 +68,10 @@ export function resumeSession(
   );
 }
 
+/**
+ * Save an edited report and rerun BURT++ on it. The rerun is single-pass, so the
+ * response carries the regenerated draft rather than another question.
+ */
 export function saveModifiedReport(
   sessionId: string,
   payload: ModifyReportRequest,
@@ -80,8 +85,24 @@ export function saveModifiedReport(
   );
 }
 
-export function fetchReportMedia(sessionId: string): Promise<ReportMediaResponse> {
-  return requestJson<ReportMediaResponse>(apiPath(`/sessions/${sessionId}/report-media`));
+/** Read back every report a session has written to its log, oldest first. */
+export function fetchSessionReports(sessionId: string): Promise<SessionReportsResponse> {
+  return requestJson<SessionReportsResponse>(
+    apiPath(`/sessions/${encodeURIComponent(sessionId)}/reports`),
+  );
+}
+
+export function fetchReportMedia(
+  sessionId: string,
+  revision?: number,
+): Promise<ReportMediaResponse> {
+  // A regenerated session holds one run's screenshots per revision, so a report
+  // card asks for its own rather than for whichever run finished last.
+  const query = revision === undefined ? "" : `?revision=${revision}`;
+
+  return requestJson<ReportMediaResponse>(
+    apiPath(`/sessions/${encodeURIComponent(sessionId)}/report-media${query}`),
+  );
 }
 
 /** Build the <img> source for one GUI graph screenshot captured for a session's bug. */

@@ -5,9 +5,15 @@ import { ThinkingBubble } from "./ThinkingBubble";
 type MessageBubbleProps = {
   message: ChatMessage;
   onSaveReport?: (report: Record<string, unknown>) => Promise<void>;
+  /** How many edit-and-regenerate rounds are left, for an editable report. */
+  editsRemaining?: number;
 };
 
-export function MessageBubble({ message, onSaveReport }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  onSaveReport,
+  editsRemaining,
+}: MessageBubbleProps) {
   if (message.kind === "thinking") {
     return (
       <div className="message-row message-row--agent">
@@ -26,6 +32,9 @@ export function MessageBubble({ message, onSaveReport }: MessageBubbleProps) {
             heading={message.heading}
             report={message.report}
             sessionId={message.sessionId}
+            revision={message.revision}
+            variant={message.variant}
+            editsRemaining={onSaveReport ? editsRemaining : undefined}
             onSave={onSaveReport}
           />
         </div>

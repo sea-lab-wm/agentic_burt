@@ -129,18 +129,28 @@ class RunMetadata(BaseModel):
 
 
 class DraftReportRecord(BaseModel):
-    """Terminal record that stores the generated report payload."""
+    """Terminal record that stores the generated report payload.
+
+    ``revision`` counts the BURT++ runs of one session: the first run writes
+    revision 1, and every regeneration triggered by a saved edit writes the next.
+    """
 
     record_type: str = "draft_report"
     session_id: str
+    revision: int = 1
     draft_report: dict[str, Any]
 
 
 class ModifiedReportRecord(BaseModel):
-    """Post-terminal record that stores a user-edited report payload."""
+    """Post-terminal record that stores a user-edited report payload.
+
+    ``revision`` counts the saved edits of one session, so the edit made to
+    draft report N is stored as revision N.
+    """
 
     record_type: str = "modified_report"
     session_id: str
+    revision: int = 1
     modified_report: dict[str, Any]
 
 

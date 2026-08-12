@@ -124,3 +124,7 @@ class BugAgentState(BaseModel):
     unknown_and_low_confidence_info: set[str] = Field(default_factory=set)
     active_follow_up: Optional[ActiveFollowUp] = None
     full_report: Optional[dict[str, Any]] = None
+    # A run regenerating a report the user just edited answers in one pass: it asks
+    # no follow-up questions and reports on whatever the edit supplied, since the
+    # user has already said what they wanted changed.
+    single_pass: bool = False

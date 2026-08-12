@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from redis.exceptions import RedisError
 
@@ -11,9 +11,11 @@ from app.schemas.sessions import (
     ModifyReportRequest,
     ReportMediaResponse,
     ResumeConversationRequest,
+    SessionReportsResponse,
 )
 from app.services.burt_runtime import (
     InvalidSessionError,
+    ReportEditLimitError,
     SessionCompletedError,
     SessionLockedError,
     SessionNotFoundError,
@@ -21,6 +23,7 @@ from app.services.burt_runtime import (
     save_modified_report,
     start_conversation,
 )
+from app.services.report_history import build_session_reports
 from app.services.report_media import build_report_media, resolve_screenshot
 from app.services.session_store import get_session, ping
 from gui_graph_context_management.loader import list_active_bug_ids
@@ -107,7 +110,11 @@ def modify_report(
     session_id: str,
     modify_request: ModifyReportRequest,
 ) -> ConversationTurnResponse:
-    """Persist a user-edited final report for a completed conversation."""
+    """Log a user-edited report, then rerun BURT++ to regenerate from that edit.
+
+    The rerun is single-pass, so the response carries the newly generated draft
+    report rather than a follow-up question.
+    """
     try:
         return save_modified_report(
             session_id=session_id,
@@ -115,17 +122,35 @@ def modify_report(
         )
     except SessionNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except SessionCompletedError as exc:
+    except (SessionCompletedError, SessionLockedError, ReportEditLimitError) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except InvalidSessionError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@sessions_router.get("/sessions/{session_id}/report-media", response_model=ReportMediaResponse)
-def report_media(session_id: str) -> ReportMediaResponse:
-    """Describe which report fields of a session have a GUI graph screenshot to show."""
+@sessions_router.get("/sessions/{session_id}/reports", response_model=SessionReportsResponse)
+def session_reports(session_id: str) -> SessionReportsResponse:
+    """Replay every draft and saved report a session has written to its log."""
     try:
-        return build_report_media(session_id)
+        return build_session_reports(session_id)
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except InvalidSessionError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@sessions_router.get("/sessions/{session_id}/report-media", response_model=ReportMediaResponse)
+def report_media(
+    session_id: str,
+    revision: int | None = Query(default=None, ge=1),
+) -> ReportMediaResponse:
+    """Describe which report fields of a session have a GUI graph screenshot to show.
+
+    ``revision`` selects one regenerated run's screenshots; the newest run answers
+    when it is omitted.
+    """
+    try:
+        return build_report_media(session_id, revision)
     except SessionNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except InvalidSessionError as exc:

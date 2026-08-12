@@ -2,6 +2,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
+import config
+
 
 class CreateSessionRequest(BaseModel):
     """Input payload used to create a new agent conversation session."""
@@ -31,6 +33,31 @@ class ConversationTurnResponse(BaseModel):
     status: Literal["awaiting_user", "completed"]
     question: str | None = None
     final_report: dict[str, Any] | None = None
+    # Revision bookkeeping, so the client can label the report it just received
+    # and know whether another edit is still allowed.
+    draft_revision: int = 0
+    final_revision: int = 0
+    edits_remaining: int = config.MAX_REPORT_EDITS
+
+
+class SessionReportEntry(BaseModel):
+    """One report a session produced, in the order it was written to the log."""
+
+    kind: Literal["draft", "final"]
+    revision: int
+    label: str
+    report: dict[str, Any]
+
+
+class SessionReportsResponse(BaseModel):
+    """API response replaying every report a session has on file, oldest first."""
+
+    session_id: str
+    bug_id: int
+    reports: list[SessionReportEntry]
+    draft_revision: int
+    final_revision: int
+    edits_remaining: int
 
 
 class ActiveBugIdsResponse(BaseModel):

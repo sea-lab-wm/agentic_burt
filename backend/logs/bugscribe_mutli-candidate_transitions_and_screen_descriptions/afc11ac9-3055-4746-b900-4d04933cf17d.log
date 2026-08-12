@@ -1,0 +1,1065 @@
+{
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "turn": 1,
+  "started_at": "2026-08-12T01:23:46.386621+00:00",
+  "ended_at": "2026-08-12T01:24:03.023684+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "App crashes when trying to duplicate an existing plant entry",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "25cc8e7e-96ef-4abf-98d9-3f0e22bb260b"
+        }
+      },
+      "meta_data": {
+        "latency": "0.0001685839997662697 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": {
+            "value": "trying to duplicate an existing plant entry",
+            "evidence": [
+              "trying to duplicate an existing plant entry"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "App crashes",
+            "evidence": [
+              "App crashes"
+            ]
+          },
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        }
+      },
+      "meta_data": {
+        "latency": "2.2827643760010687 s",
+        "node_token_consumption": {
+          "input_tokens": 887,
+          "output_tokens": 72,
+          "total_tokens": 959,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.2794809999995778 s",
+        "node_token_consumption": {
+          "input_tokens": 441,
+          "output_tokens": 21,
+          "total_tokens": 462,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "-878131199",
+                "evidence": "The bug happens when 'trying to duplicate an existing plant entry'. In the GUI graph, Duplicate is an option on PlantDetailsActivity(Window=Popup Menu), screen -878131199, reached from an existing plant's details via More options."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User reports the crash occurs when 'trying to duplicate an existing plant entry'. Transition 2104660620 is tapping 'Duplicate' in the Plant details popup menu."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "App crashes",
+                "evidence": "User explicitly states: 'App crashes'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "inferred",
+            "candidates": [
+              {
+                "value": "The app should duplicate the existing plant entry without crashing.",
+                "evidence": "Derived from the reported buggy behavior 'App crashes' when 'trying to duplicate an existing plant entry'."
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-985609370",
+                  "evidence": "Reproduction must start with opening the app."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "209336389",
+                  "evidence": "From app launch, the common valid path proceeds by allowing permissions to reach the main screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "A valid path to an existing plant entry begins by adding a plant from the main screen using the add button."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-216824928",
+                  "evidence": "This transition is part of the observed trace for creating a plant entry before later duplicating an existing one."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1972602105",
+                  "evidence": "Navigating up from AddPlantActivity leads back toward the main filtered list containing the created plant."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2136516104",
+                  "evidence": "From the filtered main screen, tapping 'Feed' opens the plant-related flow seen in the user trace that leads through an existing plant entry."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "839705451",
+                  "evidence": "Part of the concrete user trace preceding later plant-detail interactions."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1851718904",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "245763951",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-2057949531",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-2022182406",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1820839540",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-955607130",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1912744493",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1315915862",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1472395568",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1397753701",
+                  "evidence": "Part of the same trace sequence captured in the GUI graph."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1612652358",
+                  "evidence": "To reach an existing plant entry flow, use More options from the main screen."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "699581006",
+                  "evidence": "Close the main-screen menu to continue toward plant access."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "A plant-related path starts from the add button in the available graph traces."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "621133247",
+                  "evidence": "Navigate back from add plant to the main list after ensuring an existing plant is present."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "667923578",
+                  "evidence": "Tap the existing plant entry to open PlantDetailsActivity."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "1326171146",
+                  "evidence": "On PlantDetailsActivity, tap More options to open the popup menu containing Duplicate."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "Tap 'Duplicate' to trigger the crash, matching 'trying to duplicate an existing plant entry'."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "9.335748712999703 s",
+        "node_token_consumption": {
+          "input_tokens": 15083,
+          "output_tokens": 1092,
+          "total_tokens": 16175,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "1.912500010803342e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Tapping Duplicate for an existing plant entry crashes the app",
+          "observed_behavior": "On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.",
+          "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-985609370>\n2. Tap \"ALLOW\" on the permission prompt. <209336389>\n3. Tap the add button from the main screen. <515114713>\n4. Enter a plant strain on the Add Plant screen. <-216824928>\n5. Tap Navigate up to leave the Add Plant screen. <1972602105>\n6. Tap \"Feed.\" <2136516104>\n7. Enter an amount on the Feed screen. <839705451>\n8. Tap \"+ New Additive.\" <-1851718904>\n9. Enter a description. <245763951>\n10. Enter a description again on the next screen. <-2057949531>\n11. Enter an amount. <-2022182406>\n12. Enter an amount again on the next screen. <-1820839540>\n13. Tap \"OK.\" <-955607130>\n14. Swipe up. <1912744493>\n15. Enter notes. <1315915862>\n16. Enter notes again on the next screen. <1472395568>\n17. Tap the image/button control to continue. <1397753701>\n18. Tap More options from the main screen. <-1612652358>\n19. Close the menu and return to the main screen. <699581006>\n20. Tap the add button. <515114713>\n21. Tap Navigate up to return to the plant list. <621133247>\n22. Tap an existing plant entry to open its details. <667923578>\n23. Tap More options on the plant details screen. <1326171146>\n24. Tap \"Duplicate.\" <2104660620>"
+        }
+      },
+      "meta_data": {
+        "latency": "3.7091927099991153 s",
+        "node_token_consumption": {
+          "input_tokens": 13220,
+          "output_tokens": 443,
+          "total_tokens": 13663,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "revision": 1,
+  "draft_report": {
+    "title": "Tapping Duplicate for an existing plant entry crashes the app",
+    "observed_behavior": "On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-985609370>\n2. Tap \"ALLOW\" on the permission prompt. <209336389>\n3. Tap the add button from the main screen. <515114713>\n4. Enter a plant strain on the Add Plant screen. <-216824928>\n5. Tap Navigate up to leave the Add Plant screen. <1972602105>\n6. Tap \"Feed.\" <2136516104>\n7. Enter an amount on the Feed screen. <839705451>\n8. Tap \"+ New Additive.\" <-1851718904>\n9. Enter a description. <245763951>\n10. Enter a description again on the next screen. <-2057949531>\n11. Enter an amount. <-2022182406>\n12. Enter an amount again on the next screen. <-1820839540>\n13. Tap \"OK.\" <-955607130>\n14. Swipe up. <1912744493>\n15. Enter notes. <1315915862>\n16. Enter notes again on the next screen. <1472395568>\n17. Tap the image/button control to continue. <1397753701>\n18. Tap More options from the main screen. <-1612652358>\n19. Close the menu and return to the main screen. <699581006>\n20. Tap the add button. <515114713>\n21. Tap Navigate up to return to the plant list. <621133247>\n22. Tap an existing plant entry to open its details. <667923578>\n23. Tap More options on the plant details screen. <1326171146>\n24. Tap \"Duplicate.\" <2104660620>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "run_metadata": {
+    "bug_id": 5,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-12T01:23:46.386621+00:00",
+  "ended_at": "2026-08-12T01:24:03.023684+00:00",
+  "total_wall_clock_seconds": 16.637063,
+  "total_turn_processing_seconds": 16.637063,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 29631,
+    "output_tokens": 1628,
+    "total_tokens": 31259,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "revision": 1,
+  "modified_report": {
+    "title": "Tapping Duplicate for an existing plant entry crashes the app",
+    "observed_behavior": "On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+    "steps_to_reproduce": "1. Open the app.\n2. Tap \"ALLOW\" on the permission prompt.\n3. Tap the add button from the main screen.\n4. Enter a plant strain on the Add Plant screen.\n5. Tap Navigate up to leave the Add Plant screen.\n6. Tap \"Feed.\"\n7. Enter an amount on the Feed screen.\n8. Tap \"+ New Additive.\"\n9. Enter a description.\n10. Enter a description again on the next screen.\n11. Enter an amount.\n12. Enter an amount again on the next screen.\n13. Tap \"OK.\"\n14. Swipe up the screen.\n15. Enter notes.\n16. Enter notes again on the next screen.\n17. Tap the image/button control to continue.\n18. Tap More options from the main screen.\n19. Close the menu and return to the main screen.\n20. Tap the add button.\n21. Tap Navigate up to return to the plant list.\n22. Tap an existing plant entry to open its details.\n23. Tap More options on the plant details screen.\n24. Tap \"Duplicate.\""
+  }
+}
+{
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "turn": 1,
+  "started_at": "2026-08-12T01:24:37.186744+00:00",
+  "ended_at": "2026-08-12T01:24:44.310865+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I corrected the bug report you generated. Treat the corrected report below as my description of the bug and regenerate the report from it.\n\nTitle: Tapping Duplicate for an existing plant entry crashes the app\n\nObserved Behavior: On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.\n\nExpected Behavior: The app should duplicate the existing plant entry without crashing.\n\nSteps To Reproduce: 1. Open the app.\n2. Tap \"ALLOW\" on the permission prompt.\n3. Tap the add button from the main screen.\n4. Enter a plant strain on the Add Plant screen.\n5. Tap Navigate up to leave the Add Plant screen.\n6. Tap \"Feed.\"\n7. Enter an amount on the Feed screen.\n8. Tap \"+ New Additive.\"\n9. Enter a description.\n10. Enter a description again on the next screen.\n11. Enter an amount.\n12. Enter an amount again on the next screen.\n13. Tap \"OK.\"\n14. Swipe up the screen.\n15. Enter notes.\n16. Enter notes again on the next screen.\n17. Tap the image/button control to continue.\n18. Tap More options from the main screen.\n19. Close the menu and return to the main screen.\n20. Tap the add button.\n21. Tap Navigate up to return to the plant list.\n22. Tap an existing plant entry to open its details.\n23. Tap More options on the plant details screen.\n24. Tap \"Duplicate.\"",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "9e356381-7863-4d25-965f-46f0621dcae5"
+        }
+      },
+      "meta_data": {
+        "latency": "1.7083999409805983e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the plant details popup menu for an existing plant entry / the plant details screen",
+            "evidence": [
+              "On the plant details popup menu for an existing plant entry",
+              "Tap More options on the plant details screen"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "Tap More options on the plant details screen, then tap \"Duplicate\" for an existing plant entry.",
+            "evidence": [
+              "if the user taps \"Duplicate,\"",
+              "Tap More options on the plant details screen.",
+              "Tap \"Duplicate.\""
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the app crashes when duplicating an existing plant entry",
+            "evidence": [
+              "if the user taps \"Duplicate,\" the app crashes",
+              "Tapping Duplicate for an existing plant entry crashes the app"
+            ]
+          },
+          "correct_behavior": {
+            "value": "The app should duplicate the existing plant entry without crashing.",
+            "evidence": [
+              "The app should duplicate the existing plant entry without crashing."
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "1. Open the app. 2. Tap \"ALLOW\" on the permission prompt. 3. Tap the add button from the main screen. 4. Enter a plant strain on the Add Plant screen. 5. Tap Navigate up to leave the Add Plant screen. 6. Tap \"Feed.\" 7. Enter an amount on the Feed screen. 8. Tap \"+ New Additive.\" 9. Enter a description. 10. Enter a description again on the next screen. 11. Enter an amount. 12. Enter an amount again on the next screen. 13. Tap \"OK.\" 14. Swipe up the screen. 15. Enter notes. 16. Enter notes again on the next screen. 17. Tap the image/button control to continue. 18. Tap More options from the main screen. 19. Close the menu and return to the main screen. 20. Tap the add button. 21. Tap Navigate up to return to the plant list. 22. Tap an existing plant entry to open its details. 23. Tap More options on the plant details screen. 24. Tap \"Duplicate.\"",
+            "evidence": [
+              "Steps To Reproduce: 1. Open the app.",
+              "2. Tap \"ALLOW\" on the permission prompt.",
+              "3. Tap the add button from the main screen.",
+              "4. Enter a plant strain on the Add Plant screen.",
+              "5. Tap Navigate up to leave the Add Plant screen.",
+              "6. Tap \"Feed.\"",
+              "7. Enter an amount on the Feed screen.",
+              "8. Tap \"+ New Additive.\"",
+              "9. Enter a description.",
+              "10. Enter a description again on the next screen.",
+              "11. Enter an amount.",
+              "12. Enter an amount again on the next screen.",
+              "13. Tap \"OK.\"",
+              "14. Swipe up the screen.",
+              "15. Enter notes.",
+              "16. Enter notes again on the next screen.",
+              "17. Tap the image/button control to continue.",
+              "18. Tap More options from the main screen.",
+              "19. Close the menu and return to the main screen.",
+              "20. Tap the add button.",
+              "21. Tap Navigate up to return to the plant list.",
+              "22. Tap an existing plant entry to open its details.",
+              "23. Tap More options on the plant details screen.",
+              "24. Tap \"Duplicate.\""
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "4.453901834000135 s",
+        "node_token_consumption": {
+          "input_tokens": 1181,
+          "output_tokens": 670,
+          "total_tokens": 1851,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Steps To Reproduce: 'the image/button control' is unclear in step 17",
+          "Triggering Screen Reference: 'the plant details popup menu for an existing plant entry / the plant details screen' is ambiguous as a single screen reference"
+        ]
+      },
+      "meta_data": {
+        "latency": "1.3102968339990184 s",
+        "node_token_consumption": {
+          "input_tokens": 1133,
+          "output_tokens": 72,
+          "total_tokens": 1205,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_follow_up",
+      "output": {
+        "active_follow_up": {
+          "kind": "clarity",
+          "question": "To clarify: in step 17, what is the exact label or icon of the \"image/button control\" you tapped? Also, when the crash happens, are you on the plant details screen itself or on the More options popup menu opened from that screen?",
+          "target_info_elements": []
+        },
+        "clarification_rounds": 1
+      },
+      "meta_data": {
+        "latency": "1.3395029999992403 s",
+        "node_token_consumption": {
+          "input_tokens": 1014,
+          "output_tokens": 68,
+          "total_tokens": 1082,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "turn": 1,
+  "started_at": "2026-08-12T01:25:19.166469+00:00",
+  "ended_at": "2026-08-12T01:25:38.117890+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I don't know",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "4accf11c-73e7-4bf4-9fed-97d094731e0b"
+        }
+      },
+      "meta_data": {
+        "latency": "8.541999704902992e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "the plant details popup menu for an existing plant entry",
+            "evidence": [
+              "On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.",
+              "Tap More options on the plant details screen.",
+              "Tap \"Duplicate.\""
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "tap \"Duplicate\" from More options on the plant details screen for an existing plant entry",
+            "evidence": [
+              "if the user taps \"Duplicate,\" the app crashes.",
+              "Tap More options on the plant details screen.",
+              "Tap \"Duplicate.\""
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the app crashes",
+            "evidence": [
+              "if the user taps \"Duplicate,\" the app crashes."
+            ]
+          },
+          "correct_behavior": {
+            "value": "The app should duplicate the existing plant entry without crashing.",
+            "evidence": [
+              "The app should duplicate the existing plant entry without crashing."
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "1. Open the app. 2. Tap \"ALLOW\" on the permission prompt. 3. Tap the add button from the main screen. 4. Enter a plant strain on the Add Plant screen. 5. Tap Navigate up to leave the Add Plant screen. 6. Tap \"Feed.\" 7. Enter an amount on the Feed screen. 8. Tap \"+ New Additive.\" 9. Enter a description. 10. Enter a description again on the next screen. 11. Enter an amount. 12. Enter an amount again on the next screen. 13. Tap \"OK.\" 14. Swipe up the screen. 15. Enter notes. 16. Enter notes again on the next screen. 17. Tap the image/button control to continue. 18. Tap More options from the main screen. 19. Close the menu and return to the main screen. 20. Tap the add button. 21. Tap Navigate up to return to the plant list. 22. Tap an existing plant entry to open its details. 23. Tap More options on the plant details screen. 24. Tap \"Duplicate.\"",
+            "evidence": [
+              "1. Open the app.",
+              "2. Tap \"ALLOW\" on the permission prompt.",
+              "3. Tap the add button from the main screen.",
+              "4. Enter a plant strain on the Add Plant screen.",
+              "5. Tap Navigate up to leave the Add Plant screen.",
+              "6. Tap \"Feed.\"",
+              "7. Enter an amount on the Feed screen.",
+              "8. Tap \"+ New Additive.\"",
+              "9. Enter a description.",
+              "10. Enter a description again on the next screen.",
+              "11. Enter an amount.",
+              "12. Enter an amount again on the next screen.",
+              "13. Tap \"OK.\"",
+              "14. Swipe up the screen.",
+              "15. Enter notes.",
+              "16. Enter notes again on the next screen.",
+              "17. Tap the image/button control to continue.",
+              "18. Tap More options from the main screen.",
+              "19. Close the menu and return to the main screen.",
+              "20. Tap the add button.",
+              "21. Tap Navigate up to return to the plant list.",
+              "22. Tap an existing plant entry to open its details.",
+              "23. Tap More options on the plant details screen.",
+              "24. Tap \"Duplicate.\""
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "4.973773835001339 s",
+        "node_token_consumption": {
+          "input_tokens": 1243,
+          "output_tokens": 658,
+          "total_tokens": 1901,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "needs_clarification",
+        "clarity_issues": [
+          "Steps To Reproduce: 'Tap the image/button control to continue' is ambiguous",
+          "Steps To Reproduce: 'an existing plant entry' is not uniquely identified"
+        ]
+      },
+      "meta_data": {
+        "latency": "0.9999549179992755 s",
+        "node_token_consumption": {
+          "input_tokens": 1121,
+          "output_tokens": 57,
+          "total_tokens": 1178,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "-878131199",
+                "evidence": "User explicitly says the bug occurs on 'the plant details popup menu for an existing plant entry' after tapping More options, then 'Tap \"Duplicate.\"' Screen -878131199 is PlantDetailsActivity(Window=Popup Menu) with options Export, Duplicate, and Delete."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User explicitly states: 'Tap \"Duplicate.\"' from the plant details popup menu after 'Tap More options on the plant details screen.' Transition 2104660620 is the Duplicate action from screen -878131199."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "the app crashes",
+                "evidence": "User explicitly reports: 'if the user taps \"Duplicate,\" the app crashes.' This is also reflected by transition 2104660620 leading to the crash dialog flow."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "The app should duplicate the existing plant entry without crashing.",
+                "evidence": "User explicitly states: 'The app should duplicate the existing plant entry without crashing.'"
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-985609370",
+                  "evidence": "User step 1: 'Open the app.' Transition -985609370 is open app."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "209336389",
+                  "evidence": "User step 2: 'Tap \"ALLOW\" on the permission prompt.' Transition 209336389 is ALLOW on GrantPermissionsActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "User step 3: 'Tap the add button from the main screen.' Transition 515114713 opens AddPlantActivity from MainActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-216824928",
+                  "evidence": "User step 4: 'Enter a plant strain on the Add Plant screen.' Transition -216824928 is typing in plant_strain on AddPlantActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1972602105",
+                  "evidence": "User step 5: 'Tap Navigate up to leave the Add Plant screen.' Transition 1972602105 is Navigate up from AddPlantActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2136516104",
+                  "evidence": "User step 6: 'Tap \"Feed.\"' Transition 2136516104 is tapping Feed from the filtered main screen."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "839705451",
+                  "evidence": "User step 7: 'Enter an amount on the Feed screen.' Transition 839705451 is typing in the amount field on AddWateringActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1851718904",
+                  "evidence": "User step 8: 'Tap \"+ New Additive.\"' Transition -1851718904 opens the Additive dialog."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "245763951",
+                  "evidence": "User step 9: 'Enter a description.' Transition 245763951 is typing in the additive description field."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-2057949531",
+                  "evidence": "User step 10: 'Enter a description again on the next screen.' Transition -2057949531 is typing in the description field again on the next Additive dialog state."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-2022182406",
+                  "evidence": "User step 11: 'Enter an amount.' Transition -2022182406 is typing in the amount field."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1820839540",
+                  "evidence": "User step 12: 'Enter an amount again on the next screen.' Transition -1820839540 is typing in the amount field again on the next dialog state."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-955607130",
+                  "evidence": "User step 13: 'Tap \"OK.\"' Transition -955607130 is pressing OK on the Additive dialog."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1912744493",
+                  "evidence": "User step 14: 'Swipe up the screen.' Transition 1912744493 is swipe up on the Feeding form."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1315915862",
+                  "evidence": "User step 15: 'Enter notes.' Transition 1315915862 is typing in notes."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1472395568",
+                  "evidence": "User step 16: 'Enter notes again on the next screen.' Transition 1472395568 is typing in notes again on the next state."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1397753701",
+                  "evidence": "User step 17: 'Tap the image/button control to continue.' Transition 1397753701 is tapping the image control/floating completion button to finish the watering entry."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1612652358",
+                  "evidence": "User step 18: 'Tap More options from the main screen.' After finishing the entry the flow reaches MainActivity, and transition -1612652358 is More options from MainActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1387042041",
+                  "evidence": "User step 19: 'Close the menu and return to the main screen.' The graph-valid transition from the opened popup menu back to the plant details/main content view is 1387042041."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "515114713",
+                  "evidence": "User step 20: 'Tap the add button.' Transition 515114713 is the add button from MainActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1972602105",
+                  "evidence": "User step 21: 'Tap Navigate up to return to the plant list.' Transition 1972602105 is Navigate up from AddPlantActivity."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "667923578",
+                  "evidence": "User step 22: 'Tap an existing plant entry to open its details.' Transition 667923578 opens PlantDetailsActivity by tapping the existing plant name on the main plant list."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1326171146",
+                  "evidence": "User step 23: 'Tap More options on the plant details screen.' Transition 1326171146 opens the plant details popup menu."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2104660620",
+                  "evidence": "User step 24: 'Tap \"Duplicate.\"' Transition 2104660620 selects Duplicate from the plant details popup menu and triggers the crash."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 2
+      },
+      "meta_data": {
+        "latency": "9.69967367100071 s",
+        "node_token_consumption": {
+          "input_tokens": 15762,
+          "output_tokens": 1448,
+          "total_tokens": 17210,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "2.1249999917927198e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Tapping Duplicate from an existing plant's details menu crashes the app",
+          "observed_behavior": "On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.",
+          "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+          "steps_to_reproduce": "1. Open the app. <-985609370>\n2. Tap \"ALLOW\" on the permission prompt. <209336389>\n3. Tap the add button from the main screen. <515114713>\n4. Enter a plant strain on the Add Plant screen. <-216824928>\n5. Tap Navigate up to leave the Add Plant screen. <1972602105>\n6. Tap \"Feed.\" <2136516104>\n7. Enter an amount on the Feed screen. <839705451>\n8. Tap \"+ New Additive.\" <-1851718904>\n9. Enter a description. <245763951>\n10. Enter a description again on the next screen. <-2057949531>\n11. Enter an amount. <-2022182406>\n12. Enter an amount again on the next screen. <-1820839540>\n13. Tap \"OK.\" <-955607130>\n14. Swipe up the screen. <1912744493>\n15. Enter notes. <1315915862>\n16. Enter notes again on the next screen. <1472395568>\n17. Tap the image/button control to continue. <1397753701>\n18. Tap More options from the main screen. <-1612652358>\n19. Close the menu and return to the main screen. <1387042041>\n20. Tap the add button. <515114713>\n21. Tap Navigate up to return to the plant list. <1972602105>\n22. Tap an existing plant entry to open its details. <667923578>\n23. Tap More options on the plant details screen. <1326171146>\n24. Tap \"Duplicate.\" <2104660620>"
+        }
+      },
+      "meta_data": {
+        "latency": "3.2676942920006695 s",
+        "node_token_consumption": {
+          "input_tokens": 13577,
+          "output_tokens": 449,
+          "total_tokens": 14026,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "revision": 2,
+  "draft_report": {
+    "title": "Tapping Duplicate from an existing plant's details menu crashes the app",
+    "observed_behavior": "On the plant details popup menu for an existing plant entry, if the user taps \"Duplicate,\" the app crashes.",
+    "expected_behavior": "The app should duplicate the existing plant entry without crashing.",
+    "steps_to_reproduce": "1. Open the app. <-985609370>\n2. Tap \"ALLOW\" on the permission prompt. <209336389>\n3. Tap the add button from the main screen. <515114713>\n4. Enter a plant strain on the Add Plant screen. <-216824928>\n5. Tap Navigate up to leave the Add Plant screen. <1972602105>\n6. Tap \"Feed.\" <2136516104>\n7. Enter an amount on the Feed screen. <839705451>\n8. Tap \"+ New Additive.\" <-1851718904>\n9. Enter a description. <245763951>\n10. Enter a description again on the next screen. <-2057949531>\n11. Enter an amount. <-2022182406>\n12. Enter an amount again on the next screen. <-1820839540>\n13. Tap \"OK.\" <-955607130>\n14. Swipe up the screen. <1912744493>\n15. Enter notes. <1315915862>\n16. Enter notes again on the next screen. <1472395568>\n17. Tap the image/button control to continue. <1397753701>\n18. Tap More options from the main screen. <-1612652358>\n19. Close the menu and return to the main screen. <1387042041>\n20. Tap the add button. <515114713>\n21. Tap Navigate up to return to the plant list. <1972602105>\n22. Tap an existing plant entry to open its details. <667923578>\n23. Tap More options on the plant details screen. <1326171146>\n24. Tap \"Duplicate.\" <2104660620>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "afc11ac9-3055-4746-b900-4d04933cf17d",
+  "run_metadata": {
+    "bug_id": 5,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-12T01:24:37.186744+00:00",
+  "ended_at": "2026-08-12T01:25:38.117890+00:00",
+  "total_wall_clock_seconds": 60.931146,
+  "total_turn_processing_seconds": 26.075542,
+  "total_conversation_turns": 2,
+  "token_consumption": {
+    "input_tokens": 35031,
+    "output_tokens": 3422,
+    "total_tokens": 38453,
+    "llm_calls": 7,
+    "llm_calls_with_usage": 7,
+    "llm_calls_missing_usage": 0
+  }
+}

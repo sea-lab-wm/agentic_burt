@@ -151,6 +151,9 @@ def clarity_check(state: BugAgentState, config: RunnableConfig) -> dict:
 
 def should_route_clarity(state: BugAgentState):
     """Route one post-clarity step, allowing at most one clarification follow up if needed."""
+    #a single pass run has nobody to ask, so unclear input is mapped as it stands
+    if state.single_pass:
+        return "continue"
     if state.clarification_rounds < 1:
         return state.clarity_route
     return "continue"
@@ -211,8 +214,12 @@ def evaluate_state(state : BugAgentState, config : RunnableConfig) -> dict:
 
     return {"unknown_and_low_confidence_info" : find_unknown_or_ambiguous(current_bug_info)}
 
-def should_continue(state : BugAgentState):    
+def should_continue(state : BugAgentState):
     """Route to another follow-up round or to final report generation, based on the presence of low confidence or missing mapping info."""
+    #a single pass run reports on what the user's edit supplied rather than asking
+    #for the rest, so unresolved slots do not open another round
+    if state.single_pass:
+        return "end"
     if state.unknown_and_low_confidence_info:
         return "continue"
     return "end"
@@ -270,7 +277,9 @@ def generate_final_report(state: BugAgentState, config: RunnableConfig) -> dict:
     print("generating final bug report...\n")
     bug_info = state.BugInfo
     unresolved = find_unknown_or_ambiguous(bug_info)
-    if unresolved:
+    #a single pass run reaches here by design rather than by resolving everything;
+    #the mapping's own status labels tell the report prompt what is still open
+    if unresolved and not state.single_pass:
         raise ValueError(
             f"Cannot generate report with unresolved bug info: {sorted(unresolved)}"
         )
@@ -279,7 +288,13 @@ def generate_final_report(state: BugAgentState, config: RunnableConfig) -> dict:
     transitions = configurable.get("transitions")
     app_name = configurable.get("app_name")
     runtime_context = _get_runtime_context(config)
-    return generate_report(bug_info, transitions, runtime_context.model, app_name)
+    return generate_report(
+        bug_info,
+        transitions,
+        runtime_context.model,
+        app_name,
+        require_resolved=not state.single_pass,
+    )
 
 #NOTE: This name is a bit incomplete, it should eventually be something like persist_then_flush_turn
 def _flush_active_turn(runtime_context: BurtRuntimeContext) -> None:

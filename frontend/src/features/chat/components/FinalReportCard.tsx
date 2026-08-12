@@ -16,6 +16,12 @@ type FinalReportCardProps = {
   report: Record<string, unknown>;
   heading?: string;
   sessionId?: string;
+  /** Which run of the session this report came from, for its screenshots. */
+  revision?: number;
+  /** Whether BURT++ generated this report or the user saved it. */
+  variant?: "draft" | "final";
+  /** How many edit-and-regenerate rounds are left, shown beside the Edit button. */
+  editsRemaining?: number;
   onSave?: (report: Record<string, unknown>) => Promise<void>;
 };
 
@@ -138,6 +144,9 @@ export function FinalReportCard({
   report,
   heading = "Draft report",
   sessionId,
+  revision,
+  variant = "draft",
+  editsRemaining,
   onSave,
 }: FinalReportCardProps) {
   const displayReport = sanitizeReportForDisplay(report);
@@ -158,7 +167,9 @@ export function FinalReportCard({
 
     let cancelled = false;
 
-    fetchReportMedia(sessionId)
+    // A regenerated session mapped its screens afresh each run, so a report asks
+    // for the run it came from rather than for whichever one finished last.
+    fetchReportMedia(sessionId, revision)
       .then((response) => {
         if (!cancelled) {
           setMedia(response);
@@ -175,7 +186,7 @@ export function FinalReportCard({
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, revision]);
 
   const screenId = media?.has_screen_screenshot ? media.screen_id : null;
   // The behavior box shows this screen for as long as the report is on screen,
@@ -240,13 +251,23 @@ export function FinalReportCard({
     <section className="final-report-card">
       <div className="final-report-card__header">
         <div>
-          <span className="final-report-card__eyebrow">BURT++ complete</span>
+          <span className="final-report-card__eyebrow">
+            {variant === "final" ? "Saved by you" : "BURT++ complete"}
+          </span>
           <h2>{heading}</h2>
         </div>
         {onSave ? (
-          <button className="final-report-card__edit" type="button" onClick={openEditor}>
-            Edit
-          </button>
+          <div className="final-report-card__actions">
+            {/* Editing is capped, so say how much of it is left before it goes. */}
+            {editsRemaining === undefined ? null : (
+              <span className="final-report-card__edits-left">
+                {editsRemaining} {editsRemaining === 1 ? "rerun" : "reruns"} left
+              </span>
+            )}
+            <button className="final-report-card__edit" type="button" onClick={openEditor}>
+              Edit
+            </button>
+          </div>
         ) : null}
       </div>
       <ReportSectionList
@@ -312,24 +333,29 @@ export function FinalReportCard({
             />
             {editorError ? <p className="report-editor__error">{editorError}</p> : null}
             <div className="report-editor__actions">
-              <button
-                className="report-editor__secondary"
-                type="button"
-                onClick={() => setIsEditing(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </button>
-              <button
-                className="report-editor__save"
-                type="button"
-                onClick={() => {
-                  void saveEditedReport();
-                }}
-                disabled={isSaving}
-              >
-                Save
-              </button>
+              <p className="report-editor__hint">
+                Saving reruns BURT++ on your edited report and regenerates it.
+              </p>
+              <div className="report-editor__buttons">
+                <button
+                  className="report-editor__secondary"
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="report-editor__save"
+                  type="button"
+                  onClick={() => {
+                    void saveEditedReport();
+                  }}
+                  disabled={isSaving}
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </div>

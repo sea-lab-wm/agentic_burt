@@ -501,6 +501,51 @@ class ObservabilityTests(unittest.TestCase):
             redis_client.lrange.assert_called_once_with("burt:session-log:sess-redis", 0, -1)
             redis_client.delete.assert_called_once_with("burt:session-log:sess-redis")
 
+    def test_redis_then_file_sink_finalize_session_keeps_the_earlier_revisions_on_file(self):
+        # A session regenerated from a saved edit finalizes once per run, so the
+        # second run has to land after the first run's records rather than on them.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "test.log"
+            redis_client = MagicMock()
+            sink = RedisThenFileSink(redis_client=redis_client, filepath=log_path)
+            redis_client.lrange.return_value = [
+                json.dumps(
+                    {
+                        "session_id": "sess-redis",
+                        "turn": 1,
+                        "started_at": "2026-04-07T00:00:00+00:00",
+                        "ended_at": "2026-04-07T00:00:01+00:00",
+                        "actions": [],
+                    }
+                )
+            ]
+
+            sink.finalize_session(
+                session_id="sess-redis",
+                final_report={"title": "First draft"},
+            )
+            LocalFileSink(filepath=log_path).append_modified_report(
+                session_id="sess-redis",
+                modified_report={"title": "Edited"},
+                revision=1,
+            )
+            sink.finalize_session(
+                session_id="sess-redis",
+                final_report={"title": "Second draft"},
+                revision=2,
+            )
+
+            records = self._parse_json_stream(log_path.read_text())
+            reports = [
+                (record["record_type"], record["revision"])
+                for record in records
+                if record.get("record_type") in {"draft_report", "modified_report"}
+            ]
+            self.assertEqual(
+                reports,
+                [("draft_report", 1), ("modified_report", 1), ("draft_report", 2)],
+            )
+
     def test_redis_then_file_sink_finalize_session_does_not_delete_staging_list_if_write_fails(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             redis_client = MagicMock()

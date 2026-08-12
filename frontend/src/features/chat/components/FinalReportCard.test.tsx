@@ -143,6 +143,31 @@ describe("report field screenshots", () => {
     expect(screen.queryByRole("button", { name: /screenshot/i })).not.toBeInTheDocument();
   });
 
+  it("shows the behavior screen on its own, with no title or caption around it", async () => {
+    mockReportMedia(REPORT_MEDIA);
+    render(<FinalReportCard report={REPORT} sessionId="session-456" />);
+
+    const panel = await screen.findByRole("complementary", {
+      name: "Triggering screen screenshot",
+    });
+
+    // The screen speaks for itself beside the behavior it illustrates.
+    expect(within(panel).getByRole("img")).toBeInTheDocument();
+    expect(panel).not.toHaveTextContent(/\S/);
+  });
+
+  it("asks for the screenshots of the run the report came from", async () => {
+    mockReportMedia(REPORT_MEDIA);
+    render(<FinalReportCard report={REPORT} sessionId="session-456" revision={2} />);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/sessions/session-456/report-media?revision=2",
+      expect.anything(),
+    );
+  });
+
   it("shows one screenshot for the behavior pair rather than one per field", async () => {
     mockReportMedia(REPORT_MEDIA);
     render(<FinalReportCard report={REPORT} sessionId="session-456" />);

@@ -80,8 +80,10 @@ class StartConversationTests(unittest.TestCase):
             "initial bug description",
             runtime_context=runtime_context,
         )
+        # A first message is a normal conversation, so follow-ups stay available.
         mock_bug_agent_state.assert_called_once_with(
-            messages=[sentinel.initial_message_update]
+            messages=[sentinel.initial_message_update],
+            single_pass=False,
         )
         checkpointer.setup.assert_called_once_with()
         mock_build_burt_graph.assert_called_once_with(checkpointer)
@@ -107,6 +109,9 @@ class StartConversationTests(unittest.TestCase):
                 "status": "awaiting_user",
                 "question": "What screen were you on?",
                 "final_report": None,
+                "draft_revision": 0,
+                "final_revision": 0,
+                "edits_remaining": 3,
             }
         )
         mock_uuid4.assert_called_once_with()
@@ -182,6 +187,7 @@ class StartConversationTests(unittest.TestCase):
                 "input_source": "user",
                 "runtime": "api",
             },
+            revision=1,
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -190,6 +196,9 @@ class StartConversationTests(unittest.TestCase):
                 "status": "completed",
                 "question": None,
                 "final_report": {"title": "Final report"},
+                "draft_revision": 1,
+                "final_revision": 0,
+                "edits_remaining": 3,
             }
         )
         checkpointer.delete_thread.assert_called_once_with("session-123")
@@ -302,6 +311,9 @@ class ResumeConversationTests(unittest.TestCase):
                 "status": "awaiting_user",
                 "question": "What happened next?",
                 "final_report": None,
+                "draft_revision": 0,
+                "final_revision": 0,
+                "edits_remaining": 3,
             }
         )
         mock_release_session_lock.assert_called_once_with(
@@ -391,6 +403,7 @@ class ResumeConversationTests(unittest.TestCase):
                 "input_source": "user",
                 "runtime": "api",
             },
+            revision=1,
         )
         mock_create_session_record.assert_called_once_with(
             {
@@ -399,6 +412,9 @@ class ResumeConversationTests(unittest.TestCase):
                 "status": "completed",
                 "question": None,
                 "final_report": {"title": "Final report"},
+                "draft_revision": 1,
+                "final_revision": 0,
+                "edits_remaining": 3,
             }
         )
         checkpointer.delete_thread.assert_called_once_with("session-123")
@@ -576,29 +592,98 @@ class ResumeConversationTests(unittest.TestCase):
                 "status": "awaiting_user",
                 "question": "What happened next?",
                 "final_report": None,
+                "draft_revision": 0,
+                "final_revision": 0,
+                "edits_remaining": 3,
             }
         )
         mock_flush_active_turn.assert_called_once_with(runtime_context)
         mock_release_session_lock.assert_called_once_with("session-123", "owner-token")
 
 
+def _completed_session_record(**overrides):
+    """Build the persisted record of a session whose first draft report is ready."""
+    return {
+        "session_id": "session-123",
+        "bug_id": 42,
+        "status": "completed",
+        "question": None,
+        "final_report": {"title": "Draft report"},
+        "draft_revision": 1,
+        "final_revision": 0,
+        "edits_remaining": 3,
+        **overrides,
+    }
+
+
 class SaveModifiedReportTests(unittest.TestCase):
+    def _runtime_context(self):
+        return SimpleNamespace(
+            sink=MagicMock(),
+            logger=SimpleNamespace(filepath=Path("logs/test.log")),
+        )
+
+    def _patch_regeneration_run(self, graph_result):
+        """Patch out everything the regeneration run touches beyond the log file."""
+        checkpointer = MagicMock()
+        graph = MagicMock()
+        graph.invoke.return_value = graph_result
+        context_manager = MagicMock()
+        context_manager.__enter__.return_value = checkpointer
+        context_manager.__exit__.return_value = False
+
+        patches = {
+            "load_bug_graph_context": patch(
+                "app.services.burt_runtime.load_bug_graph_context",
+                return_value=("transitions", "Test App", "screen descriptions"),
+            ),
+            "create_runtime_context": patch(
+                "app.services.burt_runtime.create_runtime_context",
+                return_value=self._runtime_context(),
+            ),
+            "ingest_user_description": patch(
+                "app.services.burt_runtime.ingest_user_description",
+                return_value={"messages": sentinel.initial_message_update},
+            ),
+            "bug_agent_state": patch(
+                "app.services.burt_runtime.BugAgentState",
+                return_value=sentinel.initial_state,
+            ),
+            "from_conn_string": patch(
+                "app.services.burt_runtime.RedisSaver.from_conn_string",
+                return_value=context_manager,
+            ),
+            "build_burt_graph": patch(
+                "app.services.burt_runtime.build_burt_graph",
+                return_value=graph,
+            ),
+            "flush_active_turn": patch("app.services.burt_runtime._flush_active_turn"),
+        }
+
+        started = {name: patcher.start() for name, patcher in patches.items()}
+        for patcher in patches.values():
+            self.addCleanup(patcher.stop)
+
+        return started, checkpointer, graph
+
+    @patch("app.services.burt_runtime.release_session_lock")
+    @patch("app.services.burt_runtime.acquire_session_lock", return_value="owner-token")
     @patch("app.services.burt_runtime.create_session_record")
     @patch(
         "app.services.burt_runtime.get_session",
-        return_value={
-            "session_id": "session-123",
-            "bug_id": 42,
-            "status": "completed",
-            "question": None,
-            "final_report": {"title": "Draft report"},
-        },
+        return_value=_completed_session_record(),
     )
-    def test_save_modified_report_appends_log_record_and_updates_session(
+    def test_save_modified_report_logs_the_edit_then_regenerates_the_next_draft(
         self,
         mock_get_session,
         mock_create_session_record,
+        _mock_acquire_session_lock,
+        mock_release_session_lock,
     ):
+        started, checkpointer, graph = self._patch_regeneration_run(
+            {"BugInfo": {"id": 42}, "full_report": {"title": "Regenerated report"}},
+        )
+
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = Path(tmpdir) / "session-123.log"
 
@@ -611,26 +696,130 @@ class SaveModifiedReportTests(unittest.TestCase):
                     modified_report={"title": "Edited report"},
                 )
 
-            self.assertEqual(response.session_id, "session-123")
-            self.assertEqual(response.status, "completed")
-            self.assertIsNone(response.question)
-            self.assertEqual(response.final_report, {"title": "Edited report"})
-            self.assertIn('"record_type": "modified_report"', log_path.read_text())
-            self.assertIn('"modified_report": {', log_path.read_text())
-            mock_get_session.assert_called_once_with("session-123")
-            mock_create_session_record.assert_called_once_with(
-                {
-                    "session_id": "session-123",
-                    "bug_id": 42,
-                    "status": "completed",
-                    "question": None,
-                    "final_report": {"title": "Edited report"},
-                    "modified_report": {"title": "Edited report"},
+            log_text = log_path.read_text()
+
+        # The saved edit is banked as final report 1 before the rerun starts.
+        self.assertIn('"record_type": "modified_report"', log_text)
+        self.assertIn('"revision": 1', log_text)
+        mock_get_session.assert_called_once_with("session-123")
+
+        # The rerun re-enters the graph the way a typed message does, seeded with
+        # the edited report rather than with a resume command.
+        started["ingest_user_description"].assert_called_once()
+        seeded_description = started["ingest_user_description"].call_args.args[0]
+        self.assertIn("Edited report", seeded_description)
+        graph.invoke.assert_called_once_with(
+            sentinel.initial_state,
+            config={
+                "configurable": {
+                    "transitions": "transitions",
+                    "app_name": "Test App",
+                    "screen_descriptions": "screen descriptions",
+                    "thread_id": "session-123",
+                    "runtime_context": started["create_runtime_context"].return_value,
                 }
+            },
+        )
+        # Any checkpoint the previous run left behind would resume it instead.
+        checkpointer.delete_thread.assert_any_call("session-123")
+
+        # The response carries the regenerated draft report 2, with two edits left.
+        self.assertEqual(response.status, "completed")
+        self.assertEqual(response.final_report, {"title": "Regenerated report"})
+        self.assertEqual(response.draft_revision, 2)
+        self.assertEqual(response.final_revision, 1)
+        self.assertEqual(response.edits_remaining, 2)
+        started["create_runtime_context"].return_value.sink.finalize_session.assert_called_once_with(
+            session_id="session-123",
+            final_report={"title": "Regenerated report"},
+            run_metadata={
+                "bug_id": 42,
+                "description_level": None,
+                "input_source": "user",
+                "runtime": "api",
+            },
+            revision=2,
+        )
+        self.assertEqual(
+            mock_create_session_record.call_args_list[-1].args[0],
+            {
+                "session_id": "session-123",
+                "bug_id": 42,
+                "status": "completed",
+                "question": None,
+                "final_report": {"title": "Regenerated report"},
+                "draft_revision": 2,
+                "final_revision": 1,
+                "edits_remaining": 2,
+            },
+        )
+        mock_release_session_lock.assert_called_once_with("session-123", "owner-token")
+
+    @patch("app.services.burt_runtime.release_session_lock")
+    @patch("app.services.burt_runtime.acquire_session_lock", return_value="owner-token")
+    @patch("app.services.burt_runtime.create_session_record")
+    @patch(
+        "app.services.burt_runtime.get_session",
+        return_value=_completed_session_record(),
+    )
+    def test_save_modified_report_runs_the_regeneration_in_a_single_pass(
+        self,
+        _mock_get_session,
+        _mock_create_session_record,
+        _mock_acquire_session_lock,
+        _mock_release_session_lock,
+    ):
+        started, _checkpointer, _graph = self._patch_regeneration_run(
+            {"BugInfo": {"id": 42}, "full_report": {"title": "Regenerated report"}},
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch(
+                "app.services.burt_runtime.build_api_log_path",
+                return_value=Path(tmpdir) / "session-123.log",
+            ):
+                burt_runtime.save_modified_report(
+                    session_id="session-123",
+                    modified_report={"title": "Edited report"},
+                )
+
+        # The user has already said what they wanted changed, so the run is seeded
+        # to regenerate in one try rather than to ask anything back.
+        started["bug_agent_state"].assert_called_once_with(
+            messages=[sentinel.initial_message_update],
+            single_pass=True,
+        )
+
+    @patch("app.services.burt_runtime.release_session_lock")
+    @patch("app.services.burt_runtime.acquire_session_lock", return_value="owner-token")
+    @patch(
+        "app.services.burt_runtime.get_session",
+        return_value=_completed_session_record(final_revision=3, draft_revision=4),
+    )
+    def test_save_modified_report_stops_after_the_configured_edit_limit(
+        self,
+        mock_get_session,
+        _mock_acquire_session_lock,
+        mock_release_session_lock,
+    ):
+        with self.assertRaises(burt_runtime.ReportEditLimitError):
+            burt_runtime.save_modified_report(
+                session_id="session-123",
+                modified_report={"title": "Edited report"},
             )
 
+        mock_get_session.assert_called_once_with("session-123")
+        mock_release_session_lock.assert_called_once_with("session-123", "owner-token")
+
+    @patch("app.services.burt_runtime.release_session_lock")
+    @patch("app.services.burt_runtime.acquire_session_lock", return_value="owner-token")
     @patch("app.services.burt_runtime.get_session", return_value=None)
-    def test_save_modified_report_raises_when_session_missing(self, mock_get_session):
+    def test_save_modified_report_raises_when_session_missing(
+        self,
+        mock_get_session,
+        _mock_acquire_session_lock,
+        mock_release_session_lock,
+    ):
         with self.assertRaises(burt_runtime.SessionNotFoundError):
             burt_runtime.save_modified_report(
                 session_id="missing-session",
@@ -638,6 +827,41 @@ class SaveModifiedReportTests(unittest.TestCase):
             )
 
         mock_get_session.assert_called_once_with("missing-session")
+        mock_release_session_lock.assert_called_once_with(
+            "missing-session",
+            "owner-token",
+        )
+
+    @patch("app.services.burt_runtime.acquire_session_lock", return_value=None)
+    def test_save_modified_report_refuses_while_the_session_is_busy(
+        self,
+        mock_acquire_session_lock,
+    ):
+        # The rerun invokes the graph, so it cannot race a resume on the same session.
+        with self.assertRaises(burt_runtime.SessionLockedError):
+            burt_runtime.save_modified_report(
+                session_id="session-123",
+                modified_report={"title": "Edited report"},
+            )
+
+        mock_acquire_session_lock.assert_called_once_with("session-123")
+
+
+class FormatReportAsDescriptionTests(unittest.TestCase):
+    def test_flattens_every_report_field_into_labelled_prose(self):
+        description = burt_runtime.format_report_as_description(
+            {
+                "title": "Crash on save",
+                "steps_to_reproduce": ["Open the app.", "Tap Save."],
+                "extra_metadata": {"severity": "high"},
+            }
+        )
+
+        self.assertIn("Title: Crash on save", description)
+        self.assertIn("Steps To Reproduce:\n- Open the app.\n- Tap Save.", description)
+        self.assertIn('Extra Metadata: {"severity": "high"}', description)
+        # The agent has to read this as a bug description, not as a report to copy.
+        self.assertTrue(description.startswith("I corrected the bug report"))
 
 
 if __name__ == "__main__":

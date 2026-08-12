@@ -78,6 +78,28 @@ def _screen_reference_value(reference: Any) -> str | None:
     return None
 
 
+def _records_through_revision(
+    records: list[dict[str, Any]],
+    revision: int | None,
+) -> list[dict[str, Any]]:
+    """Cut the log off after the draft report of ``revision`` was written.
+
+    A regenerated session holds several drafts, each grounded in its own run. Asking
+    for one revision's media has to ignore everything the later runs went on to map,
+    or every report card on screen would show the newest run's screenshots.
+    """
+    if revision is None:
+        return records
+
+    for position, record in enumerate(records):
+        if record.get("record_type") != "draft_report":
+            continue
+        if record.get("revision", 1) == revision:
+            return records[: position + 1]
+
+    return records
+
+
 def _latest_screen_id(records: list[dict[str, Any]]) -> str | None:
     """Return the most recent non-null triggering screen id recorded for the session."""
     for reference in reversed(_collect_values(records, (_SCREEN_REFERENCE_KEY,))):
@@ -197,10 +219,20 @@ def _session_bug_id(session_id: str) -> int:
     return bug_id
 
 
-def build_report_media(session_id: str) -> ReportMediaResponse:
-    """Describe which report fields have a screenshot the frontend can request."""
+def build_report_media(
+    session_id: str,
+    revision: int | None = None,
+) -> ReportMediaResponse:
+    """Describe which report fields have a screenshot the frontend can request.
+
+    ``revision`` picks which of a regenerated session's drafts to answer for;
+    without it the newest run wins.
+    """
     bug_id = _session_bug_id(session_id)
-    records = parse_log_records(build_api_log_path(session_id))
+    records = _records_through_revision(
+        parse_log_records(build_api_log_path(session_id)),
+        revision,
+    )
     app_directory = resolve_app_directory(bug_id)
     screen_id = _latest_screen_id(records)
 

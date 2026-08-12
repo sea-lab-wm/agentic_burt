@@ -91,6 +91,9 @@ class SessionRouteTests(unittest.TestCase):
                 "status": "awaiting_user",
                 "question": "What screen were you on?",
                 "final_report": None,
+                "draft_revision": 0,
+                "final_revision": 0,
+                "edits_remaining": 3,
             },
         )
         mock_start.assert_called_once_with(

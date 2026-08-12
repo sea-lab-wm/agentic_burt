@@ -189,6 +189,55 @@ class BuildReportMediaTests(ReportMediaTestCase):
             report_media.build_report_media("session-1")
 
 
+def _draft_record(revision: int, steps: str) -> dict:
+    """Build the terminal draft report record one BURT++ run writes."""
+    return {
+        "record_type": "draft_report",
+        "session_id": "session-1",
+        "revision": revision,
+        "draft_report": {"title": "Crash", "steps_to_reproduce": steps},
+    }
+
+
+class RegeneratedSessionMediaTests(ReportMediaTestCase):
+    """A session regenerated from a saved edit holds one run's media per revision."""
+
+    def setUp(self):
+        super().setUp()
+        self._write_log(
+            [
+                _turn_record(_candidates("614959519")),
+                _draft_record(1, "1. Open the statistics tab. <990647563>"),
+                {
+                    "record_type": "modified_report",
+                    "session_id": "session-1",
+                    "revision": 1,
+                    "modified_report": {"title": "Crash on open"},
+                },
+                _turn_record(_candidates("739537420")),
+                _draft_record(2, "1. Tap Go. <-993716096>"),
+            ]
+        )
+
+    def test_answers_for_the_newest_run_by_default(self):
+        media = report_media.build_report_media("session-1")
+
+        self.assertEqual(media.screen_id, "739537420")
+        self.assertEqual([step.transition_id for step in media.steps], ["-993716096"])
+
+    def test_answers_for_one_earlier_revision_when_asked(self):
+        media = report_media.build_report_media("session-1", revision=1)
+
+        # Only what run 1 had mapped, so the first report card keeps its own screens.
+        self.assertEqual(media.screen_id, "614959519")
+        self.assertEqual([step.transition_id for step in media.steps], ["990647563"])
+
+    def test_falls_back_to_the_whole_log_for_a_revision_it_cannot_find(self):
+        media = report_media.build_report_media("session-1", revision=9)
+
+        self.assertEqual(media.screen_id, "739537420")
+
+
 class ResolveScreenshotTests(ReportMediaTestCase):
     def test_resolves_a_captured_screenshot(self):
         self.assertEqual(
