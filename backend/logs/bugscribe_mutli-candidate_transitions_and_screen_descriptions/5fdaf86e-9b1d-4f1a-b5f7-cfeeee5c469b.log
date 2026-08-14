@@ -607,3 +607,653 @@
     "llm_calls_missing_usage": 0
   }
 }
+{
+  "record_type": "modified_report",
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "revision": 2,
+  "modified_report": {
+    "title": "Searching iTunes for \"mis\" on the Add Podcast screen shows a JSON error and no results",
+    "observed_behavior": "On the Add Podcast iTunes search screen, if the user taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the search field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.",
+    "expected_behavior": "No error message should appear, and the results should show up.",
+    "steps_to_reproduce": "1. Open the app.\n2. Open the app menu.\n2. Tap \"Add Podcast\" from the main menu.\n3. Tap the \"SEARCH ITUNES\" button.\n4. Tap the Search action in the toolbar on the top-right corner.\n5. Enter \"mis\" in the \"Search iTunes\" text field."
+  }
+}
+{
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "turn": 1,
+  "started_at": "2026-08-13T15:56:18.227226+00:00",
+  "ended_at": "2026-08-13T15:56:36.002603+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I corrected the bug report you generated. Treat the corrected report below as my description of the bug and regenerate the report from it.\n\nTitle: Searching iTunes for \"mis\" on the Add Podcast screen shows a JSON error and no results\n\nObserved Behavior: On the Add Podcast iTunes search screen, if the user taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the search field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.\n\nExpected Behavior: No error message should appear, and the results should show up.\n\nSteps To Reproduce: 1. Open the app.\n2. Open the app menu.\n2. Tap \"Add Podcast\" from the main menu.\n3. Tap the \"SEARCH ITUNES\" button.\n4. Tap the Search action in the toolbar on the top-right corner.\n5. Enter \"mis\" in the \"Search iTunes\" text field.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "2098d3cc-426d-4941-8632-9eeaf0dd6fb2"
+        }
+      },
+      "meta_data": {
+        "latency": "8.287500003234527e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "On the Add Podcast iTunes search screen",
+            "evidence": [
+              "On the Add Podcast iTunes search screen"
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "tap \"SEARCH ITUNES,\" tap the Search action in the toolbar, and enter \"mis\" in the search field",
+            "evidence": [
+              "taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the search field"
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed",
+            "evidence": [
+              "the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed"
+            ]
+          },
+          "correct_behavior": {
+            "value": "No error message should appear, and the results should show up",
+            "evidence": [
+              "No error message should appear, and the results should show up."
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "Open the app. Open the app menu. Tap \"Add Podcast\" from the main menu. Tap the \"SEARCH ITUNES\" button. Tap the Search action in the toolbar on the top-right corner. Enter \"mis\" in the \"Search iTunes\" text field.",
+            "evidence": [
+              "1. Open the app.",
+              "2. Open the app menu.",
+              "2. Tap \"Add Podcast\" from the main menu.",
+              "3. Tap the \"SEARCH ITUNES\" button.",
+              "4. Tap the Search action in the toolbar on the top-right corner.",
+              "5. Enter \"mis\" in the \"Search iTunes\" text field."
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "4.255679709999981 s",
+        "node_token_consumption": {
+          "input_tokens": 1078,
+          "output_tokens": 329,
+          "total_tokens": 1407,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "2.4516785429999572 s",
+        "node_token_consumption": {
+          "input_tokens": 737,
+          "output_tokens": 21,
+          "total_tokens": 758,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "1585597646",
+                "evidence": "User states the bug occurs 'On the Add Podcast iTunes search screen'. In the graph, screen 1585597646 is the Add Podcast iTunes search results screen, and the triggering interactions include tapping SEARCH ITUNES then tapping the Search action and entering text there."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2045346857",
+                  "evidence": "User step: 'Tap the \"SEARCH ITUNES\" button.' Graph transition 2045346857 is from Add Podcast screen -1407732013 to iTunes search screen 1585597646 via button 'SEARCH ITUNES'."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1430424811",
+                  "evidence": "User step: 'Tap the Search action in the toolbar on the top-right corner.' Graph transition 1430424811 is tapping toolbar Search from iTunes search screen 1585597646 to expanded search screen -1495655772."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "850196619",
+                  "evidence": "User step: 'Enter \"mis\" in the \"Search iTunes\" text field.' Graph transition 850196619 is typing in the search field on screen -1495655772."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed",
+                "evidence": "Extracted bug behavior explicitly states: 'the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed'."
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "No error message should appear, and the results should show up",
+                "evidence": "Extracted expected behavior explicitly states: 'No error message should appear, and the results should show up.'"
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "634634449",
+                  "evidence": "User step: 'Open the app.' Graph transition 634634449 is the app open transition."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-124422876",
+                  "evidence": "After app open, the graph lands on screen -295652100 where the navigation drawer is already open. To align the user's next step 'Tap \"Add Podcast\" from the main menu', moving to the queue screen 290473846 via closing/selecting Queue is the graph-valid bridge before explicitly opening the menu."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "-1896038308",
+                  "evidence": "User step: 'Open the app menu.' From Queue screen 290473846, transition -1896038308 opens the navigation drawer."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "256133940",
+                  "evidence": "User step: 'Tap \"Add Podcast\" from the main menu.' From the open drawer screen -295652100, transition 256133940 selects 'Add Podcast' and opens screen -1407732013. This matches the stated main-menu action."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2045346857",
+                  "evidence": "User step: 'Tap the \"SEARCH ITUNES\" button.'"
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1430424811",
+                  "evidence": "User step: 'Tap the Search action in the toolbar on the top-right corner.'"
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "850196619",
+                  "evidence": "User step: 'Enter \"mis\" in the \"Search iTunes\" text field.'"
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "7.411746711000035 s",
+        "node_token_consumption": {
+          "input_tokens": 26535,
+          "output_tokens": 779,
+          "total_tokens": 27314,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "1.8833000012818957e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Searching iTunes for \"mis\" on the Add Podcast screen shows a JSON feedUrl error and no results",
+          "observed_behavior": "On the Add Podcast iTunes search screen, if the user taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the \"Search iTunes\" text field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.",
+          "expected_behavior": "No error message should appear, and the results should show up.",
+          "steps_to_reproduce": "1. Open the app. <634634449>\n2. Tap \"Queue\" from the open navigation menu to reach the Queue screen. <-124422876>\n3. Open the app menu. <-1896038308>\n4. Tap \"Add Podcast\" from the main menu. <256133940>\n5. Tap the \"SEARCH ITUNES\" button. <2045346857>\n6. Tap the Search action in the toolbar on the top-right corner. <1430424811>\n7. Enter \"mis\" in the \"Search iTunes\" text field. <850196619>"
+        }
+      },
+      "meta_data": {
+        "latency": "3.6387114599999677 s",
+        "node_token_consumption": {
+          "input_tokens": 21109,
+          "output_tokens": 253,
+          "total_tokens": 21362,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "revision": 3,
+  "draft_report": {
+    "title": "Searching iTunes for \"mis\" on the Add Podcast screen shows a JSON feedUrl error and no results",
+    "observed_behavior": "On the Add Podcast iTunes search screen, if the user taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the \"Search iTunes\" text field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.",
+    "expected_behavior": "No error message should appear, and the results should show up.",
+    "steps_to_reproduce": "1. Open the app. <634634449>\n2. Tap \"Queue\" from the open navigation menu to reach the Queue screen. <-124422876>\n3. Open the app menu. <-1896038308>\n4. Tap \"Add Podcast\" from the main menu. <256133940>\n5. Tap the \"SEARCH ITUNES\" button. <2045346857>\n6. Tap the Search action in the toolbar on the top-right corner. <1430424811>\n7. Enter \"mis\" in the \"Search iTunes\" text field. <850196619>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "run_metadata": {
+    "bug_id": 2,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-13T15:56:18.227226+00:00",
+  "ended_at": "2026-08-13T15:56:36.002603+00:00",
+  "total_wall_clock_seconds": 17.775377,
+  "total_turn_processing_seconds": 17.775377,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 49459,
+    "output_tokens": 1382,
+    "total_tokens": 50841,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}
+{
+  "record_type": "modified_report",
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "revision": 3,
+  "modified_report": {
+    "title": "Searching iTunes for \"mis\" on the Add Podcast screen shows a JSON feedUrl error and no results",
+    "observed_behavior": "On the Add Podcast iTunes search screen, if the user taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the \"Search iTunes\" text field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.",
+    "expected_behavior": "No error message should appear, and the results should show up.",
+    "steps_to_reproduce": "1. Open the app.\n3. Open the app menu.\n4. Tap \"Add Podcast\" from the main menu.\n5. Tap the \"SEARCH ITUNES\" button.\n6. Tap the Search action in the toolbar on the top-right corner.\n7. Enter \"mis\" in the \"Search iTunes\" text field."
+  }
+}
+{
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "turn": 1,
+  "started_at": "2026-08-13T15:57:15.151850+00:00",
+  "ended_at": "2026-08-13T15:57:31.196780+00:00",
+  "actions": [
+    {
+      "entity": "user",
+      "action_name": "user_description",
+      "output": {
+        "messages": {
+          "content": "I corrected the bug report you generated. Treat the corrected report below as my description of the bug and regenerate the report from it.\n\nTitle: Searching iTunes for \"mis\" on the Add Podcast screen shows a JSON feedUrl error and no results\n\nObserved Behavior: On the Add Podcast iTunes search screen, if the user taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the \"Search iTunes\" text field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.\n\nExpected Behavior: No error message should appear, and the results should show up.\n\nSteps To Reproduce: 1. Open the app.\n3. Open the app menu.\n4. Tap \"Add Podcast\" from the main menu.\n5. Tap the \"SEARCH ITUNES\" button.\n6. Tap the Search action in the toolbar on the top-right corner.\n7. Enter \"mis\" in the \"Search iTunes\" text field.",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "human",
+          "name": null,
+          "id": "c4dd924a-add5-4300-afea-6827946f7799"
+        }
+      },
+      "meta_data": {
+        "latency": "1.9541999904504337e-05 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "information_element_extraction",
+      "output": {
+        "information_element_extraction": {
+          "triggering_screen_reference": {
+            "value": "On the Add Podcast iTunes search screen",
+            "evidence": [
+              "On the Add Podcast iTunes search screen",
+              "Tap \"Add Podcast\" from the main menu.",
+              "Tap the \"SEARCH ITUNES\" button."
+            ]
+          },
+          "triggering_GUI_interactions": {
+            "value": "tap \"SEARCH ITUNES,\" tap the Search action in the toolbar, and enter \"mis\" in the \"Search iTunes\" text field",
+            "evidence": [
+              "taps \"SEARCH ITUNES,\" taps the Search action in the toolbar, and enters \"mis\" in the \"Search iTunes\" text field",
+              "Tap the \"SEARCH ITUNES\" button.",
+              "Tap the Search action in the toolbar on the top-right corner.",
+              "Enter \"mis\" in the \"Search iTunes\" text field."
+            ]
+          },
+          "buggy_behavior": {
+            "value": "the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed",
+            "evidence": [
+              "the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed"
+            ]
+          },
+          "correct_behavior": {
+            "value": "No error message should appear, and the results should show up",
+            "evidence": [
+              "No error message should appear, and the results should show up."
+            ]
+          },
+          "steps_to_reproduce": {
+            "value": "1. Open the app. 3. Open the app menu. 4. Tap \"Add Podcast\" from the main menu. 5. Tap the \"SEARCH ITUNES\" button. 6. Tap the Search action in the toolbar on the top-right corner. 7. Enter \"mis\" in the \"Search iTunes\" text field.",
+            "evidence": [
+              "1. Open the app.",
+              "3. Open the app menu.",
+              "4. Tap \"Add Podcast\" from the main menu.",
+              "5. Tap the \"SEARCH ITUNES\" button.",
+              "6. Tap the Search action in the toolbar on the top-right corner.",
+              "7. Enter \"mis\" in the \"Search iTunes\" text field."
+            ]
+          }
+        }
+      },
+      "meta_data": {
+        "latency": "3.387563544000045 s",
+        "node_token_consumption": {
+          "input_tokens": 1085,
+          "output_tokens": 415,
+          "total_tokens": 1500,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "clarity_check",
+      "output": {
+        "clarity_route": "continue",
+        "clarity_issues": []
+      },
+      "meta_data": {
+        "latency": "1.3667694170000004 s",
+        "node_token_consumption": {
+          "input_tokens": 832,
+          "output_tokens": 21,
+          "total_tokens": 853,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "extract_and_update",
+      "output": {
+        "BugInfo": {
+          "triggering_screen_reference": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "1585597646",
+                "evidence": "User says the bug occurs on the Add Podcast iTunes search screen after tapping \"SEARCH ITUNES\". In the graph, screen 1585597646 is the Add Podcast search results screen reached from Add Podcast via the \"SEARCH ITUNES\" button."
+              }
+            ]
+          },
+          "triggering_GUI_interactions": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2045346857",
+                  "evidence": "\"Tap the \\\"SEARCH ITUNES\\\" button.\" maps to transition 2045346857 from Add Podcast screen -1407732013 to Add Podcast iTunes search screen 1585597646."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1430424811",
+                  "evidence": "\"Tap the Search action in the toolbar on the top-right corner.\" maps to transition 1430424811 from screen 1585597646 to expanded search screen -1495655772."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "850196619",
+                  "evidence": "\"Enter \\\"mis\\\" in the \\\"Search iTunes\\\" text field.\" maps to the type action 850196619 on the expanded iTunes search screen -1495655772."
+                }
+              ]
+            }
+          ],
+          "buggy_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed",
+                "evidence": "Directly stated by the user: \"the app shows the error message \\\"org.json.JSONException: No value for feedUrl\\\" and no responses are listed\""
+              }
+            ]
+          },
+          "correct_behavior": {
+            "status": "confirmed",
+            "candidates": [
+              {
+                "value": "No error message should appear, and the results should show up",
+                "evidence": "Directly stated by the user: \"No error message should appear, and the results should show up.\""
+              }
+            ]
+          },
+          "steps_to_reproduce": [
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "634634449",
+                  "evidence": "\"Open the app.\" maps to the app launch transition 634634449."
+                }
+              ]
+            },
+            {
+              "status": "inferred",
+              "candidates": [
+                {
+                  "value": "-1896038308",
+                  "evidence": "To perform \"Open the app menu\" from the Queue screen after launch, the graph-valid transition is opening the navigation drawer via transition -1896038308 from screen 290473846."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "256133940",
+                  "evidence": "\"Tap \\\"Add Podcast\\\" from the main menu.\" maps to transition 256133940 from drawer-open main menu screen -295652100 to Add Podcast screen -1407732013."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "2045346857",
+                  "evidence": "\"Tap the \\\"SEARCH ITUNES\\\" button.\" maps to transition 2045346857."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "1430424811",
+                  "evidence": "\"Tap the Search action in the toolbar on the top-right corner.\" maps to transition 1430424811."
+                }
+              ]
+            },
+            {
+              "status": "confirmed",
+              "candidates": [
+                {
+                  "value": "850196619",
+                  "evidence": "\"Enter \\\"mis\\\" in the \\\"Search iTunes\\\" text field.\" maps to transition 850196619."
+                }
+              ]
+            }
+          ]
+        },
+        "information_element_extraction": {
+          "triggering_screen_reference": null,
+          "triggering_GUI_interactions": null,
+          "buggy_behavior": null,
+          "correct_behavior": null,
+          "steps_to_reproduce": null
+        },
+        "active_follow_up": null,
+        "clarification_window_start_idx": 1
+      },
+      "meta_data": {
+        "latency": "7.4953628779999235 s",
+        "node_token_consumption": {
+          "input_tokens": 26630,
+          "output_tokens": 698,
+          "total_tokens": 27328,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "evaluate",
+      "output": {
+        "unknown_and_low_confidence_info": []
+      },
+      "meta_data": {
+        "latency": "7.542000048488262e-06 s",
+        "node_token_consumption": null
+      }
+    },
+    {
+      "entity": "bot",
+      "action_name": "generate_report",
+      "output": {
+        "full_report": {
+          "title": "Searching iTunes for a term on the Add Podcast screen shows a JSONException error and no results",
+          "observed_behavior": "On the Add Podcast iTunes search screen, if the user taps SEARCH ITUNES, taps the Search action in the toolbar, and enters \"mis\" in the Search iTunes text field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.",
+          "expected_behavior": "No error message should appear, and the results should show up.",
+          "steps_to_reproduce": "1. Open the app. <634634449>\n2. Open the navigation menu from the Queue screen. <-1896038308>\n3. Tap \"Add Podcast\" in the main menu. <256133940>\n4. Tap the \"SEARCH ITUNES\" button. <2045346857>\n5. Tap the Search action in the toolbar on the top-right corner. <1430424811>\n6. Enter \"mis\" in the \"Search iTunes\" text field. <850196619>"
+        }
+      },
+      "meta_data": {
+        "latency": "3.7795535420000306 s",
+        "node_token_consumption": {
+          "input_tokens": 21013,
+          "output_tokens": 228,
+          "total_tokens": 21241,
+          "llm_calls": 1,
+          "llm_calls_with_usage": 1,
+          "llm_calls_missing_usage": 0
+        }
+      }
+    }
+  ]
+}
+{
+  "record_type": "draft_report",
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "revision": 4,
+  "draft_report": {
+    "title": "Searching iTunes for a term on the Add Podcast screen shows a JSONException error and no results",
+    "observed_behavior": "On the Add Podcast iTunes search screen, if the user taps SEARCH ITUNES, taps the Search action in the toolbar, and enters \"mis\" in the Search iTunes text field, the app shows the error message \"org.json.JSONException: No value for feedUrl\" and no responses are listed.",
+    "expected_behavior": "No error message should appear, and the results should show up.",
+    "steps_to_reproduce": "1. Open the app. <634634449>\n2. Open the navigation menu from the Queue screen. <-1896038308>\n3. Tap \"Add Podcast\" in the main menu. <256133940>\n4. Tap the \"SEARCH ITUNES\" button. <2045346857>\n5. Tap the Search action in the toolbar on the top-right corner. <1430424811>\n6. Enter \"mis\" in the \"Search iTunes\" text field. <850196619>"
+  }
+}
+{
+  "record_type": "conversation_summary",
+  "session_id": "5fdaf86e-9b1d-4f1a-b5f7-cfeeee5c469b",
+  "run_metadata": {
+    "bug_id": 2,
+    "description_level": null,
+    "input_source": "user",
+    "runtime": "api"
+  },
+  "started_at": "2026-08-13T15:57:15.151850+00:00",
+  "ended_at": "2026-08-13T15:57:31.196780+00:00",
+  "total_wall_clock_seconds": 16.04493,
+  "total_turn_processing_seconds": 16.04493,
+  "total_conversation_turns": 1,
+  "token_consumption": {
+    "input_tokens": 49560,
+    "output_tokens": 1362,
+    "total_tokens": 50922,
+    "llm_calls": 4,
+    "llm_calls_with_usage": 4,
+    "llm_calls_missing_usage": 0
+  }
+}
